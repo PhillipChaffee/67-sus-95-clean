@@ -1,5 +1,9 @@
 # 67-sus-95-clean
 
+<p align="center">
+  <img src="docs/meme.png" alt="Drake in landscape: turning away from 67% VIBES on the left, pointing at 95% CLEAN on the right" width="560">
+</p>
+
 One folder per language carrying the **strictest workable** enforcement stack for
 that language: linting, type checking, comment and docstring rules, and a
 **code-coverage gate at ≥ 95% in every folder**. Each language folder
