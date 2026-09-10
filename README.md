@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="docs/meme.png" alt="Drake in landscape: turning away from 67% VIBES on the left, pointing at 95% CLEAN on the right" width="560">
-</p>
+# 67-sus-95-clean
 
 One folder per language carrying the **strictest workable** enforcement stack for
 that language: linting, type checking, comment and docstring rules, and a
@@ -17,22 +15,24 @@ the strict baseline instead of assembling it from memory.
 
 | path | what it is |
 |---|---|
-| `<lang>/README.md` | what each enforced thing is, and the trade-offs ("strict but staying usable") |
+| `<lang>/README.md` | what is enforced and the trade-offs ("strict but staying usable") |
 | `<lang>/<configs>` | the canonical example configs (the enforcement surface) |
-| `<lang>/init-<lang>-repo/SKILL.md` | the AI skill: copy the folder into `~/.agents/skills/` and run it in a new directory |
-| `<lang>/init-<lang>-repo/templates/` | byte-duplicates of the canonical configs, so the skill is self-contained |
+| `<lang>/init-<lang>-repo/` | the AI skill, plus `templates/` byte-copies so it is self-contained |
 | `add-language/` | skill that adds a NEW language to this repo |
-| `scripts/verify-sync.sh` | fails when a `templates/` copy drifts from its canonical file |
-| `scripts/install-skills.sh` | installs the `init-*` and `add-language` skills |
+| `scripts/*.sh` | `verify-sync.sh` catches template drift; `install-skills.sh` installs the skills |
 
 ## Languages
 
+Details and reasoning live in each folder's README; the shape:
+
 | folder | lint | types | docs | coverage | formatter |
 |---|---|---|---|---|---|
-| [`rust/`](rust/) | clippy (pedantic, nursery, cargo, restriction picks) + `rustdoc` group deny | rustc (`missing_docs` deny) | `[workspace.lints.rustdoc] all = deny`, rustdoc lints | `cargo llvm-cov --fail-under-lines 95` | `rustfmt` |
-| [`python/`](python/) | ruff (ALL minus documented ignores) | mypy `--strict` + beyond | ruff `D` (google) | `pytest-cov` `fail_under = 95`, branch coverage | `ruff format` |
-| [`typescript/`](typescript/) | eslint + typescript-eslint `strict-type-checked` | tsc `strict` + 8 beyond-strict flags | eslint-plugin-jsdoc (require & check) | vitest coverage thresholds 95 | prettier |
-| [`go/`](go/) | golangci-lint v2 (standard + strict extras) | `go vet` + staticcheck | revive `exported` | `go tool cover -func` ≥ 95 gate | `gofumpt` |
+| [`rust/`](rust/) | clippy: pedantic + nursery + cargo + picks; rustdoc group deny | rustc: `missing_docs` deny | rustdoc: all 10 stable lints | `llvm-cov` ≥ 95% | `rustfmt` |
+| [`python/`](python/) | ruff: ALL, 18 documented ignores | mypy `--strict` | ruff `D` (google) | `pytest-cov` ≥ 95% | `ruff format` |
+| [`typescript/`](typescript/) | eslint: `strictTypeChecked` + jsdoc | tsc `strict` + 8 extras | jsdoc: require + check | vitest ≥ 95% ×4 | `prettier` |
+| [`go/`](go/) | golangci-lint v2: strict extras | `go vet` + staticcheck | revive `exported` | gate script ≥ 95% | `gofumpt` |
+
+(The full commands — `cargo llvm-cov --fail-under-lines 95`, `fail_under = 95` with branch coverage, vitest's four thresholds, the go `coverage-gate.sh` — are in the folders.)
 
 ## The house rules every folder shares
 
