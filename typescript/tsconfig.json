@@ -1,0 +1,30 @@
+// TypeScript's strictest workable compiler surface for this repo. `"strict"`
+// is the baseline; every flag beyond it carries its known ownership cost in a
+// comment here, and the trade-offs are told in full in README.md.
+//
+// The pin that makes this deterministic lives in the devDependencies of
+// package.json (typescript is pinned exactly, not ranged), for the same reason
+// rust/ pins a rust-toolchain channel: a newer compiler turns CI red on a
+// commit that changed nothing, and that signal trains people to ignore red.
+{
+  "compilerOptions": {
+    "target": "es2022", // Node 22 (engines, package.json) understands it as-is
+    "lib": ["ES2022"], // no DOM: this is Node-baseline TS, not a web bundle
+    "module": "preserve", // keeps ESM/CJS syntax as authored; implies bundler resolution below
+    "moduleResolution": "bundler", // resolves the way a bundler plus vitest do; `preserve` already implies it, restated for determinism
+    "strict": true, // the baseline below which the compiler is not the strict baseline
+    "noUncheckedIndexedAccess": true, // cost: every index read is `T | undefined` until narrowed; some may find this the noisiest flag in the table
+    "exactOptionalPropertyTypes": true, // cost: `{ a?: string }` no longer accepts `a: undefined`; you model absence vs nullish explicitly
+    "noImplicitOverride": true, // cost: every override carries the keyword; cheap, and catches accidental redefinition
+    "noFallthroughCasesInSwitch": true, // cost: an intentional fallthrough needs `// falls through` as evidence
+    "noImplicitReturns": true, // cost: every code path in a value-returning function must end at a return
+    "noPropertyAccessFromIndexSignature": true, // cost: record access is `record["key"]`, not `record.key`, so lookalike property reads cannot pass type check
+    "noUncheckedSideEffectImports": true, // cost: `import "./x"` must resolve or the build fails; typescript 5.6+
+    "verbatimModuleSyntax": true, // cost: type-only imports must say `import type`; module keywords are kept as written, so bundlers cannot guess intent
+    "noUnusedLocals": true, // cost: dead bindings are build errors, not editor hints
+    "noUnusedParameters": true, // cost: an intentional unused parameter must ride `_` prefix
+    "skipLibCheck": true // dependency .d.ts files disagree with each other across versions; the repo's own sources stay fully checked, which is what the gates own
+    // "types": ["node"] // uncomment and add @types/node to devDependencies when the sources use Node APIs (fs, process, ...)
+  },
+  "include": ["src", "vitest.config.ts"]
+}

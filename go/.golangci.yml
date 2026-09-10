@@ -1,0 +1,84 @@
+# golangci-lint v2.13.2 is the verified and pinned shape of this file; the
+# schema check (`golangci-lint config verify`) validates every key below.
+# House rule: every non-default choice carries its reason, here or in the
+# README. Bumping the pinned version re-runs the gates and fixes what moved
+# in the same commit.
+
+version: "2"
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused — the vet
+  # and type-check surface CI also runs explicitly.
+  default: standard
+
+  enable:
+    # Comment spelling errors crossing review back and forth; nothing else
+    # in the stack re-checks prose words.
+    - misspell
+    # Shadowing the predeclared identifiers (e.g. naming a variable `max`)
+    # is a trap the compiler only half-warns about.
+    - predeclared
+    # Redundant conversions (`int64(x)` where x is already int64) — noise
+    # that hides the conversions that actually matter.
+    - unconvert
+    # Assignments whose value is overwritten before it is read.
+    - wastedassign
+    # Standard-library constants where they exist (http.StatusOK, not 200)
+    # keeps magic numbers greppable.
+    - usestdlibvars
+    # `return nil, nil` hides "no result" behind a typed-nil — a sentinel
+    # error or a named state is supposed to carry it.
+    - nilnil
+    # HTTP calls built without a context lose the caller's cancellation.
+    - noctx
+    # Dynamic errors — errors constructed mid-flight instead of a sentinel
+    # — cannot be wrapped with %w into cleaner traces the way a sentinel
+    # can.
+    - err113
+    # go-critic bug/idiom families: both convenience tags are enabled in
+    # settings below (whole tags, so newly added stable checks ride along).
+    - gocritic
+    # golint's replacement: the exported rule enforces the doc-comment bar
+    # and with enable-default-rules every default check stays on.
+    - revive
+
+  settings:
+    gocritic:
+      # style + performance are the whole stable-ish families. experimental
+      # and opinionated are left off deliberately: they churn between
+      # gocritic releases and carry the false-positive budget.
+      enabled-tags:
+        - style
+        - performance
+    revive:
+      # Without this, one explicit rule (exported below) would silently
+      # drop every default rule revive carries.
+      enable-default-rules: true
+      rules:
+        - name: exported
+          # The two flags are additive: the golint default behavior (doc
+          # comments required on all exported declarations, stuttering
+          # check included) stays on, and these widen the net.
+          arguments:
+            - "check-private-receivers"
+            - "check-public-interface"
+
+formatters:
+  enable:
+    # gofumpt is a backwards-compatible strictening of gofmt, so this one
+    # gate covers gofmt too and `golangci-lint fmt --diff` is the check.
+    - gofumpt
+  settings:
+    gofumpt:
+      extra:
+        # Groups parameters sharing a type, the one extra rule verified
+        # harmless on ordinary signatures. The remaining extras
+        # (clothe-returns, balance-calls) rewrite statement shape and are
+        # left off on purpose.
+        group-params: true
+
+issues:
+  # Both 0: never cap the report. A strict gate that stops listing after 50
+  # instances or hides repeats lies about the state of the tree.
+  max-issues-per-linter: 0
+  max-same-issues: 0

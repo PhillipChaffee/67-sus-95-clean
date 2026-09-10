@@ -1,0 +1,28 @@
+# The CI gates for a strict TypeScript repository: the same commands the README
+# runs, and nothing else. `npm ci` keeps the install deterministic against the
+# committed package-lock.json; without that lock the gate is aspirational.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Node 22 is the engines floor; 24 is the Active LTS the template is
+      # verified against. Pin the major so a runner default cannot drift.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run lint
+      # The 95% coverage gate: vitest fails the run under the thresholds
+      # configured in vitest.config.ts (all four axes).
+      - run: npm test

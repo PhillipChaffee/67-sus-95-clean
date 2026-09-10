@@ -1,0 +1,33 @@
+# The CI gates for a strict Python repository: the same commands the README
+# runs, on the same pinned tools, and nothing else.
+#
+# Every tool here fails the job by its own exit code — ruff and mypy exit
+# nonzero on any diagnostic, and pytest exits nonzero when coverage's
+# fail_under (in pyproject.toml) is unmet. There is no warn-to-error
+# arithmetic to maintain.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12" # the requires-python floor: every gate below must hold on it
+          cache: pip
+      # The exact pins the README commands assume; a bumped pin re-runs the
+      # local gates and lands in the same commit as the version strings here.
+      - run: >-
+          python -m pip install "ruff==0.16.6" "mypy==2.3.1"
+          "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy .
+      - name: Coverage gate (fail_under = 95, from pyproject.toml)
+        run: pytest

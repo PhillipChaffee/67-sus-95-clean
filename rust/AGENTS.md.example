@@ -1,0 +1,22 @@
+# The comment rules exactly as one shipped repo carries them, to drop into the
+# new repository's AGENTS.md. No linter checks this prose; the rules below are
+# policy with teeth — review treats a violation as a bug.
+#
+## Comment and doc-comment rules
+#
+# The coding agent's global rules own the style basics - "Present state only"
+# (a comment never narrates what the code used to do) and "Why, not what" (a
+# comment earns its lines with a trade-off, a measurement, or a contract,
+# never a restatement of the signature) - and those apply everywhere, prose
+# and code. This repo adds four rules of its own:
+#
+# - Cite the issue, don't narrate it. #NNN references are house currency, but
+#   only as a subordinate tag on a sentence that still works without them.
+# - Doc comments carry what the signature cannot: the wire's name for a
+#   field, what the other side sends there, defaults, degradation behavior,
+#   # Errors / # Panics sections where they apply.
+# - A flagged identifier is config, not a rewrite: when clippy::doc_markdown
+#   fires on a genuine house identifier, extend doc-valid-idents in
+#   clippy.toml (verbatim code spelling) rather than rewording the prose.
+# - Nothing may display a number no server sends. (Adapt to your domain: the
+#   rule excludes instrumentation-fabricated numbers from docs and examples.)

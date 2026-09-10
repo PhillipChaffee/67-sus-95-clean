@@ -1,0 +1,43 @@
+# The CI gates for a strict Go repository: the same commands the README runs,
+# and nothing else. Keep GOTOOLCHAIN in sync with the `toolchain` line in
+# go.mod — the exact pin matters because a newer bundled toolchain would
+# otherwise win over a lower go.mod floor and the lint output would drift
+# between a local run and CI (go.dev/doc/toolchain).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  GOTOOLCHAIN: go1.27.1
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Any go >= 1.21 bootstraps the pinned toolchain from GOTOOLCHAIN; a
+      # runner presence check is unnecessary but `stable` keeps this step
+      # working across runner images.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: true
+      # Pinned install, same command the README documents — no third-party
+      # installer action in the supply chain.
+      - name: Install golangci-lint (pinned)
+        run: |
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - run: go build ./...
+      # gofumpt is a gofmt superset, so this check covers gofmt; the
+      # formatters section of .golangci.yml is NOT checked by `run` (v2
+      # behavior), which is why fmt has its own step.
+      - run: golangci-lint fmt --diff
+      - run: go vet ./...
+      - run: golangci-lint run
+      - run: go test ./...
+      - name: Coverage gate
+        run: ./coverage-gate.sh

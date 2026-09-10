@@ -1,0 +1,5 @@
+# Generated code is reported, never formatted: `coverage/` is vitest's report
+# output and `node_modules` is prettier's own default ignore, restated here so
+# the fence is visible but there is one list of fences, not two.
+node_modules/
+coverage/
