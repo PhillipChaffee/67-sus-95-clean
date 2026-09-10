@@ -1,5 +1,9 @@
 # 67-sus-95-clean
 
+<p align="center">
+  <img src="https://api.memegen.link/images/drake/67~p_vibes/95~p_clean.png" alt="Drake: reject 67% vibes; approve 95% clean" width="360">
+</p>
+
 One folder per language carrying the **strictest workable** enforcement stack for
 that language: linting, type checking, comment and docstring rules, and a
 **code-coverage gate at ≥ 95% in every folder**. Each language folder
@@ -10,10 +14,6 @@ repository in that language with the whole setup.
 Use it as a reference: when you start a new project in a language, read its
 folder, or install its skill and run it in the new project, and you start from
 the strict baseline instead of assembling it from memory.
-
-<p align="center">
-  <img src="https://api.memegen.link/images/drake/67~p_coverage_but_the_vibes_are_immaculate/the_gate_susd_a_67_and_shipped_a_clean_95.png" alt="Drake: reject 67% coverage because the vibes are immaculate; approve the gate that sus'd a 67 and shipped a clean 95" width="420">
-</p>
 
 ## Layout
 
