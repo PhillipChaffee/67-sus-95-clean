@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>strictest-setups — the strictest workable enforcement baseline, per language</title>
+<title>67 sus, 95 clean — strict lint + coverage baselines that make vibe coding and agentic dev safe</title>
 <meta name="description" content="One folder per language carrying strict linting, type checking, docstring and comment rules, and a machine-enforced 95% code-coverage gate — with installable AI skills that initialize a new repository from the baseline.">
 <style>
   :root { color-scheme: dark; }
@@ -34,8 +34,8 @@
 </head>
 <body>
 <main>
-  <h1><code>strictest-setups</code></h1>
-  <p class="lead">One folder per language carrying the <strong>strictest workable</strong> enforcement baseline:
+  <h1><code>67</code> 🤨 sus — <code>95</code> 😎 clean</h1>
+  <p class="lead"><strong>67 is pure vibes. 95 is a fact.</strong><br>One folder per language carrying the <strong>strictest workable</strong> enforcement baseline:
   linting, type checking, docstring and comment rules, and a machine-enforced
   <strong>code-coverage gate at 95%</strong>. Every non-default choice carries its reason;
   every coverage gate has a recorded pass <em>and</em> fail proof.</p>
@@ -47,7 +47,7 @@
   <h2>Languages</h2>
   <div class="grid">
     <div class="card">
-      <h3><a href="https://github.com/PhillipChaffee/strictest-setups/tree/main/rust">rust/</a></h3>
+      <h3><a href="https://github.com/PhillipChaffee/67-sus-95-clean/tree/main/rust">rust/</a></h3>
       <ul>
         <li>clippy: pedantic, nursery, cargo + restriction picks — every deny carries a reason</li>
         <li><code>[workspace.lints.rustdoc] all = "deny"</code>, <code>missing_docs = "deny"</code></li>
@@ -55,7 +55,7 @@
       </ul>
     </div>
     <div class="card">
-      <h3><a href="https://github.com/PhillipChaffee/strictest-setups/tree/main/python">python/</a></h3>
+      <h3><a href="https://github.com/PhillipChaffee/67-sus-95-clean/tree/main/python">python/</a></h3>
       <ul>
         <li>ruff <code>select = ALL</code>, 18 documented ignores</li>
         <li>mypy <code>--strict</code> + <code>warn_unreachable</code></li>
@@ -63,7 +63,7 @@
       </ul>
     </div>
     <div class="card">
-      <h3><a href="https://github.com/PhillipChaffee/strictest-setups/tree/main/typescript">typescript/</a></h3>
+      <h3><a href="https://github.com/PhillipChaffee/67-sus-95-clean/tree/main/typescript">typescript/</a></h3>
       <ul>
         <li>typescript-eslint <code>strictTypeChecked</code> + jsdoc require/check</li>
         <li>tsc <code>strict</code> + eight beyond-strict flags</li>
@@ -71,7 +71,7 @@
       </ul>
     </div>
     <div class="card">
-      <h3><a href="https://github.com/PhillipChaffee/strictest-setups/tree/main/go">go/</a></h3>
+      <h3><a href="https://github.com/PhillipChaffee/67-sus-95-clean/tree/main/go">go/</a></h3>
       <ul>
         <li>golangci-lint v2: standard + gocritic, revive, misspell, …</li>
         <li>revive <code>exported</code> as the doc-comment gate</li>
@@ -99,15 +99,15 @@ $ ./coverage-gate.sh                                 # go/ — go tool cover -fu
   <h2>Use it</h2>
   <pre><code># reference: read the folder for your language
 # or run the init skill in your new repository
-$ git clone https://github.com/PhillipChaffee/strictest-setups
-$ strictest-setups/scripts/install-skills.sh     # installs init-rust-repo, init-python-repo, ...</code></pre>
+$ git clone https://github.com/PhillipChaffee/67-sus-95-clean
+$ 67-sus-95-clean/scripts/install-skills.sh     # installs init-rust-repo, init-python-repo, ...</code></pre>
   <p>The skill copies byte-identical templates (<code>scripts/verify-sync.sh</code> fails on drift),
   adapts the project name, runs every gate before the first commit, and refuses to continue
   if a toolchain cannot be installed or a gate cannot run.</p>
 
   <footer>
-    MIT licensed · <a href="https://github.com/PhillipChaffee/strictest-setups">source</a> ·
-    add a language with the <a href="https://github.com/PhillipChaffee/strictest-setups/tree/main/add-language">add-language skill</a>
+    MIT licensed · <a href="https://github.com/PhillipChaffee/67-sus-95-clean">source</a> ·
+    add a language with the <a href="https://github.com/PhillipChaffee/67-sus-95-clean/tree/main/add-language">add-language skill</a>
   </footer>
 </main>
 </body>

@@ -1,7 +1,10 @@
-# strictest-setups
+# 67-sus-95-clean
 
-One folder per language carrying the **strictest workable** enforcement stack for
-that language: linting, type checking, comment and docstring rules, and a
+**67 sus. 95 clean.** The number the boat kid made famous is what your
+vibe-coded repo sits at; 95 is the fact the gate enforces. This repo makes
+vibe coding and agentic development robust the boring way: one folder per
+language carrying the **strictest workable** enforcement stack for that
+language — linting, type checking, comment and docstring rules, and a
 **code-coverage gate at ≥ 95% in every folder**. Each language folder
 ships the example configuration files, a README that explains what each
 enforcement is for, and an installable AI skill that initializes a new
@@ -10,6 +13,26 @@ repository in that language with the whole setup.
 Use it as a reference: when you start a new project in a language, read its
 folder, or install its skill and run it in the new project, and you start from
 the strict baseline instead of assembling it from memory.
+
+The repo in its native format:
+
+<!-- Drake, two-panel: the classic no/yes meme, rendered in ASCII so it
+     renders identically in a terminal, an editor, and on GitHub. -->
+
+```text
+┌────────────────────────────────┬──────────────────────────────────────────┐
+│                                │  the agent shipped the branch at 67%     │
+│         THE VIBE-CODED         │  coverage, the vibes were immaculate,    │
+│            BRANCH              │  and the tests were "basically implied"  │
+│                                │                                          │
+│          ( nah )               │                                          │
+├────────────────────────────────┼──────────────────────────────────────────┤
+│                                │  the gate went 67 sus, denied the        │
+│        THE COVERAGE GATE       │  merge, and fed the agent its homework   │
+│                                │  until 95 read clean                     │
+│         ( yeahhh )             │                                          │
+└────────────────────────────────┴──────────────────────────────────────────┘
+```
 
 ## Layout
 
@@ -67,4 +90,4 @@ build under 95%.
 ## License
 
 MIT — see [LICENSE](LICENSE). The site lives at
-https://phillipchaffee.github.io/strictest-setups/ (`docs/index.html`).
+https://phillipchaffee.github.io/67-sus-95-clean/ (`docs/index.html`).
