@@ -1,7 +1,5 @@
-# 67-sus-95-clean
-
 <p align="center">
-  <img src="https://api.memegen.link/images/drake/67~p_vibes/95~p_clean.png" alt="Drake: reject 67% vibes; approve 95% clean" width="360">
+  <img src="https://api.memegen.link/images/woman-cat/67~p_is_SUS/clean~p_to_me.png" alt="Woman yelling '67 IS SUS' at the cat, who sits unbothered: 'clean to me'" width="500">
 </p>
 
 One folder per language carrying the **strictest workable** enforcement stack for
