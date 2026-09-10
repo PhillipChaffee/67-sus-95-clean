@@ -26,3 +26,13 @@ jobs:
       # The 95% coverage gate: vitest fails the run under the thresholds
       # configured in vitest.config.ts (all four axes).
       - run: npm test
+      # vitest writes coverage/lcov.info (reportOnFailure keeps it on a red
+      # build). Free for public repositories; tokenless uploads work for a
+      # public repo on a new org (tokens Not required by default). If the org
+      # requires tokens, stash it as CODECOV_TOKEN and pass
+      # `token: ${{ secrets.CODECOV_TOKEN }}`. Pinned action version.
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov-action@v7
+        with:
+          files: coverage/lcov.info

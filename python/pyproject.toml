@@ -93,7 +93,7 @@ python_version = "3.12"
 # term-missing prints uncovered lines, and -ra reports all outcomes except
 # passed. pytest exits nonzero when coverage's fail_under (below) is unmet,
 # so this one command IS the coverage gate.
-addopts = "--cov=<your_package> --cov-report=term-missing -ra"
+addopts = "--cov=<your_package> --cov-report=term-missing --cov-report=xml -ra"
 testpaths = [
     "tests",    # deterministic discovery: don't sweep stray test-looking files
 ]

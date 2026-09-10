@@ -58,7 +58,14 @@ record the work.
    dynamic errors, `err113` rests), and drop those with a one-line reason in
    the config. The standard set, revive/exported, gocritic tags, gofumpt and
    the coverage gate are not negotiable.
-7. Commit everything in one bootstrap commit (message style is the repo's
+7. Wire the free coverage badge: the `ci.yml` template already uploads
+   cover.out to Codecov (`codecov-action@v7`, tokenless for a public repo).
+   Add to the new repository's README:
+   `![coverage](https://codecov.io/gh/OWNER/REPO/graph/badge.svg?branch=main)`
+   with OWNER/REPO replaced by the GitHub slug, after the first push. If the
+   org requires upload tokens, have the user create `CODECOV_TOKEN` in repo
+   secrets and add `token: ${{ secrets.CODECOV_TOKEN }}` to the upload step.
+8. Commit everything in one bootstrap commit (message style is the repo's
    choice from here on).
 
 # Gates

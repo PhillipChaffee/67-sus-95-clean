@@ -31,3 +31,14 @@ jobs:
       - run: mypy .
       - name: Coverage gate (fail_under = 95, from pyproject.toml)
         run: pytest
+      # pytest-cov writes coverage.xml before it evaluates fail_under, so the
+      # upload below still runs on a red gate and the badge tells the truth.
+      # Free for public repositories; tokenless uploads work for a public
+      # repo on a new org (tokens Not required by default). If the org
+      # requires tokens, stash it as CODECOV_TOKEN and pass
+      # `token: ${{ secrets.CODECOV_TOKEN }}`. Pinned action version.
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov-action@v7
+        with:
+          files: coverage.xml

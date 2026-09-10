@@ -68,7 +68,14 @@ record the work.
    FAILS the build; write the doc — never delete the rule to pass the
    build. The coverage FAIL output names the axis and the aggregate; fix
    the tests, not the thresholds.
-8. Commit everything in one bootstrap commit (message style is the repo's
+8. Wire the free coverage badge: the `ci.yml` template already uploads
+   coverage/lcov.info to Codecov (`codecov-action@v7`, tokenless for a
+   public repo). Add to the new repository's README:
+   `![coverage](https://codecov.io/gh/OWNER/REPO/graph/badge.svg?branch=main)`
+   with OWNER/REPO replaced by the GitHub slug, after the first push. If the
+   org requires upload tokens, have the user create `CODECOV_TOKEN` in repo
+   secrets and add `token: ${{ secrets.CODECOV_TOKEN }}` to the upload step.
+9. Commit everything in one bootstrap commit (message style is the repo's
    choice from here on).
 
 # Gates

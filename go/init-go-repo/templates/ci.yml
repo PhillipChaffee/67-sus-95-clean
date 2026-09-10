@@ -41,3 +41,15 @@ jobs:
       - run: go test ./...
       - name: Coverage gate
         run: ./coverage-gate.sh
+      # The gate script keeps cover.out on BOTH branches, so a red build still
+      # uploads its red coverage and the badge tells the truth. Go's native
+      # profile format is in Codecov's supported list. Free for public
+      # repositories; tokenless uploads work for a public repo on a new org
+      # (tokens Not required by default). If the org requires tokens, stash
+      # it as CODECOV_TOKEN and pass `token: ${{ secrets.CODECOV_TOKEN }}`.
+      # Pinned action version.
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov-action@v7
+        with:
+          files: cover.out

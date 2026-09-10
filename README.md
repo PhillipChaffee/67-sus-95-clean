@@ -50,6 +50,12 @@ the strict baseline instead of assembling it from memory.
 5. **Determinism**: pinned toolchain versions (`rust-toolchain.toml`,
    `python_version`, `engines`/TS version, `run.go`), nightly-only options
    marked as such, CI running exactly the local commands in the READMEs.
+6. **Coverage reports are free badges, not private CLI artifacts**: every
+   folder's CI ships its report to [Codecov](https://about.codecov.io)
+   (`codecov-action@v7`, free for public repositories, tokenless by default
+   for them), so a repository built from a folder gets a free coverage badge,
+   red builds included — the report is written before the gate is evaluated,
+   and uploaded even when the build fails.
 
 ## Adding a language
 

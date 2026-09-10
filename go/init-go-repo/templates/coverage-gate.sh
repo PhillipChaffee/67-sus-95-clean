@@ -10,8 +10,9 @@
 #
 # This is statement coverage only: `go tool cover` counts statements, and
 # the Go toolchain ships no branch-coverage mode (see the README's coverage
-# section for the consequences). On success the profile is removed; on any
-# failure it is kept so `go tool cover -html=cover.out` can show the gap.
+# section for the consequences). The profile is kept in every path: on
+# failure for `go tool cover -html=cover.out`, and on success so the CI's
+# Codecov upload step can turn it into the free coverage badge.
 #
 # Usage: run from the repository (module) root: ./coverage-gate.sh
 set -u -o pipefail
@@ -35,5 +36,4 @@ if [[ -z "${pct}" ]] || ! awk -v got="${pct}" -v need="${required}" 'BEGIN { exi
 	exit 1
 fi
 
-echo "coverage-gate: PASS — total statement coverage ${pct}% ≥ ${required}%"
-rm -f "${profile}"
+echo "coverage-gate: PASS — total statement coverage ${pct}% ≥ ${required}% (profile kept at ${profile} for the CI upload)"

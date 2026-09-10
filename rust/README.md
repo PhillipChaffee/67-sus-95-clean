@@ -78,6 +78,13 @@ under 95% (that is its acceptance test).
 options (`wrap_comments` and friends) if you adopt them; on a stable pin
 leave the file minimal.
 
+CI passes `--lcov --output-path lcov.info` and uploads it to Codecov
+(`codecov-action@v7`, free for public repos — tokenless on a new org);
+llvm-cov writes the report before it evaluates the gate (measured), so
+the free badge (`codecov.io/gh/OWNER/REPO/graph/badge.svg`) shows the
+real number on every commit, red builds included. The init skill
+inserts the badge line into the new repository's README.
+
 ## Commands
 
 ```bash
@@ -85,8 +92,9 @@ rustup component add llvm-tools-preview
 cargo clippy --workspace --all-targets -- -D warnings   # lint gate
 RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps   # doc gate
 cargo test --workspace                                  # also runs doc tests
-cargo llvm-cov --workspace --fail-under-lines 95        # coverage gate
+cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info
 cargo fmt --all -- --check                              # format gate
+# ...and CI uploads the lcov.info to Codecov for the free badge
 ```
 
 ## Trade-offs ("strict but staying usable")

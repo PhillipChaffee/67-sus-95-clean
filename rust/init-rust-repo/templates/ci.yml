@@ -23,8 +23,20 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      # Gate AND report in one pass: llvm-cov writes the report before it
+      # evaluates --fail-under-lines, so the upload below can still run on a
+      # gate failure (measured: exit 1 with lcov.info on disk).
       - name: Coverage gate
-        run: cargo llvm-cov --workspace --fail-under-lines 95
+        run: cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info
+      # Free for public repositories; pinned action version. Tokenless
+      # uploads work for a public repo on a new org (tokens Not required by
+      # default); if the org requires tokens, stash it as CODECOV_TOKEN and
+      # add `token: ${{ secrets.CODECOV_TOKEN }}`.
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov-action@v7
+        with:
+          files: lcov.info
 
   doc-comments:
     runs-on: ubuntu-latest

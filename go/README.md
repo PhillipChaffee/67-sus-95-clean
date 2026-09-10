@@ -109,6 +109,14 @@ NOT reported by `golangci-lint run` (formatters live in their own config
 section and their own command), which is why the CI job runs `fmt --diff`
 explicitly.
 
+The gate script keeps `cover.out` on BOTH branches (the old delete-on-
+success behavior broke badge-on-red), and CI uploads it to Codecov
+(`codecov-action@v7`, free for public repos — tokenless on a new org).
+The Go profile format is in Codecov's supported list, so the free badge
+(`codecov.io/gh/OWNER/REPO/graph/badge.svg`) shows the real number on
+every commit, red builds included. The init skill inserts the badge
+line into the new repository's README.
+
 ## Commands
 
 ```bash

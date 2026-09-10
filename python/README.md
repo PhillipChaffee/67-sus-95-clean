@@ -143,6 +143,12 @@ warning-free (its incompatible-rule warning is the tripwire), and
 `[tool.ruff.format] docstring-code-format = true` gives docstring examples
 the same guarantees as code.
 
+CI uploads the `coverage.xml` pytest-cov writes to Codecov
+(`codecov-action@v7`, free for public repos — tokenless on a new org),
+so the free badge (`codecov.io/gh/OWNER/REPO/graph/badge.svg`) shows the
+real number on every commit, red builds included. The init skill
+inserts the badge line into the new repository's README.
+
 ## Commands
 
 ```bash

@@ -127,6 +127,12 @@ chain are the single source of formatting truth. eslint's setup comment
 documents why no stylistic lint rules coexist with it. `.prettierignore`
 keeps generated code (`coverage/`, `node_modules/`) out of the check.
 
+CI uploads `coverage/lcov.info` to Codecov (`codecov-action@v7`, free for public repos — tokenless on a new org);
+`reportOnFailure` keeps the upload on a red build, so the free badge
+(`codecov.io/gh/OWNER/REPO/graph/badge.svg`) shows the real number on
+every commit. The init skill inserts the badge line into the new
+repository's README.
+
 ## Commands
 
 ```bash

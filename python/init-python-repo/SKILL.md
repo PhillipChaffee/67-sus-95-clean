@@ -61,8 +61,16 @@ assume that reasoning and only record the work.
    passing must exit 0, and temporarily commenting ONE test out must fail
    `pytest` with `FAIL Required test coverage of 95.0% not reached` and a
    nonzero exit. Restore the test afterward.
-7. Commit everything in one bootstrap commit (message style is the repo's
+7. Wire the free coverage badge: the `ci.yml` template already uploads the
+   coverage report to Codecov (`codecov-action@v7`, tokenless for a public
+   repo). Add to the new repository's README:
+   `![coverage](https://codecov.io/gh/OWNER/REPO/graph/badge.svg?branch=main)`
+   with OWNER/REPO replaced by the GitHub slug, after the first push. If the
+   org requires upload tokens, have the user create `CODECOV_TOKEN` in repo
+   secrets and add `token: ${{ secrets.CODECOV_TOKEN }}` to the upload step.
+8. Commit everything in one bootstrap commit (message style is the repo's
    choice from here on).
+
 
 # Gates
 
