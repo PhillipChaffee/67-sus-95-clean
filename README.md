@@ -57,3 +57,8 @@ Run the `add-language` skill (see `add-language/SKILL.md`), which walks the
 research → author → validate loop and updates this list. The invariant it must
 keep: a language folder is not merged until its coverage gate provably fails a
 build under 95%.
+
+## License
+
+MIT — see [LICENSE](LICENSE). The site lives at
+https://phillipchaffee.github.io/strictest-setups/ (`docs/index.html`).
