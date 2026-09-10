@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://api.memegen.link/images/woman-cat/67~p_is_SUS/clean~p_to_me.png" alt="Woman yelling '67 IS SUS' at the cat, who sits unbothered: 'clean to me'" width="500">
+  <img src="docs/meme.png" alt="Drake in landscape: turning away from 67% VIBES on the left, pointing at 95% CLEAN on the right" width="560">
 </p>
 
 One folder per language carrying the **strictest workable** enforcement stack for
