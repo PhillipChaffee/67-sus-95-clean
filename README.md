@@ -72,5 +72,4 @@ build under 95%.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The site lives at
-https://phillipchaffee.github.io/67-sus-95-clean/ (`docs/index.html`).
+MIT — see [LICENSE](LICENSE).
