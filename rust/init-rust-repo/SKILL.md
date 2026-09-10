@@ -59,12 +59,11 @@ assume that reasoning and only record the work.
    modes this project actually has, one reason per pick; the template ships
    the crash-and-printer picks common to shipped binaries.
 7. Wire the free coverage badge: the `ci.yml` template already uploads
-   `lcov.info` to Codecov (`codecov-action@v7`, tokenless for a public repo).
+   `lcov.info` to Coveralls (the coverallsapp action runs on the built-in GITHUB_TOKEN, free for a public repo).
    Add to the new repository's README:
-   `![coverage](https://codecov.io/gh/OWNER/REPO/graph/badge.svg?branch=main)`
-   with OWNER/REPO replaced by the GitHub slug, after the first push. If the
-   org requires upload tokens, have the user create `CODECOV_TOKEN` in repo
-   secrets and add `token: ${{ secrets.CODECOV_TOKEN }}` to the upload step.
+   `![coverage](https://coveralls.io/github/OWNER/REPO/badge.svg?branch=main)`
+   with OWNER/REPO replaced by the GitHub slug, after the first push. No repository secret is needed; for a private repo the owner would
+   add a Coveralls repo token instead.
 8. Commit everything in one bootstrap commit (message style is the repo's
    choice from here on).
 

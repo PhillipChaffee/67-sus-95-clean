@@ -91,10 +91,10 @@ $ pytest                                             # python/ — coverage's fa
 $ npm test                                           # typescript/ — vitest thresholds 95 × 4 axes
 $ ./coverage-gate.sh                                 # go/ — go tool cover -func total ≥ 95</code></pre>
   <p>Every CI template also ships its report to
-  <a href="https://about.codecov.io">Codecov</a> — free for public repositories,
-  tokenless by default — so a repository created from a folder gets a free
-  coverage badge from the very first build, and red builds upload their red
-  numbers rather than going badge-less.</p>
+  <a href="https://coveralls.io">Coveralls</a> — free for public repositories
+  on the built-in GITHUB_TOKEN — so a repository created from a folder gets
+  a free coverage badge from the very first build, and red builds upload
+  their red numbers rather than going badge-less.</p>
 
   <h2>Use it</h2>
   <pre><code># reference: read the folder for your language

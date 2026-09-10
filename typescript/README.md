@@ -127,9 +127,9 @@ chain are the single source of formatting truth. eslint's setup comment
 documents why no stylistic lint rules coexist with it. `.prettierignore`
 keeps generated code (`coverage/`, `node_modules/`) out of the check.
 
-CI uploads `coverage/lcov.info` to Codecov (`codecov-action@v7`, free for public repos — tokenless on a new org);
+CI uploads `coverage/lcov.info` to Coveralls (`coverallsapp/github-action@v2`, free for public repos on the built-in GITHUB_TOKEN);
 `reportOnFailure` keeps the upload on a red build, so the free badge
-(`codecov.io/gh/OWNER/REPO/graph/badge.svg`) shows the real number on
+(`coveralls.io/github/OWNER/REPO/badge.svg`) shows the real number on
 every commit. The init skill inserts the badge line into the new
 repository's README.
 

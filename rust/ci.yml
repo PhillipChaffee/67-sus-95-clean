@@ -28,15 +28,14 @@ jobs:
       # gate failure (measured: exit 1 with lcov.info on disk).
       - name: Coverage gate
         run: cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info
-      # Free for public repositories; pinned action version. Tokenless
-      # uploads work for a public repo on a new org (tokens Not required by
-      # default); if the org requires tokens, stash it as CODECOV_TOKEN and
-      # add `token: ${{ secrets.CODECOV_TOKEN }}`.
-      - name: Upload coverage to Codecov
+      # Free for public repositories, no account and no secret: the action
+      # takes the built-in GITHUB_TOKEN. Pinned action version. The lcov
+      # format is Coveralls' native one.
+      - name: Upload coverage to Coveralls
         if: always()
-        uses: codecov-action@v7
+        uses: coverallsapp/github-action@v2
         with:
-          files: lcov.info
+          file: lcov.info
 
   doc-comments:
     runs-on: ubuntu-latest

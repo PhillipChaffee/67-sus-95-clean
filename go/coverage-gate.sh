@@ -12,7 +12,7 @@
 # the Go toolchain ships no branch-coverage mode (see the README's coverage
 # section for the consequences). The profile is kept in every path: on
 # failure for `go tool cover -html=cover.out`, and on success so the CI's
-# Codecov upload step can turn it into the free coverage badge.
+# Coveralls upload step can turn it into the free coverage badge.
 #
 # Usage: run from the repository (module) root: ./coverage-gate.sh
 set -u -o pipefail

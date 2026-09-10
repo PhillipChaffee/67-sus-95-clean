@@ -17,7 +17,7 @@ export default defineConfig({
         branches: 95, // Fails under 95% branch coverage
         statements: 95, // Fails under 95% statement coverage
       }, // global aggregation is vitest's default; per-file gates are opt-in via `thresholds.perFile` and left off here
-      reporter: ["text", "lcov"], // lcov lands at coverage/lcov.info for the Codecov upload; text stays in the run log
+      reporter: ["text", "lcov"], // lcov lands at coverage/lcov.info for the Coveralls upload; text stays in the run log
       reportOnFailure: true, // a red build still uploads its real, red coverage rather than going badge-less
     },
   },

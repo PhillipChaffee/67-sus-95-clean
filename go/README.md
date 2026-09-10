@@ -110,10 +110,11 @@ section and their own command), which is why the CI job runs `fmt --diff`
 explicitly.
 
 The gate script keeps `cover.out` on BOTH branches (the old delete-on-
-success behavior broke badge-on-red), and CI uploads it to Codecov
-(`codecov-action@v7`, free for public repos — tokenless on a new org).
-The Go profile format is in Codecov's supported list, so the free badge
-(`codecov.io/gh/OWNER/REPO/graph/badge.svg`) shows the real number on
+success behavior broke badge-on-red), and CI uploads it to Coveralls
+(`coverallsapp/github-action@v2`, free for public repos on the built-in
+GITHUB_TOKEN). The Go profile format (`golang`) is in Coveralls'
+supported list, so the free badge
+(`coveralls.io/github/OWNER/REPO/badge.svg`) shows the real number on
 every commit, red builds included. The init skill inserts the badge
 line into the new repository's README.
 

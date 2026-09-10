@@ -27,12 +27,11 @@ jobs:
       # configured in vitest.config.ts (all four axes).
       - run: npm test
       # vitest writes coverage/lcov.info (reportOnFailure keeps it on a red
-      # build). Free for public repositories; tokenless uploads work for a
-      # public repo on a new org (tokens Not required by default). If the org
-      # requires tokens, stash it as CODECOV_TOKEN and pass
-      # `token: ${{ secrets.CODECOV_TOKEN }}`. Pinned action version.
-      - name: Upload coverage to Codecov
+      # build). Free for public repositories, no account and no secret: the
+      # action takes the built-in GITHUB_TOKEN. lcov is Coveralls' native
+      # format; pinned action version.
+      - name: Upload coverage to Coveralls
         if: always()
-        uses: codecov-action@v7
+        uses: coverallsapp/github-action@v2
         with:
-          files: coverage/lcov.info
+          file: coverage/lcov.info

@@ -57,11 +57,12 @@ Details and reasoning live in each folder's README; the shape:
    `python_version`, `engines`/TS version, `run.go`), nightly-only options
    marked as such, CI running exactly the local commands in the READMEs.
 6. **Coverage reports are free badges, not private CLI artifacts**: every
-   folder's CI ships its report to [Codecov](https://about.codecov.io)
-   (`codecov-action@v7`, free for public repositories, tokenless by default
-   for them), so a repository built from a folder gets a free coverage badge,
-   red builds included — the report is written before the gate is evaluated,
-   and uploaded even when the build fails.
+   folder's CI ships its report to [Coveralls](https://coveralls.io)
+   (`coverallsapp/github-action@v2`, free for public repositories on the
+   built-in `GITHUB_TOKEN` — no account, no secret), so a repository built
+   from a folder gets a free coverage badge, red builds included — the
+   report is written before the gate is evaluated, and uploaded even when
+   the build fails.
 
 ## Adding a language
 

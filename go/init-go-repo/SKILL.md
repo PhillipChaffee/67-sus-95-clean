@@ -59,12 +59,12 @@ record the work.
    the config. The standard set, revive/exported, gocritic tags, gofumpt and
    the coverage gate are not negotiable.
 7. Wire the free coverage badge: the `ci.yml` template already uploads
-   cover.out to Codecov (`codecov-action@v7`, tokenless for a public repo).
+   cover.out to Coveralls (`coverallsapp/github-action@v2` runs on the
+   built-in GITHUB_TOKEN, free for a public repo).
    Add to the new repository's README:
-   `![coverage](https://codecov.io/gh/OWNER/REPO/graph/badge.svg?branch=main)`
-   with OWNER/REPO replaced by the GitHub slug, after the first push. If the
-   org requires upload tokens, have the user create `CODECOV_TOKEN` in repo
-   secrets and add `token: ${{ secrets.CODECOV_TOKEN }}` to the upload step.
+   `![coverage](https://coveralls.io/github/OWNER/REPO/badge.svg?branch=main)`
+   with OWNER/REPO replaced by the GitHub slug, after the first push. No repository secret is needed; a private repo would add a Coveralls
+   repo token instead.
 8. Commit everything in one bootstrap commit (message style is the repo's
    choice from here on).
 
