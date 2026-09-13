@@ -40,8 +40,7 @@ jobs:
         run: gitleaks detect --source . --redact
       - name: Copy-paste detection (jscpd v5.2.0)
         run: jscpd
-      - name: Dependency advisories (osv-scanner v2.5.1)
-        run: osv-scanner scan -r .
-      - name: License check (osv-scanner v2.5.1)
-        run: osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause"
+      # osv-scanner is deliberately not here: this repository carries no
+      # lockfiles, so the advisories and license gates target the initialized
+      # repository through each folder's ci.yml and runner.
 
