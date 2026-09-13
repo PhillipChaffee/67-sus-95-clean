@@ -135,7 +135,7 @@ found"); a seeded fake AWS key fails:
 
 ```text
 Finding:     aws_access_key_id (aws-access-key-id)
-Secret:      AKIA************************EXAMPLE (redacted)
+Secret:      AKIA********************E/REDACTED
 File:        proof-seed-secret.txt:1
 ```
 
