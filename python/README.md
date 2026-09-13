@@ -135,6 +135,25 @@ the coverage total is what fails:
 The `-ra` in addopts reports every outcome except passed (pytest `--help`),
 so skips and xpasses stay visible.
 
+### Hygiene — spell check (typos)
+
+`typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
+configuration in the repo-root `.typos.toml`).
+
+```bash
+typos
+```
+
+Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
+reason (the config carries two: a ruff rule family name and a deliberate
+example of a mistyped tag). Measured wall time: 0.02s on this repo.
+THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
+
+```text
+error: `calender` should be `calendar`
+  ╭▸ ./proof-seed-typo.md:1:10
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are

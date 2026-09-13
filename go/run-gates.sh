@@ -22,6 +22,7 @@ add "lint" "golangci-lint run"
 add "tests" "go test ./..."
 add "coverage" "./coverage-gate.sh"
 
+add "spell-check" "typos"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

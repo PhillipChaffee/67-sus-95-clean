@@ -17,6 +17,7 @@ add "doc" "RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps"
 add "tests" "cargo test --workspace"
 add "coverage" "cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info"
 
+add "spell-check" "typos"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

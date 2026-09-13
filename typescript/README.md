@@ -121,6 +121,25 @@ options do not exist for this purpose). `coverage.reportOnFailure: true`
 is set deliberately: a red build still writes its lcov report, so the
 Coveralls upload shows the real number instead of going badge-less.
 
+### Hygiene — spell check (typos)
+
+`typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
+configuration in the repo-root `.typos.toml`).
+
+```bash
+typos
+```
+
+Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
+reason (the config carries two: a ruff rule family name and a deliberate
+example of a mistyped tag). Measured wall time: 0.02s on this repo.
+THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
+
+```text
+error: `calender` should be `calendar`
+  ╭▸ ./proof-seed-typo.md:1:10
+```
+
 ### Formatter
 
 `prettier --check .` with zero shared config: the defaults plus the tool

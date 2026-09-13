@@ -1,0 +1,8 @@
+# Spell-check configuration. Default dictionary on; every non-default entry
+# carries its reason.
+[default.extend-identifiers]
+# ruff's copyright rule family, not the word "copy"
+CPY001 = "CPY001"
+# the deliberate mistyped-tag example in the typescript folder's docs; it
+# quotes the bug the jsdoc rule catches, it does not make one
+retruns = "retruns"

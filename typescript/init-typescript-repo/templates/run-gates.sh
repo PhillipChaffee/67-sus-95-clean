@@ -18,6 +18,7 @@ add "types" "npm run typecheck"
 add "lint" "npm run lint"
 add "tests+coverage" "npm test"
 
+add "spell-check" "typos"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

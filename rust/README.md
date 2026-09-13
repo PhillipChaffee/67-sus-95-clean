@@ -34,7 +34,7 @@ warn level here is an error in CI. The doc lints do not take that courtesy path.
 ### Documentation — rustdoc + rustc (deny）
 
 - `[workspace.lints.rustdoc] all = "deny"`: the whole stable group in one
-  entry — broken/private intra-doc links, invalid and unparseable code blocks,
+  entry — broken/private intra-doc links, invalid and unparsable code blocks,
   HTML tags in docs, bare URLs, unescaped backticks, redundant explicit
   links, private doc tests, missing crate-level docs. The nightly-only
   `missing_doc_code_examples` is deliberately outside the group: it churns
@@ -71,6 +71,25 @@ TESTED: measured on the pinned toolchain (cargo-llvm-cov 0.9.0), a fixture
 with every statement covered exits 0 at 100.00% TOTAL, and the same fixture
 with one untested branch exits 1 at 0.00% TOTAL — the gate fails the build
 under 95% (that is its acceptance test).
+
+### Hygiene — spell check (typos)
+
+`typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
+configuration in the repo-root `.typos.toml`).
+
+```bash
+typos
+```
+
+Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
+reason (the config carries two: a ruff rule family name and a deliberate
+example of a mistyped tag). Measured wall time: 0.02s on this repo.
+THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
+
+```text
+error: `calender` should be `calendar`
+  ╭▸ ./proof-seed-typo.md:1:10
+```
 
 ### Formatter
 

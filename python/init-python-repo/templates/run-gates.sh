@@ -16,6 +16,7 @@ add "format" "ruff format --check ."
 add "types" "mypy ."
 add "tests+coverage" "pytest"
 
+add "spell-check" "typos"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

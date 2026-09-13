@@ -117,6 +117,25 @@ deleted); an uncovered helper added → `FAIL — total statement coverage is
 25.0%, required 95%` (exit 1, profile kept); a compile-broken suite →
 `FAIL — go test failed` (exit 1, profile kept).
 
+### Hygiene — spell check (typos)
+
+`typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
+configuration in the repo-root `.typos.toml`).
+
+```bash
+typos
+```
+
+Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
+reason (the config carries two: a ruff rule family name and a deliberate
+example of a mistyped tag). Measured wall time: 0.02s on this repo.
+THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
+
+```text
+error: `calender` should be `calendar`
+  ╭▸ ./proof-seed-typo.md:1:10
+```
+
 ### Formatter
 
 `golangci-lint fmt --diff` checks gofumpt, a backward-compatible strictening
