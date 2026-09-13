@@ -153,6 +153,7 @@ inserts the badge line into the new repository's README.
 ## Commands
 
 ```bash
+./run-gates.sh              # run every gate below, in parallel
 pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0"
 ruff check .           # lint + docstring gate
 ruff format --check .  # format gate

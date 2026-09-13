@@ -89,6 +89,7 @@ inserts the badge line into the new repository's README.
 ## Commands
 
 ```bash
+./run-gates.sh              # run every gate below, in parallel
 rustup component add llvm-tools-preview
 cargo clippy --workspace --all-targets -- -D warnings   # lint gate
 RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps   # doc gate

@@ -137,6 +137,7 @@ repository's README.
 ## Commands
 
 ```bash
+./run-gates.sh             # run every gate below, in parallel
 npm ci                   # deterministic install against the committed lockfile
 npm run format:check     # prettier --check .             — format gate
 npm run typecheck        # tsc --noEmit                   — type gate (strict + the 8 flags)

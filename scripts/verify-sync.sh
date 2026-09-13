@@ -39,6 +39,10 @@ typescript/ci.yml			typescript/init-typescript-repo/templates/ci.yml
 go/.golangci.yml			go/init-go-repo/templates/.golangci.yml
 go/ci.yml				go/init-go-repo/templates/ci.yml
 go/coverage-gate.sh			go/init-go-repo/templates/coverage-gate.sh
+rust/run-gates.sh			rust/init-rust-repo/templates/run-gates.sh
+python/run-gates.sh			python/init-python-repo/templates/run-gates.sh
+typescript/run-gates.sh			typescript/init-typescript-repo/templates/run-gates.sh
+go/run-gates.sh			go/init-go-repo/templates/run-gates.sh
 PAIRINGS
 )
 exit $fail

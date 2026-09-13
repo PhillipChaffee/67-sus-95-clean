@@ -137,6 +137,7 @@ line into the new repository's README.
 ## Commands
 
 ```bash
+./run-gates.sh              # run every gate below, in parallel
 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2  # pinned tool
 golangci-lint config verify                                             # schema check
 go build ./...                                                          # compiles
