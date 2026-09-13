@@ -214,6 +214,31 @@ Clone found (python)
 exit code: 1
 ```
 
+### Hygiene — dependency advisories + licenses (osv-scanner)
+
+`osv-scanner` scans every lockfile for known vulnerabilities and reports
+dependency licenses against an allow-list (v2.5.1). This repository itself
+carries no lockfiles, so the step lives in each folder's CI and runner: it
+targets the initialized repository, where the lockfiles exist.
+
+```bash
+osv-scanner scan -r .
+osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause"
+```
+
+Remedy: bump or replace the flagged dependency. License violations must be
+resolved or justified in review; the osv-scanner exit codes carry the
+verdict. Measured wall time: seconds (network-bound, advisory DB cached).
+THE GATE IS TESTED: a seeded package-lock.json with lodash 4.17.4 fails
+with five GHSA advisories; adding pm2 (AGPL-3.0) fails the license gate:
+
+```text
+| https://osv.dev/GHSA-fvqr-27wr-82fm | 6.5  | npm | lodash | 4.17.4 | 4.17.5 | package-lock.json |
+advisories exit code: 1
+| AGPL-3.0 | npm | pm2 | 5.1.0 | package-lock.json |
+license exit code: 130
+```
+
 ### Formatter
 
 `prettier --check .` with zero shared config: the defaults plus the tool

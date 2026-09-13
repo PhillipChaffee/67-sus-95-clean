@@ -27,6 +27,8 @@ add "markdown-lint" "markdownlint-cli2 \"**/*.md\""
 add "link-check" "lychee --no-progress ."
 add "secret-scan" "gitleaks detect --no-git --redact"
 add "duplication" "jscpd"
+add "advisories" "osv-scanner scan -r ."
+add "license-check" "osv-scanner scan -r . --licenses=\"MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause\""
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"
