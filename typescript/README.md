@@ -117,8 +117,9 @@ THE GATE IS TESTED, both sides:
   Lines 66.66% (4/6)` with one `ERROR: Coverage for ...` line per axis.
 
 No threshold key beyond vitest's documented set is used ("reportOn"
-options do not exist for this purpose; `coverage.reportOnFailure` defaults
-to false and stays unset).
+options do not exist for this purpose). `coverage.reportOnFailure: true`
+is set deliberately: a red build still writes its lcov report, so the
+Coveralls upload shows the real number instead of going badge-less.
 
 ### Formatter
 

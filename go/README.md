@@ -60,6 +60,22 @@ The script is the whole gate — the star of this folder:
 
 ```bash
 #!/usr/bin/env bash
+#
+# Coverage gate for a strict Go repository: fails when total statement
+# coverage is below 95%.
+#
+# `go test -coverprofile` writes the profile, `go tool cover -func` prints
+# per-package counts plus a `total:` line, and awk compares that total
+# against the threshold. A failing `go test` fails the gate too — coverage
+# is never reported on an unproven suite.
+#
+# This is statement coverage only: `go tool cover` counts statements, and
+# the Go toolchain ships no branch-coverage mode (see the README's coverage
+# section for the consequences). The profile is kept in every path: on
+# failure for `go tool cover -html=cover.out`, and on success so the CI's
+# Coveralls upload step can turn it into the free coverage badge.
+#
+# Usage: run from the repository (module) root: ./coverage-gate.sh
 set -u -o pipefail
 
 readonly required=95
@@ -81,8 +97,7 @@ if [[ -z "${pct}" ]] || ! awk -v got="${pct}" -v need="${required}" 'BEGIN { exi
 	exit 1
 fi
 
-echo "coverage-gate: PASS — total statement coverage ${pct}% ≥ ${required}%"
-rm -f "${profile}"
+echo "coverage-gate: PASS — total statement coverage ${pct}% ≥ ${required}% (profile kept at ${profile} for the CI upload)"
 ```
 
 Two things `go test` does not give you and the script supplies itself:
@@ -92,8 +107,9 @@ Two things `go test` does not give you and the script supplies itself:
    `go tool cover -func`) is the fail-under; `golangci-lint` cannot invent
    one either, which is why the gate is a script, not a config key.
 2. **Gate-the-suite semantics**: a red `go test` is a red gate — coverage is
-   never reported on unproven code, and the profile is kept for
-   `go tool cover -html=cover.out` debugging while a pass deletes it.
+   never reported on unproven code, and the profile is kept on both branches: failure keeps it for
+   `go tool cover -html=cover.out` debugging, and success keeps it so the
+   CI Coveralls upload can turn it into the badge.
 
 **THE GATE IS TESTED.** Recorded runs on a scratch module: suite fully
 covered → `PASS — total statement coverage 100.0% ≥ 95%` (exit 0, profile
