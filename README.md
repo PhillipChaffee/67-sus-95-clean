@@ -64,6 +64,14 @@ Details and reasoning live in each folder's README; the shape:
    report is written before the gate is evaluated, and uploaded even when
    the build fails.
 
+7. **Hygiene and supply-chain gates run beside the code gates**: every
+   folder's CI carries a spell check, secret scan, copy-paste detection,
+   markdown lint, link check, own-artifact linting (shellcheck, shfmt,
+   yamllint, actionlint), and dependency advisories plus license gates —
+   all pinned, all with recorded two-way proofs, and all runnable locally
+   through each folder's `run-gates.sh` (see the hygiene sections in the
+   folder READMEs).
+
 ## Adding a language
 
 Run the `add-language` skill (see `add-language/SKILL.md`), which walks the
