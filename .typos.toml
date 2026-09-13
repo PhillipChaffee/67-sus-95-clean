@@ -6,3 +6,7 @@ CPY001 = "CPY001"
 # the deliberate mistyped-tag example in the typescript folder's docs; it
 # quotes the bug the jsdoc rule catches, it does not make one
 retruns = "retruns"
+# the seeded-misspelling proof quotes in the four folder READMEs quote the
+# finding the typos gate caught, they do not make one
+recieve = "recieve"
+calender = "calender"
