@@ -40,7 +40,12 @@ ignore = [
     "CPY001",       # demands a copyright stamp on every file; a legal-layer policy, not a code-quality signal
     "TRY003",       # fires on every `raise` carrying a message, demanding a custom class per message; EM101/EM102 keep the message discipline instead
     "TD002",        # TODO authorship is git blame's job; the comment cannot stay in sync
-    "FIX002",       # "resolve the issue" is a human conversation; TD001/TD003/TD004 already govern the format of the same comment
+    # --- the uniform TODO policy: FIX002 stays ON, a TODO marker fails the
+    # build. This matches the house rule in every other stack: TypeScript
+    # fails any todo/fixme comment (no-warning-comments), go fails any
+    # marker (godox), and rust greps the tree. TD001/TD003/TD004 stay on:
+    # they govern the tag, the issue link, and the colon wherever a TODO
+    # appears, including in a scoped per-file-ignores carve-out.
 ]
 
 [tool.ruff.lint.pydocstyle]

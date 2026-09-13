@@ -28,12 +28,18 @@ deptry 0.25.1, vulture 2.16, import-linter 2.15.
     double-judge tokens the formatter already emits. (ISC001 stays on: at
     this pin it is not in the formatter's conflict set and no warning fires
     — verified.)
-  - **Noise rules** (CPY001, TRY003, TD002, FIX002): a copyright stamp is a
+  - **Noise rules** (CPY001, TRY003, TD002): a copyright stamp is a
     legal-layer policy, not a code-quality signal; TRY003 demands a custom
     exception class per message while EM101/EM102 keep the message
     discipline instead; TD002 demands TODO authorship git blame already
-    owns; FIX002 says "resolve the issue" while TD001/TD003/TD004 already
-    govern the same comment.
+    owns.
+  - **TODO policy** — the uniform house one, with FIX002 back ON: a TODO
+    marker fails the build, matching every other stack (TypeScript fails
+    any todo/fixme comment through no-warning-comments, go fails any
+    marker through godox, rust greps the tree). TD001/TD003/TD004 stay on
+    and govern the tag, the issue link, and the colon wherever a TODO
+    appears; the proof below shows a linked TODO still fails, because the
+    gate bans the marker itself, link or no link.
 - `per-file-ignores` for `tests/**`: a narrower bar, every line reasoned —
   test names replace docstrings (D1), pytest asserts with `assert` (S101),
   literals and fake credentials are the point of a test (PLR2004,
@@ -44,6 +50,15 @@ deptry 0.25.1, vulture 2.16, import-linter 2.15.
 - Deny, not warn, holds by exit code rather than flags: `ruff check .` exits
   nonzero on any diagnostic, so there is no warn-to-error arithmetic to
   maintain. `ruff format --check .` exits 1 when any file would change.
+
+THE GATE IS TESTED (the TODO policy): a seeded bare `# TODO` fails
+`ruff check .` (exit 1), and a TODO carrying an issue link still fails
+because FIX002 bans the marker itself:
+
+```text
+your_package/core.py:15:3: TD003 Missing issue link for this TODO
+your_package/core.py:15:3: FIX002 Line contains TODO, consider resolving the issue
+```
 
 ### Documentation — ruff D (google)
 
@@ -95,9 +110,11 @@ Known-flaky beyond-strict flags, documented here instead of enabled:
 
 ### Comments — machine + policy
 
-Machine: the D ruleset above and its per-file test carve-out; TODO tags are
-governed by TD001/TD003/TD004 (an issue link is required, an author is not);
-RUF100 fails the build on any unused `# noqa` so suppression cannot rot.
+Machine: the D ruleset above and its per-file test carve-out; a TODO marker
+fails the build (FIX002 on, the uniform TODO policy), and TD001/TD003/TD004
+govern the tag, the issue link, and the colon wherever a TODO appears (an
+author is not required); RUF100 fails the build on any unused `# noqa` so
+suppression cannot rot.
 
 Policy (no linter checks prose; review treats a violation as a bug): the
 same four house rules the rust baseline ships — present state only;
