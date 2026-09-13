@@ -31,14 +31,18 @@ assume that reasoning and only record the work.
 
 1. Create the skeleton: the package directory `<name>/` with `__init__.py`,
    a `tests/` directory, and a `.venv` (`python -m venv .venv`).
-"pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1"
-   "vulture==2.16"` — the exact pins `ci.yml` re-installs.
+2. Install the pinned tools into the venv:
+   `pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1"
+   "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1"
+   "vulture==2.16" "import-linter==2.15"` — the exact pins `ci.yml`
+   re-installs.
 3. Copy the templates from this skill's `templates/` directory into the
    repository root: `pyproject.toml -> pyproject.toml`,
    `ci.yml -> .github/workflows/ci.yml` (create the directory),
    `.gitignore -> .gitignore`,
-   `vulture-allowlist.py -> vulture-allowlist.py`. These are byte-copies of
-   the canonical files.
+   `vulture-allowlist.py -> vulture-allowlist.py`,
+   `.importlinter -> .importlinter`. These are byte-copies of the canonical
+   files.
 4. Adapt exactly two placeholders, both spelling the same token so
    `grep -rn your_package` finds them: `[project] name` and the
    `--cov=<your_package>` token in
@@ -54,6 +58,8 @@ assume that reasoning and only record the work.
    - `deptry .` (fires once `[project.dependencies]` declares dependencies;
       a template with no dependencies passes vacuously)
    - `vulture your_package vulture-allowlist.py` (the command carries the
+      package name, so update it with the other `your_package` tokens)
+   - `lint-imports` (the `root_package` line in `.importlinter` carries the
       package name, so update it with the other `your_package` tokens)
    The D ruleset is this language's missing-docs equivalent: an undocumented
    module, class, method, function, or package FAILS `ruff check`; write the

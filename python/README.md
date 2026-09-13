@@ -4,7 +4,7 @@ The stack below is verified against the pinned tools, not folklore: every
 ignore carries its reason, and the coverage gate was proven to fail a build
 under 95% (both runs are recorded in the coverage section). Pin of record:
 ruff 0.16.6, mypy 2.3.1, pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.0,
-deptry 0.25.1, vulture 2.16.
+deptry 0.25.1, vulture 2.16, import-linter 2.15.
 
 ## What is enforced
 
@@ -330,6 +330,39 @@ exits 0; a seeded uncalled function fails (exit 3):
 your_package/core.py:16: unused function 'helper_unused' (60% confidence)
 ```
 
+### Architecture — import layers (import-linter)
+
+`.importlinter` carries the contracts import-linter checks: a `layers`
+contract (api above core, so core must never import api) and a `forbidden`
+contract (shipped code must not import pytest). Layers wear parentheses, so
+a fresh skeleton with only `__init__.py` passes and each layer wakes up when
+its module appears; a cycle inside the covered layers needs an upward import,
+so the layers contract is also the cycle gate for the covered modules
+(import-linter 2.15, pinned in ci.yml; every contract rule carries its
+reason in the config).
+
+Covered paths in the proof: `your_package`, `your_package.api`,
+`your_package.core`, and the `your_package -> pytest` edge. The seeded
+forbidden import sits inside `your_package.core`, a covered module.
+
+```bash
+lint-imports
+```
+
+Remedy: move the import, or justify a new contracted exception in that
+contract's `ignore_imports` with a reason. Measured wall time: 0.09s on the
+template fixture. THE GATE IS TESTED: the bare skeleton (only `__init__.py`)
+exits 0 with both contracts KEPT, and the fixture with api and core modules
+also exits 0; a seeded upward import fails (exit 1):
+
+```text
+Layers import only downwards BROKEN
+
+your_package.core is not allowed to import your_package.api:
+
+- your_package.core -> your_package.api (l.3)
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are
@@ -349,13 +382,14 @@ inserts the badge line into the new repository's README.
 
 ```bash
 ./run-gates.sh              # run every gate below, in parallel
-pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16"
+pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16" "import-linter==2.15"
 ruff check .           # lint + docstring gate
 ruff format --check .  # format gate
 mypy .                 # type gate
 pytest                 # tests + the coverage gate (fail_under = 95, branch = true)
 deptry .               # unused-dependency gate
 vulture your_package vulture-allowlist.py  # dead-code gate
+lint-imports           # import-layer and cycle gate
 ```
 
 ## Trade-offs ("strict but staying usable")
