@@ -159,8 +159,9 @@ threshold) and records its exit code 1:
 
 ```text
 Found 1 clones.
-Clone found (javascript):
- proof-dup-a.py[1:1 - 10:15] <-> proof-dup-b.py[1:1 - 10:15] (58 tokens, 100%)
+Clone found (python)
+ - proof-dup-a.py [1:1 - 10:15] (10 lines, 58 tokens)
+   proof-dup-b.py [1:1 - 10:15]
 exit code: 1
 ```
 
