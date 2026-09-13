@@ -70,6 +70,15 @@ jobs:
           OSV_VERSION=2.5.1
           curl -sSfL "https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64" -o /usr/local/bin/osv-scanner
           sudo chmod +x /usr/local/bin/osv-scanner
+          SHELLCHECK_VERSION=0.11.0
+          curl -sSfL "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz" | tar xJ
+          sudo mv shellcheck-v0.11.0/shellcheck /usr/local/bin/
+          SHFMT_VERSION=3.14.0
+          curl -sSfL "https://github.com/mvdan/sh/releases/download/v3.14.0/shfmt_v3.14.0_linux_amd64" -o /usr/local/bin/shfmt
+          sudo chmod +x /usr/local/bin/shfmt
+          python3 -m pip install --quiet yamllint==1.38.0
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12
+          sudo mv actionlint /usr/local/bin/
       - name: Spell check (typos v1.50.1)
         run: typos
       - name: Markdown lint (markdownlint-cli2 v0.23.2)
@@ -84,4 +93,12 @@ jobs:
         run: osv-scanner scan -r .
       - name: License check (osv-scanner v2.5.1)
         run: osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause"
+      - name: Shell lint (shellcheck v0.11.0)
+        run: for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
+      - name: Shell format (shfmt v3.14.0)
+        run: for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
+      - name: Workflow YAML lint (yamllint v1.38.0)
+        run: yamllint .github/workflows/ */ci.yml
+      - name: Workflow lint (actionlint v1.7.12)
+        run: actionlint .github/workflows/ */ci.yml
 

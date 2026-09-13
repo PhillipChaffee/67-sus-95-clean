@@ -7,21 +7,22 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 fail=0
 while IFS=$'\t' read -r canonical template; do
-  if [[ ! -f "$canonical" ]]; then
-    echo "MISSING canonical: $canonical"
-    fail=1
-    continue
-  fi
-  if [[ ! -f "$template" ]]; then
-    echo "MISSING template: $template"
-    fail=1
-    continue
-  fi
-  if ! cmp -s "$canonical" "$template"; then
-    echo "DRIFTED: $template differs from $canonical"
-    fail=1
-  fi
-done < <(cat <<'PAIRINGS'
+	if [[ ! -f "$canonical" ]]; then
+		echo "MISSING canonical: $canonical"
+		fail=1
+		continue
+	fi
+	if [[ ! -f "$template" ]]; then
+		echo "MISSING template: $template"
+		fail=1
+		continue
+	fi
+	if ! cmp -s "$canonical" "$template"; then
+		echo "DRIFTED: $template differs from $canonical"
+		fail=1
+	fi
+done < <(
+	cat <<'PAIRINGS'
 rust/Cargo.toml.example			rust/init-rust-repo/templates/Cargo.toml.example
 rust/clippy.toml			rust/init-rust-repo/templates/clippy.toml
 rust/rust-toolchain.toml		rust/init-rust-repo/templates/rust-toolchain.toml
@@ -59,6 +60,10 @@ lychee.toml			typescript/init-typescript-repo/templates/lychee.toml
 .jscpd.json			rust/init-rust-repo/templates/.jscpd.json
 .jscpd.json			go/init-go-repo/templates/.jscpd.json
 .jscpd.json			typescript/init-typescript-repo/templates/.jscpd.json
+.yamllint.yaml			python/init-python-repo/templates/.yamllint.yaml
+.yamllint.yaml			rust/init-rust-repo/templates/.yamllint.yaml
+.yamllint.yaml			go/init-go-repo/templates/.yamllint.yaml
+.yamllint.yaml			typescript/init-typescript-repo/templates/.yamllint.yaml
 PAIRINGS
 )
 exit $fail

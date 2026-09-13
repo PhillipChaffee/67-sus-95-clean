@@ -239,6 +239,31 @@ advisories exit code: 1
 license exit code: 130
 ```
 
+### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
+
+The repository's own shell scripts and workflow files are linted with the
+same severity as its code: shellcheck (v0.11.0), shfmt -d (v3.14.0),
+yamllint (v1.38.0, config in the repo-root `.yamllint.yaml`), and
+actionlint (v1.7.12) on every workflow file, including the per-folder ci.yml
+templates.
+
+```bash
+for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
+for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
+yamllint .github/workflows/ */ci.yml
+actionlint .github/workflows/ */ci.yml
+```
+
+Remedy: fix the script or the workflow; yamllint deviations carry reasons in
+`.yamllint.yaml`. Measured wall time: 0.2s. THE GATE IS TESTED: a clean tree
+exits 0 (after fixing the findings this gate itself caught: an unguarded
+rm -rf and shfmt formatting); seeded violations fail:
+
+```text
+shellcheck: SC2086 on the seeded unquoted variable (exit 1)
+yamllint: proof-seed.yaml:2 syntax error (exit 1)
+```
+
 ### Formatter
 
 `prettier --check .` with zero shared config: the defaults plus the tool
