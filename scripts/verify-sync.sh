@@ -31,6 +31,7 @@ rust/ci.yml				rust/init-rust-repo/templates/ci.yml
 rust/AGENTS.md.example			rust/init-rust-repo/templates/AGENTS.md.example
 python/pyproject.toml			python/init-python-repo/templates/pyproject.toml
 python/ci.yml				python/init-python-repo/templates/ci.yml
+python/.gitignore			python/init-python-repo/templates/.gitignore
 typescript/tsconfig.json		typescript/init-typescript-repo/templates/tsconfig.json
 typescript/eslint.config.mjs		typescript/init-typescript-repo/templates/eslint.config.mjs
 typescript/vitest.config.ts		typescript/init-typescript-repo/templates/vitest.config.ts

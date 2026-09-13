@@ -3,7 +3,8 @@
 The stack below is verified against the pinned tools, not folklore: every
 ignore carries its reason, and the coverage gate was proven to fail a build
 under 95% (both runs are recorded in the coverage section). Pin of record:
-ruff 0.16.6, mypy 2.3.1, pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.0.
+ruff 0.16.6, mypy 2.3.1, pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.0,
+deptry 0.25.1.
 
 ## What is enforced
 
@@ -278,6 +279,30 @@ shellcheck: SC2086 on the seeded unquoted variable (exit 1)
 yamllint: proof-seed.yaml:2 syntax error (exit 1)
 ```
 
+### Hygiene — unused dependencies (deptry)
+
+`deptry` compares the imports the code makes against the dependencies
+`pyproject.toml` declares (`[project.dependencies]`): a dependency declared
+but never imported is the failing case (deptry 0.25.1, pinned in ci.yml;
+config in the `[tool.deptry]` table of pyproject.toml, which keeps every
+default and records the rule set inline).
+
+```bash
+deptry .
+```
+
+Remedy: remove the dependency, or import it where the code uses it; a real
+exception goes in `[tool.deptry.per_rule_ignores]` with a reason. Measured
+wall time: 0.08s on the template fixture. THE GATE IS TESTED: the template
+project as-is exits 0 ("Success! No dependency issues found.", and a fixture
+that declares and imports `click` also exits 0); a seeded dependency no
+module imports fails:
+
+```text
+pyproject.toml: DEP002 'httpx' defined as a dependency but not used in the codebase
+Found 1 dependency issue.
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are
@@ -297,11 +322,12 @@ inserts the badge line into the new repository's README.
 
 ```bash
 ./run-gates.sh              # run every gate below, in parallel
-pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0"
+pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1"
 ruff check .           # lint + docstring gate
 ruff format --check .  # format gate
 mypy .                 # type gate
 pytest                 # tests + the coverage gate (fail_under = 95, branch = true)
+deptry .               # unused-dependency gate
 ```
 
 ## Trade-offs ("strict but staying usable")

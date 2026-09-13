@@ -115,3 +115,12 @@ fail_under = 95
 # coverage.py exits with status 2 below this; pytest surfaces it as exit 1
 # ("FAIL Required test coverage of 95.0% not reached"), failing the CI job.
 # The percentage is branch-inclusive when branch = true above.
+
+[tool.deptry]
+# deptry compares the imports the code makes against the dependencies this
+# file declares ([project.dependencies]). Every default stays, so all four
+# rules fire: DEP001 (imported but not declared), DEP002 (declared but never
+# imported), DEP003 (imported but only transitive), and DEP004 (a dev
+# dependency imported in shipped code). The default exclude list already
+# covers tests, .venv, and .git. No entry here means no override to reason
+# about; an exception goes in [tool.deptry.per_rule_ignores] with its reason.

@@ -73,6 +73,7 @@ jobs:
           curl -sSfL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" -o /usr/local/bin/shfmt
           sudo chmod +x /usr/local/bin/shfmt
           python3 -m pip install --quiet yamllint==1.38.0
+          python3 -m pip install --quiet deptry==0.25.1
           bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12
           sudo mv actionlint /usr/local/bin/
       - name: Spell check (typos v1.50.1)
@@ -97,3 +98,5 @@ jobs:
         run: yamllint ./.github/workflows/*.yml ./*/ci.yml
       - name: Workflow lint (actionlint v1.7.12)
         run: actionlint ./.github/workflows/*.yml ./*/ci.yml
+      - name: Unused dependencies (deptry v0.25.1)
+        run: deptry .
