@@ -9,8 +9,9 @@ Met, with evidence:
   secret scan (0.2s), duplication (0.04s), advisories plus licenses
   (seconds, seeded lockfile exit 1 and 130), artifact linting (0.2s).
 - Every gate command is a labeled step in each folder ci.yml (a shared
-  hygiene job with named steps) and in the local runner; the counts match
-  (11 steps, 11 runner entries per folder).
+  hygiene job with named steps) and in the local runner; the mapping is
+  exact per folder: python 11 hygiene + 4 original gates = 15 runner
+  entries, rust 11 + 5 = 16, go 11 + 7 = 18, typescript 11 + 4 = 15.
 - The local runner ships in all four folders and templates, with a smoke
   test recorded in the execution plan (one pass gate, one seeded fail gate,
   exit 1, per-gate lines).
