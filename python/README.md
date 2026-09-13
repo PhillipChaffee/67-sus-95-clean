@@ -4,7 +4,7 @@ The stack below is verified against the pinned tools, not folklore: every
 ignore carries its reason, and the coverage gate was proven to fail a build
 under 95% (both runs are recorded in the coverage section). Pin of record:
 ruff 0.16.6, mypy 2.3.1, pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.0,
-deptry 0.25.1.
+deptry 0.25.1, vulture 2.16.
 
 ## What is enforced
 
@@ -303,6 +303,33 @@ pyproject.toml: DEP002 'httpx' defined as a dependency but not used in the codeb
 Found 1 dependency issue.
 ```
 
+### Hygiene — dead code (vulture)
+
+`vulture` reports names the scan cannot see referenced: a function, class,
+method, or variable defined but never called is the failing case (vulture
+2.16, pinned in ci.yml; `min_confidence = 60` in the `[tool.vulture]` table
+of pyproject.toml keeps every category vulture can report). The scan covers
+the shipped package plus `vulture-allowlist.py`; tests stay out on purpose —
+pytest fixtures and marks are injected dynamically, so a test scan reads as
+false positives.
+
+```bash
+vulture your_package vulture-allowlist.py
+```
+
+Noise measurement on the template fixture (the step the task requires before
+shipping): on a fixture of two modules and two tests, the only finding was a
+genuinely unused import, and after the fixture used it, the clean run found
+nothing. The allowlist is the noise valve: one reference per line, each with
+a reason, empty by design. Remedy: delete the dead code; if the name is used
+dynamically, add it to `vulture-allowlist.py` with a reason. Measured wall
+time: 0.03s on the template fixture. THE GATE IS TESTED: the clean fixture
+exits 0; a seeded uncalled function fails (exit 3):
+
+```text
+your_package/core.py:16: unused function 'helper_unused' (60% confidence)
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are
@@ -322,12 +349,13 @@ inserts the badge line into the new repository's README.
 
 ```bash
 ./run-gates.sh              # run every gate below, in parallel
-pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1"
+pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16"
 ruff check .           # lint + docstring gate
 ruff format --check .  # format gate
 mypy .                 # type gate
 pytest                 # tests + the coverage gate (fail_under = 95, branch = true)
 deptry .               # unused-dependency gate
+vulture your_package vulture-allowlist.py  # dead-code gate
 ```
 
 ## Trade-offs ("strict but staying usable")

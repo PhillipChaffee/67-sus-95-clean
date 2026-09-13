@@ -124,3 +124,16 @@ fail_under = 95
 # dependency imported in shipped code). The default exclude list already
 # covers tests, .venv, and .git. No entry here means no override to reason
 # about; an exception goes in [tool.deptry.per_rule_ignores] with its reason.
+
+[tool.vulture]
+# vulture reports names defined but never referenced. Paths are passed on
+# the command line (vulture 2.16 still requires at least one CLI path even
+# with a pyproject table): the shipped package plus the allowlist file.
+# Tests stay out of the scan on purpose: pytest fixtures and marks are
+# injected dynamically, so a test scan reads as false positives.
+# min_confidence = 60 keeps every category vulture can report (vulture docs,
+# confidence table: 60% covers attributes, classes, functions, methods,
+# properties, and variables; imports and unreachable code sit higher). The
+# allowlist is the noise valve, and every vulture-allowlist.py entry carries
+# its reason.
+min_confidence = 60

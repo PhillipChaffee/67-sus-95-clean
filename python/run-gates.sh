@@ -28,6 +28,7 @@ add "shell-format" "for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done"
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"
 add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml"
 add "unused-deps" "deptry ."
+add "dead-code" "vulture your_package vulture-allowlist.py"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"
