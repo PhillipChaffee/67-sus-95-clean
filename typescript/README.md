@@ -201,12 +201,16 @@ Remedy: extract the shared code into one place. The config ignores four
 intentionally-parallel shapes with reasons (template byte-copies, per-folder
 CI files, per-folder runners, and the folder READMEs' shared hygiene
 sections). Measured wall time: 0.04s on this repo. THE GATE IS TESTED: a
-clean tree exits 0; two seeded identical functions fail:
+clean tree exits 0 (0.00% duplicated). The threshold measures the whole
+tree, so the failure proof runs the same command on a scratch fixture with
+two identical 10-line functions (58 of 120 tokens, 48% against the 5%
+threshold) and records its exit code 1:
 
 ```text
 Found 1 clones.
 Clone found (javascript):
- proof-dup-a.py[0,10] <-> proof-dup-b.py[0,10] (11 tokens, 100%)
+ proof-dup-a.py[1:1 - 10:15] <-> proof-dup-b.py[1:1 - 10:15] (58 tokens, 100%)
+exit code: 1
 ```
 
 ### Formatter
