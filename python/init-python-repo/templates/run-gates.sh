@@ -20,6 +20,7 @@ add "spell-check" "typos"
 add "markdown-lint" "markdownlint-cli2 \"**/*.md\""
 add "link-check" "lychee --no-progress ."
 add "secret-scan" "gitleaks detect --no-git --redact"
+add "duplication" "jscpd"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

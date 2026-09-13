@@ -55,6 +55,10 @@ lychee.toml			typescript/init-typescript-repo/templates/lychee.toml
 .gitleaks.toml			rust/init-rust-repo/templates/.gitleaks.toml
 .gitleaks.toml			go/init-go-repo/templates/.gitleaks.toml
 .gitleaks.toml			typescript/init-typescript-repo/templates/.gitleaks.toml
+.jscpd.json			python/init-python-repo/templates/.jscpd.json
+.jscpd.json			rust/init-rust-repo/templates/.jscpd.json
+.jscpd.json			go/init-go-repo/templates/.jscpd.json
+.jscpd.json			typescript/init-typescript-repo/templates/.jscpd.json
 PAIRINGS
 )
 exit $fail

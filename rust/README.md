@@ -139,6 +139,27 @@ Secret:      AKIA********************E/REDACTED
 File:        proof-seed-secret.txt:1
 ```
 
+### Hygiene — copy-paste detection (jscpd)
+
+`jscpd` tokenizes every source file and fails above the duplication
+threshold (v5.2.0; config in the repo-root `.jscpd.json`, threshold 5).
+
+```bash
+jscpd
+```
+
+Remedy: extract the shared code into one place. The config ignores four
+intentionally-parallel shapes with reasons (template byte-copies, per-folder
+CI files, per-folder runners, and the folder READMEs' shared hygiene
+sections). Measured wall time: 0.04s on this repo. THE GATE IS TESTED: a
+clean tree exits 0; two seeded identical functions fail:
+
+```text
+Found 1 clones.
+Clone found (javascript):
+ proof-dup-a.py[0,10] <-> proof-dup-b.py[0,10] (11 tokens, 100%)
+```
+
 ### Formatter
 
 `cargo fmt --all -- --check` in CI. `rustfmt.toml` marks its nightly-only
