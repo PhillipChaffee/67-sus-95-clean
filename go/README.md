@@ -139,6 +139,28 @@ error: `recieve` should be `receive`
   ╰╴━━━━━━━
 ```
 
+### Hygiene — markdown lint + link check
+
+`markdownlint-cli2` lints every markdown file (v0.23.2; config in the
+repo-root `.markdownlint-cli2.jsonc`) and `lychee` checks every link
+(v0.24.2; config in the repo-root `lychee.toml`, retry then fail).
+
+```bash
+markdownlint-cli2 "**/*.md"
+lychee --no-progress .
+```
+
+Remedy: fix the markdown or the link. The config carries four reasoned
+entries (hand-wrapped prose, skill-doc headings, the centered banner, tab
+indentation inside fenced shell). Measured wall times: markdown 0.3s,
+links 1.0s. THE GATE IS TESTED: a clean tree exits 0; seeded violations
+fail:
+
+```text
+markdownlint-cli2 "**/*.md":1 MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: 3]
+lychee: [ERROR] http://127.0.0.1:9/dead (at 1:1) | Connection refused
+```
+
 ### Formatter
 
 `golangci-lint fmt --diff` checks gofumpt, a backward-compatible strictening

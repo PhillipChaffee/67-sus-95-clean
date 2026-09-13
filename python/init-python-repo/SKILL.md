@@ -70,7 +70,6 @@ assume that reasoning and only record the work.
 8. Commit everything in one bootstrap commit (message style is the repo's
    choice from here on).
 
-
 # Gates
 
 - After step 5, ALL four commands run green (or a documented, pre-existing

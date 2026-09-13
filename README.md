@@ -18,7 +18,7 @@ the strict baseline instead of assembling it from memory.
 ## Layout
 
 | path | what it is |
-|---|---|
+| --- | --- |
 | `<lang>/README.md` | what is enforced and the trade-offs ("strict but staying usable") |
 | `<lang>/<configs>` | the canonical example configs (the enforcement surface) |
 | `<lang>/init-<lang>-repo/` | the AI skill, plus `templates/` byte-copies so it is self-contained |
@@ -30,7 +30,7 @@ the strict baseline instead of assembling it from memory.
 Details and reasoning live in each folder's README; the shape:
 
 | folder | lint | types | docs | coverage | formatter |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | [`rust/`](rust/) | clippy: pedantic + nursery + cargo + picks; rustdoc group deny | rustc: `missing_docs` deny | rustdoc: all 10 stable lints | `llvm-cov` ≥ 95% | `rustfmt` |
 | [`python/`](python/) | ruff: ALL, 18 documented ignores | mypy `--strict` | ruff `D` (google) | `pytest-cov` ≥ 95% | `ruff format` |
 | [`typescript/`](typescript/) | eslint: `strictTypeChecked` + jsdoc | tsc `strict` + 8 extras | jsdoc: require + check | vitest ≥ 95% ×4 | `prettier` |

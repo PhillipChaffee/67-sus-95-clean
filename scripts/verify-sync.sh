@@ -43,6 +43,14 @@ rust/run-gates.sh			rust/init-rust-repo/templates/run-gates.sh
 python/run-gates.sh			python/init-python-repo/templates/run-gates.sh
 typescript/run-gates.sh			typescript/init-typescript-repo/templates/run-gates.sh
 go/run-gates.sh			go/init-go-repo/templates/run-gates.sh
+.markdownlint-cli2.jsonc			python/init-python-repo/templates/.markdownlint-cli2.jsonc
+.markdownlint-cli2.jsonc			rust/init-rust-repo/templates/.markdownlint-cli2.jsonc
+.markdownlint-cli2.jsonc			go/init-go-repo/templates/.markdownlint-cli2.jsonc
+.markdownlint-cli2.jsonc			typescript/init-typescript-repo/templates/.markdownlint-cli2.jsonc
+lychee.toml			python/init-python-repo/templates/lychee.toml
+lychee.toml			rust/init-rust-repo/templates/lychee.toml
+lychee.toml			go/init-go-repo/templates/lychee.toml
+lychee.toml			typescript/init-typescript-repo/templates/lychee.toml
 PAIRINGS
 )
 exit $fail

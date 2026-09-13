@@ -54,7 +54,7 @@ Negative:
 Four independent lanes, one commit each:
 
 | lane | commit | files |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Record the doc drift fixes the audit found | go/README.md, rust/Cargo.toml.example + template, typescript/README.md |
 | 2 | Add the expand-lint-gates epic plan | tasks/expand-lint-gates/** |
 | 3 | Require the new gate families in add-language | add-language/SKILL.md |
@@ -77,7 +77,7 @@ decision.
 
 Install prerequisite (once, before the phase):
 
-```
+```bash
 brew install typos gitleaks shellcheck shfmt yamllint actionlint osv-scanner
 npm install -g markdownlint-cli2 jscpd
 ```

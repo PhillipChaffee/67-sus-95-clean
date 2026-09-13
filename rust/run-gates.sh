@@ -18,6 +18,8 @@ add "tests" "cargo test --workspace"
 add "coverage" "cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info"
 
 add "spell-check" "typos"
+add "markdown-lint" "markdownlint-cli2 \"**/*.md\""
+add "link-check" "lychee --no-progress ."
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

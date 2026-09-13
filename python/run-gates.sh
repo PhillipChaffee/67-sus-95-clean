@@ -17,6 +17,8 @@ add "types" "mypy ."
 add "tests+coverage" "pytest"
 
 add "spell-check" "typos"
+add "markdown-lint" "markdownlint-cli2 \"**/*.md\""
+add "link-check" "lychee --no-progress ."
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"
