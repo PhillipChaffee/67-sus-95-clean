@@ -150,8 +150,11 @@ example of a mistyped tag). Measured wall time: 0.02s on this repo.
 THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
 
 ```text
-error: `calender` should be `calendar`
-  ╭▸ ./proof-seed-typo.md:1:10
+error: `recieve` should be `receive`
+  ╭▸ ./proof-seed-typo.md:1:1
+  │
+1 │ recieve the calender
+  ╰╴━━━━━━━
 ```
 
 ### Formatter
