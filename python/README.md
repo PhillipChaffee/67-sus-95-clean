@@ -264,8 +264,8 @@ templates.
 ```bash
 for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
 for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
-yamllint .github/workflows/ */ci.yml
-actionlint .github/workflows/ */ci.yml
+yamllint ./.github/workflows/*.yml ./*/ci.yml
+actionlint ./.github/workflows/*.yml ./*/ci.yml
 ```
 
 Remedy: fix the script or the workflow; yamllint deviations carry reasons in
