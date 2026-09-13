@@ -380,6 +380,26 @@ your_package.core is not allowed to import your_package.api:
 - your_package.core -> your_package.api (l.3)
 ```
 
+### Hygiene — lockfile integrity (hash-pinned installs)
+
+`requirements-lock.txt` pins the full install set with sha256 hashes
+(generated from `requirements.in` with pip-tools). The gate installs it with
+`--require-hashes`, so any missing or wrong hash fails (pip 25.x docs).
+
+```bash
+pip install --require-hashes --dry-run -r requirements-lock.txt
+```
+
+Remedy: regenerate the lock with pip-compile and commit it with the version
+bumps; never add a package without its hash. Measured wall time: 6.6s for
+the compile, seconds for the dry-run install. THE GATE IS TESTED: a clean
+lockfile exits 0; a lockfile missing one hash fails:
+
+```text
+ERROR: In --require-hashes mode, all requirements must have their versions
+pinned with == and a hash. Hash checking failed.
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are

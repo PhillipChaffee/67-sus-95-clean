@@ -30,6 +30,7 @@ add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml"
 add "unused-deps" "deptry ."
 add "dead-code" "vulture your_package vulture-allowlist.py"
 add "import-layers" "lint-imports"
+add "lockfile" "pip install --require-hashes --dry-run -r requirements-lock.txt"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"

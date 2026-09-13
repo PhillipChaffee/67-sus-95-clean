@@ -29,6 +29,7 @@ add "shell-lint" "for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done"
 add "shell-format" "for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done"
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"
 add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml"
+add "lockfile" "pip install --require-hashes --dry-run -r requirements-lock.txt"
 for i in "${!names[@]}"; do
   name="${names[$i]}"
   cmd="${cmds[$i]}"
