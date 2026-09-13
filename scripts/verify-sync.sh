@@ -51,6 +51,10 @@ lychee.toml			python/init-python-repo/templates/lychee.toml
 lychee.toml			rust/init-rust-repo/templates/lychee.toml
 lychee.toml			go/init-go-repo/templates/lychee.toml
 lychee.toml			typescript/init-typescript-repo/templates/lychee.toml
+.gitleaks.toml			python/init-python-repo/templates/.gitleaks.toml
+.gitleaks.toml			rust/init-rust-repo/templates/.gitleaks.toml
+.gitleaks.toml			go/init-go-repo/templates/.gitleaks.toml
+.gitleaks.toml			typescript/init-typescript-repo/templates/.gitleaks.toml
 PAIRINGS
 )
 exit $fail

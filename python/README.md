@@ -179,6 +179,29 @@ markdownlint-cli2 "**/*.md":1 MD009/no-trailing-spaces Trailing spaces [Expected
 lychee: [ERROR] http://127.0.0.1:9/dead (at 1:1) | Connection refused
 ```
 
+### Hygiene — secret scan (gitleaks)
+
+`gitleaks` scans for committed credentials (v8.30.1, default rule set;
+config in the repo-root `.gitleaks.toml`). CI scans the full git history
+(`fetch-depth: 0`), so an already-committed secret is caught too; the local
+runner scans the working tree with `--no-git`.
+
+```bash
+gitleaks detect --source . --redact     # CI: full history
+gitleaks detect --no-git --redact       # local runner: working tree
+```
+
+Remedy: rotate the secret, purge it from history, and never allowlist a real
+credential. Allowlist entries need a reason. Measured wall time: 0.2s on
+this repo (20 commits). THE GATE IS TESTED: a clean tree exits 0 ("no leaks
+found"); a seeded fake AWS key fails:
+
+```text
+Finding:     aws_access_key_id (aws-access-key-id)
+Secret:      AKIA************************EXAMPLE (redacted)
+File:        proof-seed-secret.txt:1
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are
