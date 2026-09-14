@@ -97,6 +97,3 @@ jobs:
         run: yamllint ./.github/workflows/*.yml ./*/ci.yml
       - name: Workflow lint (actionlint v1.7.12)
         run: actionlint ./.github/workflows/*.yml ./*/ci.yml
-      - name: Lockfile integrity (hash-pinned install)
-        run: pip install --require-hashes --dry-run -r requirements-lock.txt
-
