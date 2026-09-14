@@ -16,7 +16,10 @@ trap 'rm -rf "$log_dir"' EXIT
 
 names=()
 cmds=()
-add() { names+=("$1"); cmds+=("$2"); }
+add() {
+	names+=("$1")
+	cmds+=("$2")
+}
 add "schema" "golangci-lint config verify"
 add "build" "go build ./..."
 add "format" "golangci-lint fmt --diff"
@@ -38,24 +41,24 @@ add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"
 add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml"
 add "lockfile" "pip install --require-hashes --dry-run -r requirements-lock.txt"
 for i in "${!names[@]}"; do
-  name="${names[$i]}"
-  cmd="${cmds[$i]}"
-  (
-    if eval "$cmd" >"$log_dir/$name.log" 2>&1; then
-      echo "PASS  $name" >"$log_dir/$name.status"
-    else
-      echo "FAIL  $name" >"$log_dir/$name.status"
-      printf '%s\n' "--- $name output ---" >>"$log_dir/failures.log"
-      cat "$log_dir/$name.log" >>"$log_dir/failures.log"
-    fi
-  ) &
+	name="${names[$i]}"
+	cmd="${cmds[$i]}"
+	(
+		if eval "$cmd" >"$log_dir/$name.log" 2>&1; then
+			echo "PASS  $name" >"$log_dir/$name.status"
+		else
+			echo "FAIL  $name" >"$log_dir/$name.status"
+			printf '%s\n' "--- $name output ---" >>"$log_dir/failures.log"
+			cat "$log_dir/$name.log" >>"$log_dir/failures.log"
+		fi
+	) &
 done
 wait
 
 cat "$log_dir"/*.status 2>/dev/null
 if [ -f "$log_dir/failures.log" ]; then
-  echo "=== failing gate output ==="
-  cat "$log_dir/failures.log"
-  exit 1
+	echo "=== failing gate output ==="
+	cat "$log_dir/failures.log"
+	exit 1
 fi
 echo "all gates pass"
