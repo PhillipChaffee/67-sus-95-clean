@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Runs every PR-blocking gate from this folder's README, in parallel.
 # Keep this gate list in sync with the CI steps in ci.yml. Mutation
+# The gate commands below are opaque strings that run_gates.sh evaluates
+# at runtime; shellcheck sees them out of context here.
+# shellcheck disable=SC2016,SC2027,SC2086,SC2154
 # testing is nightly only, so it is deliberately not here.
 
 # Requires node_modules. Run npm ci once first if it is missing.
@@ -24,9 +27,9 @@ add "link-check" "lychee --no-progress ."
 add "secret-scan" "gitleaks detect --no-git --redact"
 add "duplication" "jscpd"
 add "advisories" "osv-scanner scan -r ."
-add "license-check" "osv-scanner scan -r . --licenses=\"MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Python-2.0,0BSD\""
-add "shell-lint" "for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done"
-add "shell-format" "for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done"
+add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Python-2.0,0BSD"
+add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
+add "shell-format" 'for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done'
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"
 add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml"
 add "lockfile" "pip install --require-hashes --dry-run -r requirements-lock.txt"
