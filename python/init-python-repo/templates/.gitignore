@@ -1,0 +1,18 @@
+# Python toolchain artifacts: caches, build output, and coverage files the
+# gates produce. Local gate runs and proof runs must never leak into commits.
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.mutmut-cache/
+mutants/
+build/
+dist/
+*.egg-info/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/

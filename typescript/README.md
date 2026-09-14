@@ -94,7 +94,7 @@ Machine (eslint core comment rules):
 
 ### Coverage — the gate
 
-```
+```json
 "test": "vitest run --coverage"
 ```
 
@@ -117,8 +117,152 @@ THE GATE IS TESTED, both sides:
   Lines 66.66% (4/6)` with one `ERROR: Coverage for ...` line per axis.
 
 No threshold key beyond vitest's documented set is used ("reportOn"
-options do not exist for this purpose; `coverage.reportOnFailure` defaults
-to false and stays unset).
+options do not exist for this purpose). `coverage.reportOnFailure: true`
+is set deliberately: a red build still writes its lcov report, so the
+Coveralls upload shows the real number instead of going badge-less.
+
+### Hygiene — spell check (typos)
+
+`typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
+configuration in the repo-root `.typos.toml`).
+
+```bash
+typos
+```
+
+Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
+reason (the config carries two: a ruff rule family name and a deliberate
+example of a mistyped tag). Measured wall time: 0.02s on this repo.
+THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
+
+```text
+error: `recieve` should be `receive`
+  ╭▸ ./proof-seed-typo.md:1:1
+  │
+1 │ recieve the calender
+  ╰╴━━━━━━━
+```
+
+### Hygiene — markdown lint + link check
+
+`markdownlint-cli2` lints every markdown file (v0.23.2; config in the
+repo-root `.markdownlint-cli2.jsonc`) and `lychee` checks every link
+(v0.24.2; config in the repo-root `lychee.toml`, retry then fail).
+
+```bash
+markdownlint-cli2 "**/*.md"
+lychee --no-progress .
+```
+
+Remedy: fix the markdown or the link. The config carries four reasoned
+entries (hand-wrapped prose, skill-doc headings, the centered banner, tab
+indentation inside fenced shell). Measured wall times: markdown 0.3s,
+links 1.0s. THE GATE IS TESTED: a clean tree exits 0; seeded violations
+fail:
+
+```text
+markdownlint-cli2 "**/*.md":1 MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: 3]
+lychee: [ERROR] http://127.0.0.1:9/dead (at 1:1) | Connection refused
+```
+
+### Hygiene — secret scan (gitleaks)
+
+`gitleaks` scans for committed credentials (v8.30.1, default rule set;
+config in the repo-root `.gitleaks.toml`). CI scans the full git history
+(`fetch-depth: 0`), so an already-committed secret is caught too; the local
+runner scans the working tree with `--no-git`.
+
+```bash
+gitleaks detect --source . --redact     # CI: full history
+gitleaks detect --no-git --redact       # local runner: working tree
+```
+
+Remedy: rotate the secret, purge it from history, and never allowlist a real
+credential. Allowlist entries need a reason. Measured wall time: 0.2s on
+this repo (20 commits). THE GATE IS TESTED: a clean tree exits 0 ("no leaks
+found"); a seeded fake AWS key fails:
+
+```text
+Finding:     aws_access_key_id (aws-access-key-id)
+Secret:      AKIA********************E/REDACTED
+File:        proof-seed-secret.txt:1
+```
+
+### Hygiene — copy-paste detection (jscpd)
+
+`jscpd` tokenizes every source file and fails above the duplication
+threshold (v5.2.0; config in the repo-root `.jscpd.json`, threshold 5).
+
+```bash
+jscpd
+```
+
+Remedy: extract the shared code into one place. The config ignores four
+intentionally-parallel shapes with reasons (template byte-copies, per-folder
+CI files, per-folder runners, and the folder READMEs' shared hygiene
+sections). Measured wall time: 0.04s on this repo. THE GATE IS TESTED: a
+clean tree exits 0 (0.00% duplicated). The threshold measures the whole
+tree, so the failure proof runs the same command on a scratch fixture with
+two identical 10-line functions (58 of 120 tokens, 48% against the 5%
+threshold) and records its exit code 1:
+
+```text
+Found 1 clones.
+Clone found (python)
+ - proof-dup-a.py [1:1 - 10:15] (10 lines, 58 tokens)
+   proof-dup-b.py [1:1 - 10:15]
+exit code: 1
+```
+
+### Hygiene — dependency advisories + licenses (osv-scanner)
+
+`osv-scanner` scans every lockfile for known vulnerabilities and reports
+dependency licenses against an allow-list (v2.5.1). This repository itself
+carries no lockfiles, so the step lives in each folder's CI and runner: it
+targets the initialized repository, where the lockfiles exist.
+
+```bash
+osv-scanner scan -r .
+osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Python-2.0,0BSD"
+```
+
+Remedy: bump or replace the flagged dependency. License violations must be
+resolved or justified in review; the osv-scanner exit codes carry the
+verdict. Measured wall time: seconds (network-bound, advisory DB cached).
+THE GATE IS TESTED: a seeded package-lock.json with lodash 4.17.4 fails
+with five GHSA advisories; adding pm2 (AGPL-3.0) fails the license gate:
+
+```text
+| https://osv.dev/GHSA-fvqr-27wr-82fm | 6.5  | npm | lodash | 4.17.4 | 4.17.5 | package-lock.json |
+advisories exit code: 1
+| AGPL-3.0 | npm | pm2 | 5.1.0 | package-lock.json |
+license exit code: 130
+```
+
+### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
+
+The repository's own shell scripts and workflow files are linted with the
+same severity as its code: shellcheck (v0.11.0), shfmt -d (v3.14.0),
+yamllint (v1.38.0, config in the repo-root `.yamllint.yaml`), and
+actionlint (v1.7.12) on every workflow file, including the per-folder ci.yml
+templates.
+
+```bash
+for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
+for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
+yamllint ./.github/workflows/*.yml ./*/ci.yml
+actionlint ./.github/workflows/*.yml ./*/ci.yml
+```
+
+Remedy: fix the script or the workflow; yamllint deviations carry reasons in
+`.yamllint.yaml`. Measured wall time: 0.2s. THE GATE IS TESTED: a clean tree
+exits 0 (after fixing the findings this gate itself caught: an unguarded
+rm -rf and shfmt formatting); seeded violations fail:
+
+```text
+shellcheck: SC2086 on the seeded unquoted variable (exit 1)
+yamllint: proof-seed.yaml:2 syntax error (exit 1)
+```
 
 ### Formatter
 
@@ -136,6 +280,7 @@ repository's README.
 ## Commands
 
 ```bash
+./run-gates.sh             # run every gate below, in parallel
 npm ci                   # deterministic install against the committed lockfile
 npm run format:check     # prettier --check .             — format gate
 npm run typecheck        # tsc --noEmit                   — type gate (strict + the 8 flags)
