@@ -52,7 +52,7 @@ jobs:
       - name: Dependency advisories (osv-scanner v2.5.1)
         run: osv-scanner scan -r .
       - name: License check (osv-scanner v2.5.1)
-        run: osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause"
+        run: osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
       - name: Shell lint (shellcheck v0.11.0)
         run: for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
       - name: Shell format (shfmt v3.14.0)

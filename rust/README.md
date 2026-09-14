@@ -174,7 +174,7 @@ targets the initialized repository, where the lockfiles exist.
 
 ```bash
 osv-scanner scan -r .
-osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause"
+osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Python-2.0,0BSD"
 ```
 
 Remedy: bump or replace the flagged dependency. License violations must be
