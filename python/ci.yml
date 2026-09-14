@@ -29,6 +29,9 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy .
+      # File-length gate: ruff has no rule for it, so a deterministic script
+      # fails the job when any Python file exceeds 500 lines.
+      - run: python scripts/check_file_length.py
       - name: Coverage gate (fail_under = 95, from pyproject.toml)
         run: pytest
       # pytest-cov writes coverage.xml before it evaluates fail_under, so the

@@ -69,6 +69,15 @@ convention = "google"
     "INP001",                               # the tests directory is not an importable package
 ]
 
+[tool.ruff.lint.mccabe]
+# Cyclomatic-complexity gate: C901 fires above this threshold, forcing
+# conditionals into named helpers. Lower it, never raise it, when a function
+# grows past this bound.
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+
 [tool.mypy]
 strict = true
 # strict's own flag list (mypy 2.3.1 --strict): disallow-any-generics,

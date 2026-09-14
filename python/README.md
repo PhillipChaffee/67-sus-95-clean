@@ -195,3 +195,17 @@ Install: `scripts/install-skills.sh` (or copy the folder to
 `scripts/verify-sync.sh` fails if they drift. The skill adapts exactly two
 placeholders (project name and `--cov=<your_package>`), runs every gate,
 and fails loudly rather than leaving a gate quietly missing.
+
+## Cyclomatic complexity
+
+Ruff's mccabe plugin enforces C901 with `max-complexity = 10` under
+`[tool.ruff.lint.mccabe]`. A function above the bound fails `ruff check`;
+factor conditionals into named helpers. Lower the bound deliberately; never
+raise it to admit a function.
+
+## File length
+
+Ruff has no file-length rule, so `scripts/check_file_length.py` fails when
+any Python file exceeds 500 lines. CI runs it after mypy, and the init
+template wires the same gate into the repository's own test suite so local
+`pytest` fails identically.
