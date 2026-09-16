@@ -40,8 +40,8 @@ add "markdown-lint" 'markdownlint-cli2 "**/*.md"'
 add "link-check" "lychee --no-progress ."
 add "secret-scan" "gitleaks detect --no-git --redact"
 add "duplication" "jscpd"
-add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"
-add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml"
+add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml $(find . -mindepth 2 -maxdepth 2 \( -name 'ci.yml' -o -name 'mutation.yml' \) -not -path './.github/*' | tr '\n' ' ')"
+add "workflow-lint" "actionlint ./.github/workflows/*.yml $(find . -mindepth 2 -maxdepth 2 \( -name 'ci.yml' -o -name 'mutation.yml' \) -not -path './.github/*' | tr '\n' ' ')"
 for i in "${!names[@]}"; do
 	name="${names[$i]}"
 	cmd="${cmds[$i]}"

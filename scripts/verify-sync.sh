@@ -96,11 +96,13 @@ PAIRINGS
 )
 
 # Cross-folder drift check: the hygiene install blocks and the license
-# allow-list are intentionally shared across the four folder ci.yml files and
-# the root dogfood workflow (jscpd ignores those globs and no pairing rows
-# cross folders, so nothing else catches one folder's pin bumping while the
-# other three lag). Per-folder extras (python's pip tools, rust's cargo-deny)
-# are filtered before comparing. shell/ is deliberately outside this check:
+# allow-list are intentionally shared across the four manifest-bearing folder
+# ci.yml files and the root dogfood workflow (jscpd ignores those globs and
+# no pairing rows cross folders, so nothing else catches one folder's pin
+# bumping while the other three lag). Per-folder extras (python's pip tools,
+# rust's cargo-deny) are filtered before comparing. shell/ is excluded by
+# documented decision: it ships no dependency lockfile, so no osv-scanner
+# license step and a different install set (shell/ci.yml documents it). shell/ is deliberately outside this check:
 # its ci.yml drops the osv-scanner advisories and license gates (shell
 # carries no lockfile manifest), so its install block and license list
 # differ from the shared fingerprint by design.
@@ -109,14 +111,14 @@ fingerprint() {
 	# (installed from the hash-pinned lock), rust's cargo-deny and cargo-shear
 	# downloads, and all pip/npm registry installs (which differ by folder by
 	# design).
-	awk '/Install pinned hygiene tools/,/Spell check/' "$1" |
-		grep -vE 'deptry|vulture|import-linter|DENY_VERSION|cargo-deny|deny\.|denyx|pinned versions|cargo-shear|SHEAR_VERSION|shear\.|pip install|npm install' |
-		grep -vE '^[[:space:]]*#' |
-		grep -vE '^[[:space:]]*(- name:|- run:|run: \|?)?[[:space:]]*$' |
+	{ awk '/Install pinned hygiene tools/,/Spell check/' "$1" 2>/dev/null || true; } |
+		{ grep -vE 'deptry|vulture|import-linter|DENY_VERSION|cargo-deny|deny\.|denyx|pinned versions|cargo-shear|SHEAR_VERSION|shear\.|pip install|npm install' || true; } |
+		{ grep -vE '^[[:space:]]*#' || true; } |
+		{ grep -vE '^[[:space:]]*(- name:|- run:|run: \|?)?[[:space:]]*$' || true; } |
 		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
 }
 expected_license='MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear,LGPL-3.0-only,BlueOak-1.0.0,CC-BY-3.0'
-for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml typescript/ci.yml python/run-gates.sh rust/run-gates.sh go/run-gates.sh typescript/run-gates.sh; do
+for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml typescript/ci.yml; do
 	fp="$(fingerprint "$f")"
 	if [[ "$fp" != "$(fingerprint .github/workflows/hygiene.yml)" ]]; then
 		echo "CROSS-FOLDER DRIFT: $f install block differs from .github/workflows/hygiene.yml"
@@ -133,11 +135,16 @@ done
 # are filtered out by name. shell/ is outside this check for the same
 # manifest-less reason: its runner has no advisories or license-check
 # entries to fingerprint.
+# The fingerprint covers only the gates every runner genuinely shares;
+# advisories/license-check are absent in shell by documented decision, and
+# the shell-lint/shell-format commands are per-folder shapes.
 runner_fingerprint() {
-	grep -E '^add "(spell-check|markdown-lint|link-check|secret-scan|duplication|advisories|license-check|shell-lint|shell-format|workflow-yaml-lint|workflow-lint)" ' "$1" |
-		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
+	grep -E '^add "(spell-check|markdown-lint|link-check|secret-scan|duplication|workflow-yaml-lint|workflow-lint)" ' "$1" |
+		sed 's/^[[:space:]]*//' |
+		tr -d "\042\047\134" |
+		sort | sha256sum | awk '{print $1}'
 }
-for f in python/run-gates.sh rust/run-gates.sh go/run-gates.sh typescript/run-gates.sh; do
+for f in python/run-gates.sh rust/run-gates.sh go/run-gates.sh typescript/run-gates.sh shell/run-gates.sh; do
 	if [[ "$(runner_fingerprint "$f")" != "$(runner_fingerprint python/run-gates.sh)" ]]; then
 		echo "CROSS-FOLDER DRIFT: $f hygiene gate entries differ from python/run-gates.sh"
 		fail=1

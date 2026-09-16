@@ -371,8 +371,8 @@ templates.
 ```bash
 for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
 for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
-yamllint ./.github/workflows/*.yml ./*/ci.yml
-actionlint ./.github/workflows/*.yml ./*/ci.yml
+yamllint ./.github/workflows/*.yml $(find . -mindepth 2 -maxdepth 2 \( -name "ci.yml" -o -name "mutation.yml" \) -not -path "./.github/*" | tr "\n" " ")
+actionlint ./.github/workflows/*.yml $(find . -mindepth 2 -maxdepth 2 \( -name "ci.yml" -o -name "mutation.yml" \) -not -path "./.github/*" | tr "\n" " ")
 ```
 
 Remedy: fix the script or the workflow; yamllint deviations carry reasons in
