@@ -319,6 +319,34 @@ deadExport  function  src/lib.ts:54:17
 ✖ Error: security issues detected!
 ```
 
+### Architecture — import layers and cycles (dependency-cruiser)
+
+`.dependency-cruiser.cjs` carries the dependency-graph contract, checked by
+`dependency-cruiser validate` (dependency-cruiser 18.3.1, pinned in
+package.json; the command runs `depcruise --validate` over `src`). The
+rules, each with its reason in the config: no circular imports (a cycle
+compiles but cannot be reasoned about top-down — the depcruiser equivalent
+of the python/rust layer contracts), no orphan modules (a module nothing
+imports and that is not an entry point is dead weight), and nothing may
+import the entry point (src/index.ts is the outbound edge of the package,
+not a layer below the shipped code).
+
+```bash
+npm run lint:graph
+```
+
+Remedy: break the cycle by extracting the shared shape, import the orphan
+or delete it, and leave the entry point alone — it is the outbound edge,
+not a layer below the shipped code. Measured wall time: 1s on the template
+fixture. THE GATE IS TESTED: the clean fixture exits 0; a seeded module
+that imports src/index.ts fails `entry-is-leaf`, and a seeded two-module
+cycle fails `no-circular`, both naming the modules (exit 1):
+
+```text
+error no-circular: src/cycle_a.ts → src/cycle_b.ts → src/cycle_a.ts
+error entry-is-leaf: src/entry_importer.ts → src/index.ts
+```
+
 ### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
 
 The repository's own shell scripts and workflow files are linted with the

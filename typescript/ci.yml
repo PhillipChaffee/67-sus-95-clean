@@ -34,6 +34,10 @@ jobs:
       # package names, sha512 integrity (reasons in the README).
       - name: Lockfile policy (lockfile-lint v5.0.1)
         run: npm run lint:lockfile
+      # The dependency-graph contract: cycles, orphans, and imports of the
+      # entry point (rules and reasons in .dependency-cruiser.cjs).
+      - name: Dependency graph (dependency-cruiser v18.3.1)
+        run: npm run lint:graph
       # vitest writes coverage/lcov.info (reportOnFailure keeps it on a red
       # build). Free for public repositories, no account and no secret: the
       # action takes the built-in GITHUB_TOKEN. lcov is Coveralls' native

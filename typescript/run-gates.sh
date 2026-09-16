@@ -25,6 +25,7 @@ add "lint" "npm run lint"
 add "tests+coverage" "npm test"
 add "dependency-hygiene" "npm run knip"
 add "lockfile" "npm run lint:lockfile"
+add "dependency-graph" "npm run lint:graph"
 
 add "spell-check" "typos"
 add "markdown-lint" "markdownlint-cli2 \"**/*.md\""
