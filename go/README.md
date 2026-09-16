@@ -344,6 +344,11 @@ nothing nightly exists to exclude.
 
 ## Trade-offs ("strict but staying usable")
 
+- CI tool installs: the pinned prebuilt binaries are checksum-verified
+  where upstream publishes checksums (lychee, gitleaks, osv-scanner,
+  actionlint, cargo-deny) and release-tag-pinned where none is published
+  (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
+  recorded in the install block and reviewed on every pin bump.
 - **Statement coverage only.** `go tool cover` counts statements; Go ships
   no branch-coverage mode, and 95% of statements still allows an untested
   branch of every if. Recorded here rather than papered over — the gate
@@ -390,8 +395,7 @@ each entry names what changes the answer.
   pin with score-floor semantics.
 - Refused families, not gaps: coupling/cohesion dashboards and
   Halstead/Maintainability-Index/NPath were reviewed and refused — they are
-  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
-  refusal-decisions.md` records the reasons).
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/refusal-decisions.md` records the reasons).
 
 ## The init skill
 

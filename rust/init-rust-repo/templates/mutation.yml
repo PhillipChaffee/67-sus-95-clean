@@ -3,6 +3,8 @@
 # and fails the scheduled run only when the mutation score drops below the
 # floor. Command, pin, floor, and reason: see the README's mutation-testing
 # section.
+permissions:
+  contents: read  # least privilege: no step in this workflow writes to the repo (GitHub secure-use reference)
 name: mutation
 
 on:
@@ -13,6 +15,10 @@ on:
 jobs:
   mutation:
     runs-on: ubuntu-latest
+    timeout-minutes: 60  # bounds a hung network gate; GitHub's default is 360
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       # rustup reads rust-toolchain.toml (pinned channel) on the first
@@ -20,7 +26,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install cargo-mutants v27.1.0
         run: |
-          mkdir /tmp/mutx && curl -sSfL "https://github.com/sourcefrog/cargo-mutants/releases/download/v27.1.0/cargo-mutants-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C /tmp/mutx
+          mkdir /tmp/mutx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/sourcefrog/cargo-mutants/releases/download/v27.1.0/cargo-mutants-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C /tmp/mutx
           sudo mv /tmp/mutx/cargo-mutants /usr/local/bin/
       # The run's own exit code is its zero-missed CI mode: it fails on ANY
       # surviving mutant, and the template fixture provably carries

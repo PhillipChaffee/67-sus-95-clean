@@ -443,7 +443,7 @@ npm test                 # vitest run --coverage           — the 95% gate, fou
 ```
 
 CI (`.github/workflows/ci.yml`) runs exactly these commands in this order,
-after `npm ci`, on node 24 with actions/setup-node@v7.
+after `npm ci`, on node 24 with actions/setup-node@v4.
 
 Runner-CI parity: 19 runner entries <-> 19 CI gate steps (7 language gates including knip, lockfile-lint, and dependency-cruiser + 12 hygiene steps; the tool installs are not gates). The runner deliberately
 The runner carries no mutation gate: StrykerJS is a
@@ -452,6 +452,11 @@ nightly exists to exclude.
 
 ## Trade-offs ("strict but staying usable")
 
+- CI tool installs: the pinned prebuilt binaries are checksum-verified
+  where upstream publishes checksums (lychee, gitleaks, osv-scanner,
+  actionlint, cargo-deny) and release-tag-pinned where none is published
+  (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
+  recorded in the install block and reviewed on every pin bump.
 - The inconveniencing tsc flags, named: `noUncheckedIndexedAccess` makes
   every index read `T | undefined` until you narrow (the noisiest flag in
   the table); `exactOptionalPropertyTypes` makes `undefined` different
@@ -476,11 +481,6 @@ nightly exists to exclude.
 - The typescript pin (6.0.3) will trail the TypeScript majors: tseslint's
   support window governs, not hype. Bumping is a deliberate change with
   the two gate commands re-run.
-- Node floor is 22 (`engines`), verified on 24: tseslint's supported range
-  is `^18.18.0 || ^20.9.0 || >=21.1.0`, so the floor holds with margin. A
-  team pinning node via Volta adds its own `volta` block — deliberately not
-  in the template so the pin belongs to the team using it.
-
 - Node floor is 22 (`engines`), verified on 24: tseslint's supported range
   is `^18.18.0 || ^20.9.0 || >=21.1.0`, so the floor holds with margin. A
   team pinning node via Volta adds its own `volta` block — deliberately not
@@ -513,8 +513,7 @@ each entry names what changes the answer.
   reasoned-slice decision, not by absence.
 - Refused families, not gaps: coupling/cohesion dashboards and
   Halstead/Maintainability-Index/NPath were reviewed and refused — they are
-  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
-  refusal-decisions.md` records the reasons).
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/refusal-decisions.md` records the reasons).
 
 ## The init skill
 

@@ -22,8 +22,10 @@ assume that reasoning and only record the work.
 
 # Preconditions
 
+One repository, one language: the init skills all write `.github/workflows/ci.yml` (and `mutation.yml` where shipped), so initializing two languages into one repo silently overwrites the first folder's workflows.
+
 - A Python 3.12+ interpreter with `python -m venv` and network access to
-  PyPI for the five pinned tools.
+  PyPI for the nine pinned tools.
 - You know the project name and it is valid in both places it appears
   (PEP 508 `name`, importable package directory).
 
@@ -71,6 +73,9 @@ assume that reasoning and only record the work.
       package name, so update it with the other `your_package` tokens)
    - `lint-imports` (the `root_package` line in `.importlinter` carries the
       package name, so update it with the other `your_package` tokens)
+   - `pip install --require-hashes --dry-run -r requirements-lock.txt`
+      (the lockfile-integrity gate; the copied lock must satisfy the hash
+      check, and the CI step fails without the file)
    The mutation gate does not run in bootstrap: it is the scheduled nightly
    workflow (`mutation.yml`), so nothing to prove at init time beyond the
    workflow file being present.
@@ -95,7 +100,7 @@ assume that reasoning and only record the work.
 
 # Gates
 
-- After step 5, ALL four commands run green (or a documented, pre-existing
+- After step 5, ALL eight commands run green (or a documented, pre-existing
   decision explains any red), and step 6 showed the gate failing under 95%.
 - `mutation.yml` is present as `.github/workflows/mutation.yml`: the
   nightly mutation-score gate the README documents (floor 85, reason

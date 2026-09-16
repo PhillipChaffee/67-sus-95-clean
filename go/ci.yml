@@ -3,6 +3,8 @@
 # go.mod — the exact pin matters because a newer bundled toolchain would
 # otherwise win over a lower go.mod floor and the lint output would drift
 # between a local run and CI (go.dev/doc/toolchain).
+permissions:
+  contents: read  # least privilege: no step in this workflow writes to the repo (GitHub secure-use reference)
 name: CI
 
 on:
@@ -16,6 +18,10 @@ env:
 jobs:
   gates:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # bounds a hung network gate; GitHub's default is 360
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       # Any go >= 1.21 bootstraps the pinned toolchain from GOTOOLCHAIN; a
@@ -52,8 +58,11 @@ jobs:
       # public repositories, no account and no secret: the action takes the
       # built-in GITHUB_TOKEN. Go's native profile format is golang; pinned
       # action version.
+      # The badge is not a gate: a coveralls.io flake must not redden an
+      # otherwise-green build.
       - name: Upload coverage to Coveralls
         if: always()
+        continue-on-error: true
         uses: coverallsapp/github-action@v2
         with:
           file: cover.out
@@ -67,29 +76,49 @@ jobs:
           fetch-depth: 0
       - name: Install pinned hygiene tools
         run: |
-          # pinned versions; one download per tool, no installer actions
+          # Pinned hygiene tools: one download per tool, no installer actions.
+          # Every download is checksum-verified where the project publishes
+          # checksums (lychee, gitleaks, osv-scanner, actionlint, cargo-deny);
+          # the rest pin by release tag because no checksum asset is published
+          # upstream (typos, shellcheck, shfmt, markdownlint, cargo-mutants) —
+          # the recorded residual risk, reviewed on every pin bump. Every curl
+          # is bounded (--connect-timeout/--max-time) so a hung download cannot
+          # stall the job to GitHub's 360-minute default.
           TYPOS_VERSION=1.50.1
-          mkdir /tmp/typosx && curl -sSfL "https://github.com/crate-ci/typos/releases/download/v${TYPOS_VERSION}/typos-v${TYPOS_VERSION}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp/typosx
+          mkdir /tmp/typosx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/crate-ci/typos/releases/download/v${TYPOS_VERSION}/typos-v${TYPOS_VERSION}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp/typosx
           sudo mv /tmp/typosx/typos /usr/local/bin/
           npm install -g markdownlint-cli2@0.23.2
           LYCHEE_VERSION=0.24.2
-          mkdir /tmp/lycheex && curl -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C /tmp/lycheex
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz.sha256" -o /tmp/lychee.sha256
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/lychee.tar.gz
+          echo "$(awk '{print $1}' /tmp/lychee.sha256)  /tmp/lychee.tar.gz" | sha256sum --check --status
+          mkdir /tmp/lycheex && tar xz -C /tmp/lycheex -f /tmp/lychee.tar.gz
           sudo mv /tmp/lycheex/lychee-x86_64-unknown-linux-gnu/lychee /usr/local/bin/
           GITLEAKS_VERSION=8.30.1
-          mkdir /tmp/gitleaksx && curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar xz -C /tmp/gitleaksx
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt" -o /tmp/gitleaks.sums
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
+          echo "$(grep "linux_x64.tar.gz" /tmp/gitleaks.sums | awk '{print $1}')  /tmp/gitleaks.tar.gz" | sha256sum --check --status
+          mkdir /tmp/gitleaksx && tar xz -C /tmp/gitleaksx -f /tmp/gitleaks.tar.gz
           sudo mv /tmp/gitleaksx/gitleaks /usr/local/bin/
           npm install -g jscpd@5.2.0
           SHELLCHECK_VERSION=0.11.0
-          mkdir /tmp/shellcheckx && curl -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar xJ -C /tmp/shellcheckx
+          mkdir /tmp/shellcheckx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar xJ -C /tmp/shellcheckx
           sudo mv /tmp/shellcheckx/shellcheck-v${SHELLCHECK_VERSION}/shellcheck /usr/local/bin/
           SHFMT_VERSION=3.14.0
-          curl -sSfL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" -o /usr/local/bin/shfmt
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" -o /usr/local/bin/shfmt
           sudo chmod +x /usr/local/bin/shfmt
           python3 -m pip install --quiet yamllint==1.38.0
-          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12
-          sudo mv actionlint /usr/local/bin/
+          ACTIONLINT_VERSION=1.7.12
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -o /tmp/actionlint.tar.gz
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_checksums.txt" -o /tmp/actionlint.sums
+          echo "$(grep "linux_amd64.tar.gz" /tmp/actionlint.sums | awk '{print $1}')  /tmp/actionlint.tar.gz" | sha256sum --check --status
+          mkdir /tmp/actionlintx && tar xz -C /tmp/actionlintx -f /tmp/actionlint.tar.gz
+          sudo mv /tmp/actionlintx/actionlint /usr/local/bin/
           OSV_VERSION=2.5.1
-          curl -sSfL "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_linux_amd64" -o /usr/local/bin/osv-scanner
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_linux_amd64" -o /tmp/osv-scanner
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_SHA256SUMS" -o /tmp/osv.sums
+          echo "$(grep "osv-scanner_linux_amd64" /tmp/osv.sums | awk '{print $1}')  /tmp/osv-scanner" | sha256sum --check --status
+          sudo mv /tmp/osv-scanner /usr/local/bin/
           sudo chmod +x /usr/local/bin/osv-scanner
       - name: Spell check (typos v1.50.1)
         run: typos
