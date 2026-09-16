@@ -26,7 +26,9 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6  # v2
       - name: Install cargo-mutants v27.1.0
         run: |
-          mkdir /tmp/mutx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/sourcefrog/cargo-mutants/releases/download/v27.1.0/cargo-mutants-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C /tmp/mutx
+          mkdir /tmp/mutx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/sourcefrog/cargo-mutants/releases/download/v27.1.0/cargo-mutants-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/mutants.tar.gz
+          echo "dfe6dc37d0342c891d2829b5a695aa57c2d0edecef7e7d0399a30cc6e206411e  /tmp/mutants.tar.gz" | sha256sum --check --status
+          mkdir /tmp/mutx && tar xz -C /tmp/mutx -f /tmp/mutants.tar.gz
           sudo mv /tmp/mutx/cargo-mutants /usr/local/bin/
       # The run's own zero-missed CI mode exits 2 on ANY surviving mutant, and
       # the template fixture provably carries equivalent mutants (clamp's
@@ -37,8 +39,7 @@ jobs:
       # wrapper tolerates ONLY exit 2 and fails on every other code.
       - name: Run cargo-mutants (survivors tolerated, errors fail)
         run: |
-          cargo mutants
-          code=$?
+          cargo mutants || code=$?
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then
             echo "cargo mutants failed with exit $code"
             exit "$code"

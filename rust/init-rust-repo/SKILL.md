@@ -55,12 +55,10 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    - `cargo deny check advisories`
    - `cargo deny check licenses`
    - `cargo deny check bans` (the three supply-chain policy checks over the
-      copied `deny.toml`; a failed checksum or stale advisory database fails
-      here)
+      copied `deny.toml`; a stale advisory database fails the run)
    - `cargo shear --deny-warnings`
-   - `git grep -nE "TODO|FIXME" --untracked -- "*.rs" || test $? -eq 1`
-      (the TODO policy grep; the || test keeps it fail-closed on scanner errors)
-      grep)
+   - `git grep -nE "TODO|FIXME" --untracked -- "*.rs" || test $? -eq 1` (the
+      TODO policy grep; the || test keeps it fail-closed on scanner errors)
 5. Run every gate and make each one pass or fail for a known, acceptable
    reason:
    - `cargo fmt --all -- --check`

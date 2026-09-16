@@ -1,16 +1,10 @@
 {
-  "//": "Reasons live next to each entry. Threshold: fail when more than 5% of tokens are duplicated.",
+  "//": "Threshold: fail when more than 5% of tokens are duplicated; ignore globs exclude the install-time byte copies (templates, ci.yml, run-gates.sh) and markdown, which the README-fingerprint check in verify-sync.sh owns.",
   "threshold": 5,
   "ignore": [
     "**/init-*-repo/templates/**",
     "**/ci.yml",
     "**/run-gates.sh",
     "**/*.md"
-  ],
-  "ignore-comment": [
-    "install-time byte copies of the canonical configs, paired by verify-sync",
-    "the four folder CI files intentionally share the house shape",
-    "the four folder runners intentionally share the house shape",
-    "the four folder READMEs deliberately carry identical hygiene sections"
   ]
 }
