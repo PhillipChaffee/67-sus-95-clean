@@ -25,8 +25,11 @@ linting (commitlint, optional).
 
 ## Python-only gaps (no rule exists in the ruff/mypy stack)
 
-Cognitive complexity, nesting-depth caps, repeated literal to constant,
-interface/class-size caps. Partial: TODO policy (FIX002 is still ignored).
+Accepted after ws-02 (same list the python README's "Accepted gaps" section
+carries): cognitive complexity, nesting-depth caps, repeated literal to
+constant, interface/class-size caps. Assertion-less tests are covered by
+the nightly mutmut score floor, not a separate gate. TODO policy is closed:
+FIX002 is back ON and a TODO marker fails the build.
 
 ## Rust-only gaps (no tool exists in the clippy/rustc stack)
 

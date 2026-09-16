@@ -503,6 +503,36 @@ mutmut run; mutmut export-cicd-stats; python3 -c "import json, sys; s = json.loa
   writing pass, or per-file-ignores the legacy modules with a dated reason —
   never a global ignore of D.
 
+### Accepted gaps — signals no gate in this stack can catch
+
+Stated as current facts, not a plan: nothing below is enforced today, and
+each entry names what changes the answer.
+
+- Cognitive complexity. No rule in ruff or mypy computes it (ruff's rule
+  index has no cognitive-complexity rule; mypy type-checks, it does not
+  score readability). What changes the answer: ruff shipping a stable
+  cognitive-complexity rule at a non-preview pin — the TypeScript baseline
+  runs exactly that check through eslint-plugin-sonarjs.
+- Nesting-depth caps. Ruff has no nesting-depth rule (the `nestif`-style
+  signal) and mypy does not count nesting. What changes the answer: a
+  nesting-depth rule in ruff's stable set.
+- Repeated literal promoted to a constant. PLR2004 only flags magic values
+  used in comparisons; a string repeated across branches is invisible to
+  the ruff/mypy surface. What changes the answer: a repeated-literal rule
+  in ruff (the `goconst`-style check).
+- Interface and class-size caps. Ruff's size family is stable for functions
+  (PLR0911–PLR0915) but the class-side cap (PLR0906, too many public
+  methods) is preview-only, and preview stays off by the baseline's own
+  rule. What changes the answer: PLR0906 graduating to stable.
+- Assertion-less tests. Nothing static here detects a test whose body runs
+  no assertion — it passes vacuously. The nightly mutation run covers the
+  signal instead: an untested behavior survives as a mutant and fails the
+  mutation-score floor (see the mutation-testing section).
+- Refused families, not gaps: coupling/cohesion dashboards and
+  Halstead/Maintainability-Index/NPath were reviewed and refused — they are
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
+  refusal-decisions.md` records the reasons).
+
 ## The init skill
 
 `init-python-repo/` initializes a new Python repository with all of this.
