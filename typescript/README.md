@@ -37,6 +37,22 @@ typescript-eslint 8.70.0, eslint-plugin-jsdoc 64.3.8, vitest 5.0.0 +
   parameter is an unnamed context object). All six proven both ways on the
   template fixture: a seeded violation per family fails with the rule name
   in the output.
+- Sonar's metric gates through `eslint-plugin-sonarjs` (4.2.1, pinned in
+  package.json next to the other pins), explicitly enabled as a slice: the
+  plugin's `recommended` bundle pulls in more surface than this slice
+  needs. `sonarjs/cognitive-complexity` at 15 (Sonar's own documented issue
+  threshold for S3776 — catches the deep shape `complexity` misses),
+  `sonarjs/no-duplicate-string` at 3 (S1192's documented default), and
+  `sonarjs/no-commented-code` (S125 — the plugin ships the rule, so the
+  audit's commented-out-code gap is closed). Proven both ways: a seeded
+  unnamed literal, a triple-repeated literal, and a commented-out block
+  each fail with the rule name.
+- `no-magic-numbers`, the go folder's mnd signal: unnamed literals in
+  logic fail; the allowance list carries a reason per entry (0, 1, -1 are
+  identity values; array indexes and field initializers name their own
+  values by position). Test files get the tests bar (literals are the
+  point of a test — mirrors python's PLR2004 carve-out). Proven: a seeded
+  `value > 42` fires.
 - Stale suppressions fail the build: `linterOptions.reportUnusedDisableDirectives`
   is escalated from eslint's warn default to `error`, so an
   `eslint-disable` whose rule no longer fires is a build failure, not a
