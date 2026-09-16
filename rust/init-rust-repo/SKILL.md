@@ -52,20 +52,22 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    last rule's domain mention to the project's).
 4. `rustup component add llvm-tools-preview` (first coverage run needs it;
    rust-toolchain.toml also requests it).
-   - `cargo deny check advisories`
-   - `cargo deny check licenses`
-   - `cargo deny check bans` (the three supply-chain policy checks over the
-      copied `deny.toml`; a stale advisory database fails the run)
-   - `cargo shear --deny-warnings`
-   - `git grep -nE "TODO|FIXME" --untracked -- "*.rs" || test $? -eq 1` (the
-      TODO policy grep; the || test keeps it fail-closed on scanner errors)
 5. Run every gate and make each one pass or fail for a known, acceptable
    reason:
    - `cargo fmt --all -- --check`
    - `cargo clippy --workspace --all-targets -- -D warnings`
    - `RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps`
    - `cargo test --workspace`
-   - `cargo llvm-cov --workspace --fail-under-lines 95`
+   - `cargo llvm-cov --workspace --fail-under-lines 95 --fail-under-regions 95 --fail-under-functions 95`
+   - `cargo deny check advisories`
+   - `cargo deny check licenses`
+   - `cargo deny check bans` (the three supply-chain policy checks over the
+      copied `deny.toml`; a stale advisory database fails the run)
+   - `cargo shear --deny-warnings`
+   - the TODO policy grep as shipped in ci.yml: `rc=0; git grep --untracked
+      --no-recurse-submodules -nE "TODO|FIXME" -- "*.rs" || rc=$?;
+      test "$rc" -eq 1` — a marker or a scanner failure fails the step; only
+      "no matches" passes (fail-closed)
    `missing_docs = "deny"` means an undocumented pub item FAILS the build;
    write the doc or scope a `#[expect(missing_docs, reason = "...")]` —
    never delete the lint to pass the build.
