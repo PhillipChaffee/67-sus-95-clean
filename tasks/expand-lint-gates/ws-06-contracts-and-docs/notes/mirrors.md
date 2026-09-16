@@ -21,3 +21,15 @@
   folded into existing ones: keep the section's numbered-list shape.
 - docs/index.html is the landing page (see docs/). Mirror the README table
   changes there so the two never disagree.
+
+## 2026-09-15 — ws-05 language-gate expansion mirrored
+
+Canonical `~/.agents/rules/new-repo-setup.md` first paragraph now names the
+expanded baseline: hygiene/supply-chain gates machine-enforced everywhere
+(spell, secrets, duplication, markdown, links, advisories + licenses,
+artifact linting) plus the language's own unused-dependency, import-layer,
+lockfile-integrity, and TODO-marker gates, with nightly mutation testing
+where the pinned tools can tell the truth. All five mirrors carry the same
+shared body (diff-checked against the canonical rule text). The goose
+condensed variant stays at 12 lines (bound: 12). No mirror points at a
+local checkout path; the repo pointer stays the GitHub copy.
