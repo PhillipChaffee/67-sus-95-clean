@@ -397,6 +397,57 @@ cargo fmt --all -- --check                              # format gate
 - `doc_markdown` false-positives are config, not prose edits: extend
   `doc-valid-idents` with the identifier spelled AS THE CODE SPELLS IT.
 
+### Accepted gaps — signals no gate in this stack can catch
+
+Stated as current facts, not a plan: nothing below is enforced today, and
+each entry names what changes the answer.
+
+- Cognitive complexity. Clippy has no cognitive-complexity rule; the close
+  cousin `clippy::cognitive_complexity` measures a McCabe-style branching
+  score, not Sonar's cognitive complexity, and it is not a stable thresholded
+  gate here. What changes the answer: clippy shipping a cognitive-complexity
+  restriction rule with a defensible threshold.
+- Nesting-depth caps. No clippy/rustc lint counts nesting depth (the
+  `nestif`-style signal). What changes the answer: a nesting-depth rule in
+  clippy's stable set.
+- Magic-number detection. Rust's type system keeps constants typed, but
+  nothing in the clippy/rustc stack flags unnamed literals in logic the way
+  eslint's no-magic-numbers does; rustc's `alert`-style lint does not exist.
+  What changes the answer: a magic-number restriction lint in clippy.
+- Repeated literal to constant. No clippy lint flags a string or number
+  repeated across branches (the `goconst`/`no-duplicate-string` signal).
+  What changes the answer: a repeated-literal rule in clippy.
+- Class-size caps. Rust has no classes, and clippy's size family stops at
+  functions (`clippy::too_many_lines`); struct surface and trait complexity
+  have no cap lint. What changes the answer: a size-cap rule for impl blocks
+  in clippy.
+- Commented-out code detection. No clippy/rustc lint fires on commented-out
+  code blocks (the `commented_code`-style signal). What changes the answer:
+  a commented-out-code rule in clippy's stable set.
+- SAST. The rust-native surface has no static security scanner in this
+  baseline (semmle/CodeQL-style analysis is not a clippy lint). What changes
+  the answer: a maintained rust-native SAST gate mainstream enough to pin.
+- Test-style linting. Clippy's group lints cover shipped code shapes; test
+  naming/assertion style (the `thelper`/`testifylint` signal) has no clippy
+  rule. What changes the answer: test-style restriction lints in clippy.
+- Assertion-less tests. Nothing static here detects a test whose body runs
+  no assertion. The nightly mutation run covers the signal instead: an
+  unpinned behavior survives as a mutant and fails the mutation-score floor
+  (see the mutation-testing section).
+- Import-layer contracts and cycles. `cargo` denies cyclic crate
+  dependencies at the package boundary (a workspace cannot compile one), but
+  within a crate there is no layer contract lint (the depguard/depcruiser
+  signal). What changes the answer: an import-layer lint in clippy or a
+  mainstream rust-native layer checker.
+- Dependency-graph cycles between crates: see the line above — cargo fails
+  the build on a crate cycle, so the signal exists; no separate gate is
+  needed and none is claimed.
+
+Refused families, not gaps: coupling/cohesion dashboards and
+Halstead/Maintainability-Index/NPath were reviewed and refused — they are
+not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
+refusal-decisions.md` records the reasons).
+
 ## The init skill
 
 `init-rust-repo/` initializes a new Rust repository with all of this. Install:

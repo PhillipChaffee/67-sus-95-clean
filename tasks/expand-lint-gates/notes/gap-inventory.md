@@ -33,10 +33,14 @@ FIX002 is back ON and a TODO marker fails the build.
 
 ## Rust-only gaps (no tool exists in the clippy/rustc stack)
 
-Cognitive complexity, nesting depth, magic numbers, repeated literals,
-class-size caps, commented-out code, import layers, cycles, SAST, test-style
-lints, TODO gate, assertion-less tests. Partial: allow_attributes_without_reason
-is not among the restriction picks. Coverage is line-only.
+Accepted after ws-03 (same list the rust README's "Accepted gaps" section
+carries): cognitive complexity, nesting-depth caps, magic-number detection,
+repeated literal to constant, class-size caps, commented-out code detection,
+SAST, test-style lints, assertion-less tests (covered by the nightly
+cargo-mutants score floor), import-layer contracts. Cycles between crates
+are already denied by cargo at the package boundary. Partial closed:
+allow_attributes_without_reason is now among the restriction picks, and
+coverage gates on lines, regions, and functions (not line-only).
 
 ## Go-only gaps (linters exist in golangci-lint, not enabled)
 
