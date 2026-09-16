@@ -35,6 +35,22 @@ error out instead of silently misparsing once the version is declared):
   fixture: the clean project runs 0 issues; a seeded violation per family
   fires with output naming the linter and file (cyclop trips on a wide
   switch — a chained nested-if shape trips gocognit first at this floor).
+- Hygiene and security linters, each with its policy in the config:
+  `godox` (TODO and FIXME markers fail the build — the uniform house TODO
+  policy; BUG stays out as a tracker state; remedy: resolve the TODO, there
+  is no ignore mechanism), `nolintlint` (a suppression names its lint and
+  carries an explanation; a stale one fails the run — no bare nolint),
+  `bidichk` (bidi and confusable characters in source fail the build),
+  `gosec` (the default check list, nothing disabled — none needed on the
+  template fixture; disable a check only with a reason in the table),
+  `depguard` (the import-layer contract: shipped code does not import
+  `unsafe`, the guarantee rust's `unsafe_code = "forbid"` carries), and
+  `gomodguard_v2` (blocked modules carry their recommended replacement, so
+  the error names the fix; `gomodguard` itself is deprecated since v2.12.0).
+  Proven both ways on the template fixture: a bare TODO, a bare nolint, a
+  bidi character, a hardcoded credential with a weak hash, an `unsafe`
+  import, and a blocked module import each fire with output naming the
+  linter and file.
 - `issues.max-issues-per-linter: 0` and `max-same-issues: 0`: the report is
   never capped or deduplicated — a gate that stops listing after 50 findings
   lies about the state of the tree.
