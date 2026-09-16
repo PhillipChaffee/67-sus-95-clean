@@ -6,7 +6,7 @@
 [default.extend-identifiers]
 # ruff's copyright rule family, not the word "copy"
 CPY001 = "CPY001"
-# the seeded-misspelling proof quotes in the four folder READMEs quote the
+# the seeded-misspelling proof quotes in the folder READMEs quote the
 # finding the typos gate caught, they do not make one
 recieve = "recieve"
 calender = "calender"

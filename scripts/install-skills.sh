@@ -8,7 +8,7 @@ dest="${HOME}/.agents/skills"
 mkdir -p "$dest"
 force=""
 [[ "${1:-}" == "--force" ]] && force="--force"
-for skill_dir in rust/init-rust-repo python/init-python-repo typescript/init-typescript-repo go/init-go-repo add-language; do
+for skill_dir in rust/init-rust-repo python/init-python-repo typescript/init-typescript-repo go/init-go-repo shell/init-shell-repo add-language; do
 	name="$(basename "$skill_dir")"
 	if [[ -e "$dest/$name" && -z "$force" ]]; then
 		echo "SKIP $name (exists; re-run with --force to replace)"

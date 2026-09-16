@@ -79,6 +79,19 @@ typescript/package.json			typescript/init-typescript-repo/templates/package.json
 typescript/.prettierignore			typescript/init-typescript-repo/templates/.prettierignore
 go/.golangci.yml			go/init-go-repo/templates/.golangci.yml
 go/coverage-gate.sh			go/init-go-repo/templates/coverage-gate.sh
+shell/ci.yml			shell/init-shell-repo/templates/ci.yml
+shell/run-gates.sh			shell/init-shell-repo/templates/run-gates.sh
+shell/coverage-gate.sh			shell/init-shell-repo/templates/coverage-gate.sh
+shell/.shellcheckrc			shell/init-shell-repo/templates/.shellcheckrc
+shell/.editorconfig			shell/init-shell-repo/templates/.editorconfig
+shell/test/run_tests.sh			shell/init-shell-repo/templates/test/run_tests.sh
+shell/src/greeter.sh			shell/init-shell-repo/templates/src/greeter.sh
+shell/.typos.toml			shell/init-shell-repo/templates/.typos.toml
+.markdownlint-cli2.jsonc			shell/init-shell-repo/templates/.markdownlint-cli2.jsonc
+lychee.toml			shell/init-shell-repo/templates/lychee.toml
+.gitleaks.toml			shell/init-shell-repo/templates/.gitleaks.toml
+.jscpd.json			shell/init-shell-repo/templates/.jscpd.json
+.yamllint.yaml			shell/init-shell-repo/templates/.yamllint.yaml
 PAIRINGS
 )
 
@@ -87,7 +100,10 @@ PAIRINGS
 # the root dogfood workflow (jscpd ignores those globs and no pairing rows
 # cross folders, so nothing else catches one folder's pin bumping while the
 # other three lag). Per-folder extras (python's pip tools, rust's cargo-deny)
-# are filtered before comparing.
+# are filtered before comparing. shell/ is deliberately outside this check:
+# its ci.yml drops the osv-scanner advisories and license gates (shell
+# carries no lockfile manifest), so its install block and license list
+# differ from the shared fingerprint by design.
 fingerprint() {
 	# Per-folder extras are filtered before comparing: python's pip tools
 	# (installed from the hash-pinned lock), rust's cargo-deny and cargo-shear
@@ -114,7 +130,9 @@ done
 
 # Runner drift: the shared hygiene gate entries (same names, same commands)
 # must match across the four folder run-gates.sh files; per-language entries
-# are filtered out by name.
+# are filtered out by name. shell/ is outside this check for the same
+# manifest-less reason: its runner has no advisories or license-check
+# entries to fingerprint.
 runner_fingerprint() {
 	grep -E '^add "(spell-check|markdown-lint|link-check|secret-scan|duplication|advisories|license-check|shell-lint|shell-format|workflow-yaml-lint|workflow-lint)" ' "$1" |
 		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'

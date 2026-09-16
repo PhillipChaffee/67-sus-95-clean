@@ -67,8 +67,7 @@ Ship them verbatim in the new repo's AGENTS.md (the template carries them).
 Policy, enforced: a TODO or FIXME marker in Rust source fails the build —
 the uniform house TODO policy (python fails the marker through FIX002,
 TypeScript through no-warning-comments, go through godox). The rust half is
-a grep step — `git grep -nE "TODO|FIXME" --untracked -- '*.rs' || test
-$? -eq 1` — so any marker in tracked or new-but-untracked `*.rs` files
+a grep step — a fail-closed grep (captured exit code: matches and errors fail, only "no matches" passes): `git grep --untracked --no-recurse-submodules -nE "TODO|FIXME" -- '*.rs' || rc=$?; test "$rc" -eq 1` — so any marker in tracked or new-but-untracked `*.rs` files
 fails CI, and a scanner failure (corrupt index, bad pathspec) also fails
 the step instead of inverting to a green build; there is no ignore mechanism — the remedy is to resolve the TODO, not to suppress
 the gate.
