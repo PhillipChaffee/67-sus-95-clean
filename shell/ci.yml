@@ -142,6 +142,7 @@ jobs:
       - name: TODO policy (no TODO/FIXME markers in shell source)
         run: "rc=0; git grep --untracked --no-recurse-submodules -nE 'TODO|FIXME' -- '*.sh' || rc=$?; test \"$rc\" -eq 1"
       - name: Workflow YAML lint (yamllint v1.38.0)
-        run: yamllint ./.github/workflows/*.yml ./*/ci.yml
+        # Initialized-repo layout: every workflow lives in .github/workflows/.
+        run: yamllint ./.github/workflows/*.yml
       - name: Workflow lint (actionlint v1.7.12)
-        run: actionlint ./.github/workflows/*.yml ./*/ci.yml
+        run: actionlint ./.github/workflows/*.yml

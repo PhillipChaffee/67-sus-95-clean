@@ -136,7 +136,7 @@ jobs:
       # all invisible to a reviewer, all useful for spoofing identifiers.
       # Ordinary non-ASCII text (accented words, emoji) passes.
       - name: Bidi and invisible-character hygiene (grep)
-        run: "! grep -rPn \"[\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}\\x{200B}-\\x{200F}\\x{2060}-\\x{2064}\\x{FEFF}\\x{00AD}\\x{180E}]\" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.json' --include='*.md' --exclude-dir=node_modules --exclude-dir=coverage --exclude-dir=.git --exclude-dir=stryker-tmp --exclude-dir=mutants ."
+        run: "rc=0; grep -rPn \"[\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}\\x{200B}-\\x{200F}\\x{2060}-\\x{2064}\\x{FEFF}\\x{00AD}\\x{180E}]\" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.json' --include='*.md' --exclude-dir=node_modules --exclude-dir=coverage --exclude-dir=.git --exclude-dir=stryker-tmp --exclude-dir=mutants . || rc=$?; test \"$rc\" -eq 1"
       - name: Copy-paste detection (jscpd v5.2.0)
         run: jscpd
       - name: Dependency advisories (osv-scanner v2.5.1)

@@ -149,6 +149,7 @@ jobs:
       - name: Shell format (shfmt v3.14.0)
         run: for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
       - name: Workflow YAML lint (yamllint v1.38.0)
-        run: yamllint ./.github/workflows/*.yml ./*/ci.yml
+        # Initialized-repo layout: every workflow lives in .github/workflows/.
+        run: yamllint ./.github/workflows/*.yml
       - name: Workflow lint (actionlint v1.7.12)
-        run: actionlint ./.github/workflows/*.yml ./*/ci.yml
+        run: actionlint ./.github/workflows/*.yml
