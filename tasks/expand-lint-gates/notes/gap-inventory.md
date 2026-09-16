@@ -44,10 +44,17 @@ coverage gates on lines, regions, and functions (not line-only).
 
 ## Go-only gaps (linters exist in golangci-lint, not enabled)
 
-cyclop, gocognit, funlen, nestif, mnd, goconst, interfacebloat, godox,
-nolintlint, bidichk, gosec, depguard, gomodguard, thelper, testifylint,
-tparallel. No commented-out-code checker fires today. Coverage is maxed at
-statements (toolchain limit).
+Accepted after ws-04 (same list the go README's "Accepted gaps" section
+carries): commented-out-code detection (the gocritic commentedOutCode
+checker exists but is experimental-tagged, which the config deliberately
+leaves off), assertion-less tests, mutation testing (two tools with recent
+activity — gremlins, avito-tech/go-mutesting — but neither with proven
+score-floor gate semantics). All sixteen linters from the audit's list are
+now enabled: the structural, hygiene/security, and test-style batches land
+in .golangci.yml, plus go mod tidy -diff as the go-native unused-dependency
+gate. The x/tools deadcode command was refused (reporter exit 0 on
+findings; see ws-04-go/notes/decision-deadcode.md). Coverage remains
+statements-only (toolchain limit).
 
 ## TypeScript-only gaps (rules and plugins exist, not enabled)
 

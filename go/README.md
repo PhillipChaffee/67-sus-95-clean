@@ -356,6 +356,31 @@ go test ./...                                                           # tests
   gate in this stack catches. What changes the answer: a deadcode exit-code
   mode in x/tools.
 
+### Accepted gaps — signals no gate in this stack can catch
+
+Stated as current facts, not a plan: nothing below is enforced today, and
+each entry names what changes the answer.
+
+- Commented-out code. gocritic has a `commentedOutCode` checker today, but
+  it carries the `experimental` tag — the same false-positive budget reason
+  the config leaves the experimental tag off, so the checker does not ride
+  the enabled `style`/`performance` tags. What changes the answer: the
+  checker graduating out of experimental.
+- Assertion-less tests. Nothing static here detects a test whose body runs
+  no assertion — it passes vacuously. The coverage gate sees reached
+  statements, not assertions. What changes the answer: mutation testing.
+- Mutation testing. Two go tools exist with recent activity (gremlins, last
+  release May 2024; avito-tech/go-mutesting, commits through 2025), but
+  neither ships a proven mutation-score floor that is a binary gate the way
+  mutmut and cargo-mutants are for python and rust, and adopting one here
+  without the gate-contract proofs would be the half state those workstreams
+  refused. What changes the answer: one of these tools reaching a stable
+  pin with score-floor semantics.
+- Refused families, not gaps: coupling/cohesion dashboards and
+  Halstead/Maintainability-Index/NPath were reviewed and refused — they are
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
+  refusal-decisions.md` records the reasons).
+
 ## The init skill
 
 `init-go-repo/` initializes a new Go repository with all of this. Install:
