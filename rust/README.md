@@ -95,6 +95,45 @@ with one untested function exits 1 under the three-axis gate at
 86.36%/75.00%/86.36% — the gate fails the build under 95% (that is its
 acceptance test).
 
+### Tests — mutation testing (cargo-mutants, scheduled nightly)
+
+`cargo-mutants` mutates the workspace source (operators, literals, arm
+bodies) and runs the test suite against each mutant: a mutant the tests do
+not catch is behavior the suite never pinned down (v27.1.0, pinned in
+mutation.yml — the scheduled workflow, not the PR path). The results file
+`mutants.out/outcomes.json` carries the totals the floor reads; it is
+disposable tool output, like `target/`.
+
+The score floor is 85, checked from the results file: `cargo mutants`
+exits nonzero whenever ANY mutant survives (its zero-missed CI mode), and
+the template fixture provably carries equivalent mutants — `clamp` returns
+the bound itself at the boundary, so mutating `value < low` to
+`value <= low` cannot change behavior. A zero-missed gate is unmeetable
+without restructuring the code, so the floor sits under the
+equivalent-mutant headroom instead: any genuinely untested code drops the
+score below it.
+
+```bash
+cargo mutants
+python3 -c "import json, sys; s = json.load(open('mutants.out/outcomes.json')); score = 100 * s['caught'] // s['total_mutants']; print('mutation score %d%% (caught %d/%d, floor 85)' % (score, s['caught'], s['total_mutants'])); sys.exit(0 if score >= 85 else 1)"
+```
+
+Floor reason, from the first measured run on the template fixture: 19/21
+caught = 90%, with the two misses the clamp equivalent mutants above. Why
+nightly: a mutant run multiplies the test suite by the mutant count (14s
+for 21 mutants on a three-function fixture; it scales with both), so it
+cannot sit between a commit and a merge. `run-gates.sh` and the PR `ci.yml`
+deliberately exclude it. Trade-off accepted: a surviving mutant waits up to
+a day for the nightly run to flag it. Remedy: add a test that kills the
+mutant. Measured wall time: 14s clean, 18s seeded. THE GATE IS TESTED: the
+clean fixture scores 90% and the floor step exits 0; a seeded function with
+no test drops the score below the floor and the floor step exits 1:
+
+```text
+mutation score 90% (caught 19/21, floor 85)     # clean, exit 0
+mutation score 73% (caught 19/26, floor 85)     # seeded, exit 1
+```
+
 ### Hygiene — spell check (typos)
 
 `typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
