@@ -22,16 +22,17 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: "3.12"  # the requires-python floor: every gate below must hold on it
           cache: pip
       # The exact pins the README commands assume; a bumped pin re-runs the
       # local gates and lands in the same commit as the version strings here.
+      # Every tool the gates use installs from the hash-pinned lockfile, so
+      # transitive dependencies resolve by hash too — no live PyPI resolution.
       - run: >-
-          python -m pip install "ruff==0.16.6" "mypy==2.3.1"
-          "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0"
+          python -m pip install --require-hashes -r requirements-lock.txt
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy .
@@ -47,15 +48,19 @@ jobs:
       - name: Upload coverage to Coveralls
         if: always()
         continue-on-error: true
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329  # v2
         with:
           file: coverage.xml
           format: cobertura
 
   hygiene:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # bounds a hung network gate; GitHub's default is 360
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0
       - name: Install pinned hygiene tools
@@ -67,11 +72,17 @@ jobs:
           # upstream (typos, shellcheck, shfmt, markdownlint, cargo-mutants) —
           # the recorded residual risk, reviewed on every pin bump. Every curl
           # is bounded (--connect-timeout/--max-time) so a hung download cannot
-          # stall the job to GitHub's 360-minute default.
+          # stall the job to GitHub's 360-minute default. Registry installs
+          # (npm global) are version-pinned and run with --ignore-scripts
+          # (markdownlint-cli2 and jscpd ship no install scripts); the python
+          # tools (where present) install from the hash-pinned lockfile, so no
+          # transitive dependency resolves live. yamllint is the one explicit
+          # exception: GPL-3.0-or-later, deliberately excluded from the
+          # permissive-only lockfile, installed by exact pin.
           TYPOS_VERSION=1.50.1
           mkdir /tmp/typosx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/crate-ci/typos/releases/download/v${TYPOS_VERSION}/typos-v${TYPOS_VERSION}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp/typosx
           sudo mv /tmp/typosx/typos /usr/local/bin/
-          npm install -g markdownlint-cli2@0.23.2
+          npm install -g --ignore-scripts markdownlint-cli2@0.23.2
           LYCHEE_VERSION=0.24.2
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz.sha256" -o /tmp/lychee.sha256
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/lychee.tar.gz
@@ -84,14 +95,13 @@ jobs:
           echo "$(grep "linux_x64.tar.gz" /tmp/gitleaks.sums | awk '{print $1}')  /tmp/gitleaks.tar.gz" | sha256sum --check --status
           mkdir /tmp/gitleaksx && tar xz -C /tmp/gitleaksx -f /tmp/gitleaks.tar.gz
           sudo mv /tmp/gitleaksx/gitleaks /usr/local/bin/
-          npm install -g jscpd@5.2.0
+          npm install -g --ignore-scripts jscpd@5.2.0
           SHELLCHECK_VERSION=0.11.0
           mkdir /tmp/shellcheckx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar xJ -C /tmp/shellcheckx
           sudo mv /tmp/shellcheckx/shellcheck-v${SHELLCHECK_VERSION}/shellcheck /usr/local/bin/
           SHFMT_VERSION=3.14.0
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" -o /usr/local/bin/shfmt
           sudo chmod +x /usr/local/bin/shfmt
-          python3 -m pip install --quiet yamllint==1.38.0
           ACTIONLINT_VERSION=1.7.12
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -o /tmp/actionlint.tar.gz
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_checksums.txt" -o /tmp/actionlint.sums

@@ -450,6 +450,11 @@ or last edited the cron; scheduled workflows are also auto-disabled after
 about 60 days of repo inactivity. Keep Actions notifications on for that
 account and re-run via `gh workflow run mutation` if the nightly has not
 fired recently.
+Capacity note: the nightly job is capped at 60 minutes — free on public
+repos, and on a private initialized repo it bills against the free
+Actions minutes as the suite grows. When the suite outgrows 60 minutes
+the run dies on the job timeout: that red is a capacity signal, not a
+score-floor failure (the log shows the timeout, not the floor message).
 
 Measured wall time: 0.7s for a full run (17 mutants) on the template
 fixture. THE GATE IS TESTED: the clean fixture exits 0 (score 88% >= 85); a
@@ -500,7 +505,9 @@ the documented decision, not a miss.
   where upstream publishes checksums (lychee, gitleaks, osv-scanner,
   actionlint, cargo-deny) and release-tag-pinned where none is published
   (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
-  recorded in the install block and reviewed on every pin bump.
+  recorded in the install block and reviewed on every pin bump. yamllint is
+  the one registry-install exception: GPL-3.0-or-later, deliberately excluded
+  from the permissive-only python lockfile, installed by exact pin.
 - `select = ["ALL"]` rotates with the pin: a bump may turn on a new family
   that fires loudly. The response is in the ledger, not a reflex delete —
   fix it, or ignore it with a reason; an entry with a dead reason gets

@@ -36,8 +36,9 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
 2. Install the pinned tools into the venv:
    `pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1"
    "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1"
-   "vulture==2.16" "import-linter==2.15" "mutmut==3.8.0"` — the exact pins
-   `ci.yml` and `mutation.yml` re-install.
+   "vulture==2.16" "import-linter==2.15" "mutmut==3.8.0"` — these pins feed
+   `requirements.in`, and `requirements-lock.txt` (which ci.yml and
+   mutation.yml install with --require-hashes) resolves the full tree by hash.
 3. Copy the templates from this skill's `templates/` directory into the
    repository root: `pyproject.toml -> pyproject.toml`,
    `ci.yml -> .github/workflows/ci.yml` (create the directory),
