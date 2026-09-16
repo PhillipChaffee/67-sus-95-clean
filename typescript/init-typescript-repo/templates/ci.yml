@@ -26,6 +26,14 @@ jobs:
       # The 95% coverage gate: vitest fails the run under the thresholds
       # configured in vitest.config.ts (all four axes).
       - run: npm test
+      # knip reports unused dependencies, unused exports, and dead files;
+      # its entry/project config is knip.jsonc.
+      - name: Dependency hygiene (knip v6.35.1)
+        run: npm run knip
+      # The lockfile policy: the official registry over HTTPS, matching
+      # package names, sha512 integrity (reasons in the README).
+      - name: Lockfile policy (lockfile-lint v5.0.1)
+        run: npm run lint:lockfile
       # vitest writes coverage/lcov.info (reportOnFailure keeps it on a red
       # build). Free for public repositories, no account and no secret: the
       # action takes the built-in GITHUB_TOKEN. lcov is Coveralls' native

@@ -282,6 +282,43 @@ advisories exit code: 1
 license exit code: 130
 ```
 
+### Hygiene — dependency hygiene (knip) + lockfile policy (lockfile-lint)
+
+`knip` (6.35.1, pinned in package.json, config in `knip.jsonc`) reports
+unused dependencies, unused exports, and dead files: entry is the module's
+own entry point plus the test files; `project` covers exactly
+`src/**` — a never-imported source file must appear in the report, so
+`src/` is never excluded from its own report (the vitest coverage.include
+lesson). `lockfile-lint` (5.0.1, pinned; CLI flags because the rc-file
+config is not supported at this pin) holds the lockfile policy: every
+package resolves from `registry.npmjs.org` (the official registry — no
+other host is allowlisted), over `https:` (resolved metadata must not
+cross the wire in cleartext), every entry names its own package (a
+mismatched name is a dependency-confusion vector), every integrity hash is
+sha512 (lockfile-lint validates the strongest type), and empty hostnames
+are rejected (`--empty-hostname false` — stricter than the default).
+
+```bash
+npm run knip
+npm run lint:lockfile
+```
+
+Remedy: remove the dead export or file, import the dependency where the
+code uses it, or fix the registry allowlist by policy change — never by
+widening it for one package. Measured wall time: knip 1s, lockfile-lint
+1s on the template fixture. THE GATE IS TESTED: the clean fixture exits 0
+on both; a seeded unused devDependency and a seeded dead export fail knip
+(exit 1), and a lockfile entry resolved from `evil.example.com` fails
+lockfile-lint (exit 1):
+
+```text
+Unused devDependencies (1)
+lodash  package.json:26:6
+Unused exports (1)
+deadExport  function  src/lib.ts:54:17
+✖ Error: security issues detected!
+```
+
 ### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
 
 The repository's own shell scripts and workflow files are linted with the

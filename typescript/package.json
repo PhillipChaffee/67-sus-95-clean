@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "format:check": "prettier --check .",
+    "knip": "knip",
     "lint": "eslint .",
+    "lint:lockfile": "lockfile-lint -p package-lock.json -t npm -a registry.npmjs.org -o \"https:\" -n -i -e false",
     "test": "vitest run --coverage",
-    "format:check": "prettier --check ."
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=22"
@@ -19,6 +21,8 @@
     "eslint": "10.10.0",
     "eslint-plugin-jsdoc": "64.3.8",
     "eslint-plugin-sonarjs": "4.2.1",
+    "knip": "6.35.1",
+    "lockfile-lint": "5.0.1",
     "prettier": "3.9.6",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.0",

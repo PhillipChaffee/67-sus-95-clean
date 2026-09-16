@@ -70,6 +70,7 @@ python/osv-scanner.toml			python/init-python-repo/templates/osv-scanner.toml
 python/mutation.yml			python/init-python-repo/templates/mutation.yml
 typescript/tsconfig.json			typescript/init-typescript-repo/templates/tsconfig.json
 typescript/eslint.config.mjs			typescript/init-typescript-repo/templates/eslint.config.mjs
+typescript/knip.jsonc			typescript/init-typescript-repo/templates/knip.jsonc
 typescript/vitest.config.ts			typescript/init-typescript-repo/templates/vitest.config.ts
 typescript/package.json			typescript/init-typescript-repo/templates/package.json
 typescript/.prettierignore			typescript/init-typescript-repo/templates/.prettierignore
