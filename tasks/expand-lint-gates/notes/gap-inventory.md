@@ -58,9 +58,13 @@ statements-only (toolchain limit).
 
 ## TypeScript-only gaps (rules and plugins exist, not enabled)
 
-eslint core: complexity, max-lines, max-statements, max-lines-per-function,
-max-depth, max-params, no-magic-numbers. eslint-plugin-sonarjs: cognitive
-complexity, no-duplicate-string, commented-out code (make sure that the plugin's rule
-list). @vitest/eslint-plugin: expect-expect and test-style rules. knip: dead
-code, unused deps, unused exports. dependency-cruiser: layers and cycles.
-lockfile-lint. Partial: unused-disable-directive reporting is warn-only.
+Closed after ws-05: all the eslint core caps (complexity, max-lines,
+max-statements, max-lines-per-function, max-depth, max-params,
+no-magic-numbers), sonarjs cognitive complexity / duplicate string /
+commented-out code, the vitest expect-expect and test-style slice, knip
+(dead code, unused deps, unused exports), dependency-cruiser (cycles,
+orphans, entry contract), lockfile-lint, and the bidi grep gate. Unused
+disable-directive reporting is escalated from warn to error. Refused with
+evidence: StrykerJS mutation testing (stryker 10.0.0 + vitest 5.0.0
+verdicts are wrong; see ws-05-typescript/notes/decision-stryker.md) and
+SAST (no maintained TS-native eslint-ecosystem scanner).

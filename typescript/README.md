@@ -462,6 +462,41 @@ after `npm ci`, on node 24 with actions/setup-node@v7.
   team pinning node via Volta adds its own `volta` block — deliberately not
   in the template so the pin belongs to the team using it.
 
+- Node floor is 22 (`engines`), verified on 24: tseslint's supported range
+  is `^18.18.0 || ^20.9.0 || >=21.1.0`, so the floor holds with margin. A
+  team pinning node via Volta adds its own `volta` block — deliberately not
+  in the template so the pin belongs to the team using it.
+
+### Accepted gaps — signals no gate in this stack can catch
+
+Stated as current facts, not a plan: nothing below is enforced today, and
+each entry names what changes the answer.
+
+- Mutation testing. StrykerJS was investigated and refused at this pin:
+  @stryker-mutator/core and the vitest runner (both 10.0.0, the latest
+  releases) against vitest 5.0.0 produce wrong verdicts — a scratch run on
+  the template fixture reports every covered mutant as Survived, including
+  a mutant the passing test provably kills (`return left + right` →
+  `return left - right` with `add(2, 3) === 5` asserted). The upstream
+  issues (stryker-js#6210, #6146, #6213, #6209) are open and the fix
+  (#6214) is unmerged; the scratch-run evidence is recorded in the epic's
+  `ws-05-typescript/notes/decision-stryker.md`. What changes the answer: a
+  stryker release containing that fix, verified against vitest 5.
+- SAST. The eslint ecosystem has no maintained TS-native static security
+  scanner (sonarjs ships correctness rules, not security analysis; the
+  taint-tracking scanners are not eslint rules). What changes the answer:
+  a maintained TS-native SAST gate mainstream enough to pin.
+- Sonar parity beyond the shipped slice: the plugin's three enabled rules
+  map to SonarQube S3776 (cognitive complexity), S1192 (duplicate string),
+  and S125 (commented-out code). The plugin ships more rules than this
+  slice enables; no SonarQube rule is claimed here that the pinned plugin
+  does not actually ship, and the remaining S-rules stay off by the
+  reasoned-slice decision, not by absence.
+- Refused families, not gaps: coupling/cohesion dashboards and
+  Halstead/Maintainability-Index/NPath were reviewed and refused — they are
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
+  refusal-decisions.md` records the reasons).
+
 ## The init skill
 
 `init-typescript-repo/` initializes a new TypeScript repository with all of
