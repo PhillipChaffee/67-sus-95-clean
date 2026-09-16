@@ -330,6 +330,10 @@ go test ./...                                                           # tests
 ./coverage-gate.sh                                                      # coverage gate
 ```
 
+Runner-CI parity: 19 runner entries <-> 19 CI gate steps (8 language gates including the schema check + 11 hygiene steps; the tool installs are not gates). The runner deliberately
+excludes the nightly mutation gate (mutation.yml), so its absence there is
+the documented decision, not a miss.
+
 ## Trade-offs ("strict but staying usable")
 
 - **Statement coverage only.** `go tool cover` counts statements; Go ships

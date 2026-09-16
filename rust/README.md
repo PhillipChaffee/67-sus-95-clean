@@ -384,6 +384,10 @@ cargo fmt --all -- --check                              # format gate
 # ...and CI uploads the lcov.info to Coveralls for the free badge
 ```
 
+Runner-CI parity: 21 runner entries <-> 21 CI gate steps (5 language gates + 16 hygiene gates, cargo-deny's three among them; the Coveralls upload, the doc job's rust-cache step, and the tool installs are not gates). The runner deliberately
+excludes the nightly mutation gate (mutation.yml), so its absence there is
+the documented decision, not a miss.
+
 ## Trade-offs ("strict but staying usable")
 
 - `missing_docs` was found firing ~330 times on a workspace whose docs would

@@ -431,6 +431,10 @@ npm test                 # vitest run --coverage           — the 95% gate, fou
 CI (`.github/workflows/ci.yml`) runs exactly these commands in this order,
 after `npm ci`, on node 24 with actions/setup-node@v7.
 
+Runner-CI parity: 19 runner entries <-> 19 CI gate steps (7 language gates including knip, lockfile-lint, and dependency-cruiser + 12 hygiene steps; the tool installs are not gates). The runner deliberately
+excludes the nightly mutation gate (mutation.yml), so its absence there is
+the documented decision, not a miss.
+
 ## Trade-offs ("strict but staying usable")
 
 - The inconveniencing tsc flags, named: `noUncheckedIndexedAccess` makes

@@ -476,6 +476,10 @@ lint-imports           # import-layer and cycle gate
 mutmut run; mutmut export-cicd-stats; python3 -c "import json, sys; s = json.load(open('mutants/mutmut-cicd-stats.json')); score = 100 * s['killed'] // s['total']; print('mutation score %d%% (killed %d/%d, floor 85)' % (score, s['killed'], s['total'])); sys.exit(0 if score >= 85 else 1)"  # nightly mutation-score gate (mutation.yml), not part of run-gates.sh
 ```
 
+Runner-CI parity: 19 runner entries <-> 19 CI gate steps (4 language gates + 15 hygiene steps; the Coveralls upload and the tool installs are not gates). The runner deliberately
+excludes the nightly mutation gate (mutation.yml), so its absence there is
+the documented decision, not a miss.
+
 ## Trade-offs ("strict but staying usable")
 
 - `select = ["ALL"]` rotates with the pin: a bump may turn on a new family
