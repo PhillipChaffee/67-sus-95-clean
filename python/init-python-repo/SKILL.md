@@ -54,7 +54,7 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    (`lychee.toml`, `.typos.toml`, `.markdownlint-cli2.jsonc`,
    `.gitleaks.toml`, `.jscpd.json`, `.yamllint.yaml`) -> repository root.
    These are byte-copies of the canonical files.
-4. Adapt exactly two placeholders, both spelling the same token so
+4. Adapt the project name and the --cov token — both spell the same token so
    `grep -rn your_package` finds them: `[project] name` and the
    `--cov=<your_package>` token in
    `[tool.pytest.ini_options] addopts`. The package token also appears in

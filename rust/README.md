@@ -67,10 +67,12 @@ Ship them verbatim in the new repo's AGENTS.md (the template carries them).
 Policy, enforced: a TODO or FIXME marker in Rust source fails the build —
 the uniform house TODO policy (python fails the marker through FIX002,
 TypeScript through no-warning-comments, go through godox). The rust half is
-a grep step — `git grep -nE "TODO|FIXME" --untracked -- '*.rs' || test
-$? -eq 1` — so any marker in tracked or new-but-untracked `*.rs` files
-fails CI, and a scanner failure (corrupt index, bad pathspec) also fails
-the step instead of inverting to a green build; there is no ignore mechanism — the remedy is to resolve the TODO, not to suppress
+a grep step — `grep -rnE "TODO|FIXME" --include="*.rs" --exclude-dir=.git
+--exclude-dir=target --exclude-dir=mutants.out . && exit 1 || test $? -eq 1`
+— so any marker in any `*.rs` file (tracked or new-and-untracked) fails CI,
+a scanner failure also fails the step instead of inverting to a green
+build, and the exclusion list covers only version-control and build output;
+there is no ignore mechanism — the remedy is to resolve the TODO, not to suppress
 the gate.
 
 ### Coverage — the gate
@@ -372,8 +374,8 @@ templates.
 ```bash
 for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
 for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
-yamllint ./.github/workflows/*.yml ./*/ci.yml
-actionlint ./.github/workflows/*.yml ./*/ci.yml
+yamllint ./.github/workflows/*.yml $(ls ./*/ci.yml ./*/mutation.yml 2>/dev/null)
+actionlint ./.github/workflows/*.yml $(ls ./*/ci.yml ./*/mutation.yml 2>/dev/null)
 ```
 
 Remedy: fix the script or the workflow; yamllint deviations carry reasons in

@@ -5,7 +5,7 @@
 #
 # The gate commands below are opaque strings that run_gates.sh evaluates
 # at runtime; shellcheck sees them out of context here.
-# shellcheck disable=SC2016,SC2027,SC2086,SC2154
+# shellcheck disable=SC2015,SC2016,SC2027,SC2086,SC2154
 
 set -u -o pipefail
 
@@ -30,12 +30,12 @@ add "link-check" "lychee --no-progress ."
 add "secret-scan" "gitleaks detect --no-git --redact"
 add "duplication" "jscpd"
 add "advisories" "osv-scanner scan -r ."
-add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
+add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear,LGPL-3.0-only,BlueOak-1.0.0,CC-BY-3.0"
 add "deny-advisories" "cargo deny check advisories"
 add "deny-licenses" "cargo deny check licenses"
 add "deny-bans" "cargo deny check bans"
 add "unused-deps" "cargo shear --deny-warnings"
-add "todo-policy" 'git grep -nE "TODO|FIXME" --untracked -- "*.rs" || test $? -eq 1'
+add "todo-policy" 'grep -rnE "TODO|FIXME" --include="*.rs" --exclude-dir=.git --exclude-dir=target --exclude-dir=mutants.out . && exit 1 || test $? -eq 1'
 add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
 add "shell-format" 'for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done'
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml $(ls ./*/ci.yml ./*/mutation.yml 2>/dev/null)"

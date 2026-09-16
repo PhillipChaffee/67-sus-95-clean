@@ -38,7 +38,7 @@ Why refused ("vanity metrics"):
 The refusal is evidence-based, not permanent. If a mainstream linter ships a
 stable rule with consistent semantics and a defensible threshold, re-evaluate
 it through the normal gate bar (precise definition,
-maintained tool, binary gate, proven failure, stated remedy.
+maintained tool, binary gate, proven failure, stated remedy).
 
 Cyclomatic complexity shows the difference: it is a metric too, and it kept
 its place because it has all five.

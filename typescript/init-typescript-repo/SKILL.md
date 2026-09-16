@@ -70,7 +70,7 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    - `npm run format:check`
    - `npm run typecheck`
    - `npm run lint`
-   - `npm test`
+   - `npm test` (the 95% × 4 axes gate: fails under 95% on lines, functions, branches, or statements)
    - `npm run knip` (the dependency-hygiene gate; config in `knip.jsonc`)
    - `npm run lint:lockfile` (the lockfile policy gate)
    - `npm run lint:graph` (the dependency-cruiser layer/cycle gate) (fine under 95% on any of lines / functions / branches /
