@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Runs every PR-blocking gate from this folder's README, in parallel.
 # Keep this gate list in sync with the CI steps in ci.yml. Mutation
+# testing is nightly only, so it is deliberately not here.
+#
 # The gate commands below are opaque strings that run_gates.sh evaluates
 # at runtime; shellcheck sees them out of context here.
 # shellcheck disable=SC2016,SC2027,SC2086,SC2154
-# testing is nightly only, so it is deliberately not here.
 
 # Requires the pinned golangci-lint binary: see the README install
 # command (go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2).

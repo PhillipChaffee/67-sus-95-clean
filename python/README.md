@@ -163,8 +163,10 @@ typos
 ```
 
 Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
-reason (the config carries two: a ruff rule family name and a deliberate
-example of a mistyped tag). Measured wall time: 0.02s on this repo.
+reason (the config carries five, each with its reason: a ruff rule
+family name, the deliberate mistyped-tag example, the seeded-proof quote
+words, and GNU grep's PCRE flag token from the typescript bidi step).
+Measured wall time: 0.02s on this repo.
 THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
 
 ```text

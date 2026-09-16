@@ -7,6 +7,13 @@ four coverage axes) — and the coverage gate was proven to FAIL at 50%
 branches. Pinned tool versions: typescript 6.0.3, eslint 10.10.0 +
 typescript-eslint 8.70.0, eslint-plugin-jsdoc 64.3.8, vitest 5.0.0 +
 @vitest/coverage-v8 5.0.0, prettier 3.9.6 (verified 2026-09, node 24).
+Two dependency notes: `vite` is pinned explicitly in package.json because
+vitest declares it a peer and npm 11.4.x's arborist cannot build the tree
+from that peer chain (`npm install --legacy-peer-deps` then misses it);
+knip ignores it for the same reason (`knip.jsonc`). And
+`eslint-plugin-jsdoc` 64.3.8 declares a node engines range that excludes
+node 24.3.0 at the patch level — npm only warns (EBADENGINE), no gate runs
+`--engine-strict`, and every gate runs green on node 24 anyway.
 
 ## What is enforced
 
@@ -174,8 +181,10 @@ typos
 ```
 
 Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
-reason (the config carries two: a ruff rule family name and a deliberate
-example of a mistyped tag). Measured wall time: 0.02s on this repo.
+reason (the config carries five, each with its reason: a ruff rule
+family name, the deliberate mistyped-tag example, the seeded-proof quote
+words, and GNU grep's PCRE flag token from the typescript bidi step).
+Measured wall time: 0.02s on this repo.
 THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
 
 ```text
