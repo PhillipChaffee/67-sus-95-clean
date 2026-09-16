@@ -53,6 +53,16 @@ typescript-eslint 8.70.0, eslint-plugin-jsdoc 64.3.8, vitest 5.0.0 +
   values by position). Test files get the tests bar (literals are the
   point of a test — mirrors python's PLR2004 carve-out). Proven: a seeded
   `value > 42` fires.
+- Vitest's test-style gates through `@vitest/eslint-plugin` (1.6.27,
+  pinned in package.json; the plugin reads the project's installed vitest
+  version, so the rules track the vitest pin). Scoped to test files — the
+  rules cannot leak into shipped code. The slice, each rule its reason:
+  `expect-expect` makes an assertion-less test a build failure (the
+  assertion-less-test signal the audit targeted), `max-nested-describe`
+  at 3 keeps describe nesting readable, and `no-conditional-expect` keeps
+  assertions out of conditionals where the runner never reaches them.
+  Proven: a seeded assertion-less test and a 4-level describe both fail
+  with the rule name.
 - Stale suppressions fail the build: `linterOptions.reportUnusedDisableDirectives`
   is escalated from eslint's warn default to `error`, so an
   `eslint-disable` whose rule no longer fires is a build failure, not a

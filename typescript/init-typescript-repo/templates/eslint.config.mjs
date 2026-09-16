@@ -17,6 +17,7 @@ import jsdoc from "eslint-plugin-jsdoc";
 import sonarjs from "eslint-plugin-sonarjs";
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
+import vitest from "@vitest/eslint-plugin";
 
 export default defineConfig(
   // Build output and coverage reports hold generated code; no lint, no coverage
@@ -181,6 +182,25 @@ export default defineConfig(
     files: ["**/*.{test,spec}.{ts,tsx,cts,mts}"],
     rules: {
       "no-magic-numbers": "off",
+    },
+  },
+  {
+    // Vitest's test-style gates, scoped to test files (the plugin's rules
+    // only make sense there per its docs, so nothing leaks into shipped
+    // code). @vitest/eslint-plugin 1.6.27 is pinned in package.json and
+    // reads the project's installed vitest version, so the rules track the
+    // vitest pin rather than the plugin's own assumption. A focused slice,
+    // each rule its reason: expect-expect makes an assertion-less test a
+    // build failure (the assertion-less-test signal the audit targeted);
+    // max-nested-describe at 3 keeps describe nesting readable; and
+    // no-conditional-expect keeps assertions out of conditionals, where the
+    // runner never reaches them.
+    files: ["**/*.{test,spec}.{ts,tsx,cts,mts}"],
+    plugins: { vitest },
+    rules: {
+      "vitest/expect-expect": "error",
+      "vitest/max-nested-describe": ["error", { max: 3 }],
+      "vitest/no-conditional-expect": "error",
     },
   },
 );
