@@ -444,6 +444,13 @@ score visible every night without blocking merges. `run-gates.sh` and the
 PR `ci.yml` deliberately exclude it. Trade-off accepted: a mutant that
 survives up to a day before the nightly run flags it.
 
+Visibility note: the nightly run's only failure signal is GitHub's
+scheduled-run notification, which goes to the single account that created
+or last edited the cron; scheduled workflows are also auto-disabled after
+about 60 days of repo inactivity. Keep Actions notifications on for that
+account and re-run via `gh workflow run mutation` if the nightly has not
+fired recently.
+
 Measured wall time: 0.7s for a full run (17 mutants) on the template
 fixture. THE GATE IS TESTED: the clean fixture exits 0 (score 88% >= 85); a
 seeded function with no test drops the score below the floor and the floor
@@ -489,6 +496,11 @@ the documented decision, not a miss.
 
 ## Trade-offs ("strict but staying usable")
 
+- CI tool installs: the pinned prebuilt binaries are checksum-verified
+  where upstream publishes checksums (lychee, gitleaks, osv-scanner,
+  actionlint, cargo-deny) and release-tag-pinned where none is published
+  (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
+  recorded in the install block and reviewed on every pin bump.
 - `select = ["ALL"]` rotates with the pin: a bump may turn on a new family
   that fires loudly. The response is in the ledger, not a reflex delete —
   fix it, or ignore it with a reason; an entry with a dead reason gets
@@ -541,8 +553,7 @@ each entry names what changes the answer.
   mutation-score floor (see the mutation-testing section).
 - Refused families, not gaps: coupling/cohesion dashboards and
   Halstead/Maintainability-Index/NPath were reviewed and refused — they are
-  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
-  refusal-decisions.md` records the reasons).
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/refusal-decisions.md` records the reasons).
 
 ## The init skill
 

@@ -25,6 +25,8 @@ record the work.
 
 # Preconditions
 
+One repository, one language: the init skills all write `.github/workflows/ci.yml` (and `mutation.yml` where shipped), so initializing two languages into one repo silently overwrites the first folder's workflows.
+
 - Node 22 or newer (`node --version`; the engines floor in the template) and
   a working `npm` with network access to the registry.
 - You know the target directory and the package name (kebab-case).
@@ -68,7 +70,10 @@ record the work.
    - `npm run format:check`
    - `npm run typecheck`
    - `npm run lint`
-   - `npm test` (fine under 95% on any of lines / functions / branches /
+   - `npm test`
+   - `npm run knip` (the dependency-hygiene gate; config in `knip.jsonc`)
+   - `npm run lint:lockfile` (the lockfile policy gate)
+   - `npm run lint:graph` (the dependency-cruiser layer/cycle gate) (fine under 95% on any of lines / functions / branches /
      statements)
    `jsdoc/require-description` means an undocumented exported function
    FAILS the build; write the doc — never delete the rule to pass the
@@ -85,7 +90,7 @@ record the work.
 
 # Gates
 
-- After step 7, ALL four commands run green (or a documented, pre-existing
+- After step 7, ALL seven commands run green (or a documented, pre-existing
   decision explains any red), and `npm test` exits 0 at 100% on the
   skeleton.
 - `scripts/verify-sync.sh` in this reference repo still passes: templates

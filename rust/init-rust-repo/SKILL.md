@@ -21,6 +21,8 @@ assume that reasoning and only record the work.
 
 # Preconditions
 
+One repository, one language: the init skills all write `.github/workflows/ci.yml` (and `mutation.yml` where shipped), so initializing two languages into one repo silently overwrites the first folder's workflows.
+
 - A `cargo`-capable Rust installation (rustup honored by `rust-toolchain.toml`
   applies automatically).
 - You know the target directory and the package (or workspace) name.
@@ -50,6 +52,14 @@ assume that reasoning and only record the work.
    last rule's domain mention to the project's).
 4. `rustup component add llvm-tools-preview` (first coverage run needs it;
    rust-toolchain.toml also requests it).
+   - `cargo deny check advisories`
+   - `cargo deny check licenses`
+   - `cargo deny check bans` (the three supply-chain policy checks over the
+      copied `deny.toml`; a failed checksum or stale advisory database fails
+      here)
+   - `cargo shear --deny-warnings`
+   - `! git grep -nE "TODO|FIXME" --untracked -- "*.rs"` (the TODO policy
+      grep)
 5. Run every gate and make each one pass or fail for a known, acceptable
    reason:
    - `cargo fmt --all -- --check`
@@ -74,7 +84,7 @@ assume that reasoning and only record the work.
 
 # Gates
 
-- After step 5, ALL five commands run green (or a documented, pre-existing
+- After step 5, ALL ten commands run green (or a documented, pre-existing
   decision explains any red).
 - `scripts/verify-sync.sh` in this reference repo still passes: templates
   must be edits of the canonical files, not independent forks.

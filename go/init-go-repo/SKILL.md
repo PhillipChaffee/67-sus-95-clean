@@ -22,6 +22,8 @@ record the work.
 
 # Preconditions
 
+One repository, one language: the init skills all write `.github/workflows/ci.yml` (and `mutation.yml` where shipped), so initializing two languages into one repo silently overwrites the first folder's workflows.
+
 - A `go` command at 1.21 or newer (the pinned toolchain is then fetched
   automatically under the default `GOTOOLCHAIN=auto`, go.dev/doc/toolchain).
 - You know the target directory and the module name (`go mod init` takes it).

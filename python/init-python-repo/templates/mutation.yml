@@ -3,6 +3,8 @@
 # workflow runs on a cron and fails the scheduled run only when the mutation
 # score drops below the floor. Command, pin, floor, and reason:
 # see the README's mutation-testing section.
+permissions:
+  contents: read  # least privilege: no step in this workflow writes to the repo (GitHub secure-use reference)
 name: mutation
 
 on:
@@ -13,6 +15,10 @@ on:
 jobs:
   mutation:
     runs-on: ubuntu-latest
+    timeout-minutes: 60  # bounds a hung network gate; GitHub's default is 360
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

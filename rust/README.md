@@ -129,6 +129,13 @@ mutant. Measured wall time: 14s clean, 18s seeded. THE GATE IS TESTED: the
 clean fixture scores 90% and the floor step exits 0; a seeded function with
 no test drops the score below the floor and the floor step exits 1:
 
+Visibility note: the nightly run's only failure signal is GitHub's
+scheduled-run notification, which goes to the single account that created
+or last edited the cron; scheduled workflows are also auto-disabled after
+about 60 days of repo inactivity. Keep Actions notifications on for that
+account and re-run via `gh workflow run mutation` if the nightly has not
+fired recently.
+
 ```text
 mutation score 90% (caught 19/21, floor 85)     # clean, exit 0
 mutation score 73% (caught 19/26, floor 85)     # seeded, exit 1
@@ -397,6 +404,11 @@ the documented decision, not a miss.
 
 ## Trade-offs ("strict but staying usable")
 
+- CI tool installs: the pinned prebuilt binaries are checksum-verified
+  where upstream publishes checksums (lychee, gitleaks, osv-scanner,
+  actionlint, cargo-deny) and release-tag-pinned where none is published
+  (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
+  recorded in the install block and reviewed on every pin bump.
 - `missing_docs` was found firing ~330 times on a workspace whose docs would
   have been name-restatements; the way out was not an allow but a bar — each
   doc must say what the signature cannot. If you are initializing a repo with
@@ -456,8 +468,7 @@ each entry names what changes the answer.
 
 Refused families, not gaps: coupling/cohesion dashboards and
 Halstead/Maintainability-Index/NPath were reviewed and refused — they are
-not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
-refusal-decisions.md` records the reasons).
+not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/refusal-decisions.md` records the reasons).
 
 ## The init skill
 

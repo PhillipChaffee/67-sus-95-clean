@@ -81,4 +81,30 @@ go/.golangci.yml			go/init-go-repo/templates/.golangci.yml
 go/coverage-gate.sh			go/init-go-repo/templates/coverage-gate.sh
 PAIRINGS
 )
+
+# Cross-folder drift check: the hygiene install blocks and the license
+# allow-list are intentionally shared across the four folder ci.yml files and
+# the root dogfood workflow (jscpd ignores those globs and no pairing rows
+# cross folders, so nothing else catches one folder's pin bumping while the
+# other three lag). Per-folder extras (python's pip tools, rust's cargo-deny)
+# are filtered before comparing.
+fingerprint() {
+	awk '/Install pinned hygiene tools/,/Spell check/' "$1" |
+		grep -vE 'deptry|vulture|import-linter|DENY_VERSION|cargo-deny|deny\.|denyx|pinned versions' |
+		grep -vE '^\s*(#|- name:|- run:|run: \|?)?\s*$' |
+		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
+}
+expected_license='MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear'
+for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml typescript/ci.yml; do
+	fp="$(fingerprint "$f")"
+	if [[ "$fp" != "$(fingerprint .github/workflows/hygiene.yml)" ]]; then
+		echo "CROSS-FOLDER DRIFT: $f install block differs from .github/workflows/hygiene.yml"
+		fail=1
+	fi
+	if ! grep -qF "$expected_license" "$f"; then
+		echo "CROSS-FOLDER DRIFT: $f does not carry the shared 14-license allow-list"
+		fail=1
+	fi
+done
+
 exit $fail
