@@ -1,0 +1,34 @@
+# Nightly mutation testing: a mutant run multiplies the test suite by the
+# mutant count, so it stays off the PR path — this workflow runs on a cron
+# and fails the scheduled run only when the mutation score drops below the
+# floor. Command, pin, floor, and reason: see the README's mutation-testing
+# section.
+name: mutation
+
+on:
+  schedule:
+    - cron: "23 4 * * *"  # nightly, off the hour so it does not race the shared-runner rush
+  workflow_dispatch:  # manual trigger to verify the gate without waiting for the schedule
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # rustup reads rust-toolchain.toml (pinned channel) on the first
+      # cargo call; no toolchain step needed.
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-mutants v27.1.0
+        run: |
+          mkdir /tmp/mutx && curl -sSfL "https://github.com/sourcefrog/cargo-mutants/releases/download/v27.1.0/cargo-mutants-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C /tmp/mutx
+          sudo mv /tmp/mutx/cargo-mutants /usr/local/bin/
+      # The run's own exit code is its zero-missed CI mode: it fails on ANY
+      # surviving mutant, and the template fixture provably carries
+      # equivalent mutants (clamp's boundary comparisons return the same
+      # bound either way) that no test can kill. The floor step below is the
+      # gate; a crashed run leaves no outcomes.json and fails there too.
+      - run: cargo mutants
+        continue-on-error: true
+      - name: Mutation score floor (85, reason in the README)
+        run: |
+          python3 -c "import json, sys; s = json.load(open('mutants.out/outcomes.json')); score = 100 * s['caught'] // s['total_mutants']; print('mutation score %d%% (caught %d/%d, floor 85)' % (score, s['caught'], s['total_mutants'])); sys.exit(0 if score >= 85 else 1)"

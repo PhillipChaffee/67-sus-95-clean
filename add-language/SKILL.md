@@ -47,6 +47,11 @@ never from blog lore:
    or the command-line idiom that reproduces one, and whether branch coverage
    exists (record the answer either way).
 5. The formatter and its check-mode flag, and the pinned-toolchain mechanism.
+6. The hygiene and supply-chain families the ecosystem supports: spell
+   check, secret scanning, dependency advisories, license compliance, unused
+   dependencies, import-layer contracts, markdown and link hygiene, and
+   artifact linting. For each family, record the maintained tool, or record
+   that none exists.
 
 Every claim you author into the folder must trace to a URL you fetched. If you
 cannot verify a key, mark it UNVERIFIED in the README rather than guessing.
@@ -64,9 +69,17 @@ lowercase):
 - Canonical config files at the folder root — real, complete, syntactically
   valid; each non-default choice carries its reason in an adjacent comment or
   the README.
-- `.github/workflows/ci.yml` — the gates running exactly the README commands
-  (lint with warnings fatal where the toolchain supports deny, type check,
-  format check, tests, and the coverage gate that fails under 95).
+- `ci.yml` at the folder root (the init skill installs it into
+  `.github/workflows/` of the new repository) — the gates running exactly
+  the README commands (lint with warnings fatal where the toolchain supports
+  deny, type check, format check, tests, and the coverage gate that fails
+  under 95).
+- `run-gates.sh` — the local runner for every gate in the folder: all
+  PR-blocking gates in parallel, one pass or fail line per gate, and a gate
+  list that matches the CI steps.
+- Hygiene and supply-chain configs for every family that has a maintained
+  tool, and an accepted-gaps note in the README for every family that does
+  not.
 - `init-<slug>-repo/` — an installable skill for initializing a new
   repository in this language: `SKILL.md` with the standard frontmatter rules
   (`name` = the folder name, lowercase-and-hyphens; `description` third person,

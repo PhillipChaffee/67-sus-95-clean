@@ -41,8 +41,128 @@ linters:
     # golint's replacement: the exported rule enforces the doc-comment bar
     # and with enable-default-rules every default check stays on.
     - revive
+    # Cyclomatic complexity above 10 is the classic McCabe reference point
+    # (Sonar uses the same default); the fix is mechanical: extract a
+    # function.
+    - cyclop
+    # Cognitive complexity over 30 per function is the gocognit README's
+    # cited issue threshold; it counts nesting and breaks, so a flat
+    # 10-branch switch does not trip it the way cyclop does.
+    - gocognit
+    # Function length caps at funlen's documented defaults (60 lines, 40
+    # statements): a function that does not fit a screen is two functions
+    # wearing a trench coat.
+    - funlen
+    # Nested if depth (nestif) above 5 is where extraction stops being
+    # optional: the nestif default is the documented strict floor.
+    - nestif
+    # Unnamed literals in logic (the eslint no-magic-numbers signal) with
+    # the mnd default checks: argument, case, condition, operation, return.
+    # usestdlibvars covers the http-context literals; mnd covers the rest.
+    - mnd
+    # A string written three or more times should be a constant (goconst
+    # documented default min-occurrences = 3).
+    - goconst
+    # An interface with more than 10 methods is a god interface
+    # (interfacebloat's documented default).
+    - interfacebloat
+    # TODO/BUG/FIXME markers fail the build (the uniform house TODO policy;
+    # python fails the marker through FIX002, rust greps the tree,
+    # TypeScript through no-warning-comments). The keywords are restricted
+    # to TODO and FIXME to match the house policy: BUG is a tracker state,
+    # not a source marker.
+    - godox
+    # A suppression without a why is the bug: nolintlint requires an
+    # explanation and a specific lint name, and an nolint that no longer
+    # suppresses anything fails the run (allow-unused defaults to false).
+    - nolintlint
+    # Trojan-Source hygiene: bidi and other confusable characters in Go
+    # source fail the build (bidichk's default check list).
+    - bidichk
+    # gosec's default check list stays on. Nothing is disabled by default:
+    # a check that fights a legitimate template pattern gets a reasoned
+    # disable here, never a blanket allow of the linter.
+    - gosec
+    # The import-layer contract for the template layout: shipped code does
+    # not import unsafe, the same guarantee rust's unsafe_code = forbid
+    # carries on the other side of the baseline.
+    - depguard
+    # The go half of dependency bans: blocked modules carry their
+    # recommended replacement, so the error names the fix. gomodguard was
+    # deprecated in favor of its second major version (v2.12.0), which is
+    # the shape pinned here.
+    - gomodguard_v2
+    # A test helper that takes *testing.T must call t.Helper() first, or
+    # failure traces point at the helper instead of the caller.
+    - thelper
+    # Canonical testify assertion style, all checkers on: the linter knows
+    # which assertion shape the testify authors intended for each compare.
+    - testifylint
+    # A parallel subtest under a serial parent silently serializes;
+    # tparallel fires when the parallelism promise is broken.
+    - tparallel
 
   settings:
+    cyclop:
+      # 10 is the McCabe reference threshold (Sonar's default as well).
+      max-complexity: 10
+    gocognit:
+      # 30 is the gocognit README's cited issue threshold: strict but
+      # leaves room for flat, high-branch switch tables.
+      min-complexity: 30
+    funlen:
+      # funlen's documented defaults; the cap is the screen, the reason is
+      # readability, and both axes exist because generated-tables code can
+      # be long and flat (lines) or short and dense (statements).
+      lines: 60
+      statements: 40
+    nestif:
+      # 5 is nestif's documented default: deeper than that, extraction is
+      # the remedy.
+      min-complexity: 5
+    mnd:
+      # The default checks (argument, case, condition, operation, return)
+      # stay on; no ignored numbers, files, or functions are whitelisted,
+      # so every unnamed literal in logic must be named.
+      ignored-numbers: []
+    goconst:
+      # 3 is goconst's documented default: twice is coincidence, three
+      # times is a constant.
+      min-occurrences: 3
+    interfacebloat:
+      # 10 is interfacebloat's documented default.
+      max: 10
+    godox:
+      # The uniform house policy markers; BUG stays out (a tracker state).
+      keywords:
+        - TODO
+        - FIXME
+    nolintlint:
+      # A bare nolint tells the reviewer nothing: the suppression names the
+      # lint and carries an explanation, and a stale one fails the run.
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+    gosec:
+      # The default check list runs unmodified. Disable a check only with a
+      # reason in this table; none were needed on the template fixture.
+      excludes: []
+    depguard:
+      rules:
+        shipped-code:
+          deny:
+            - pkg: unsafe
+              desc: "unsafe escapes the memory guarantees the baseline forbids elsewhere; do not import it in shipped code"
+    gomodguard_v2:
+      blocked:
+        - module: github.com/pkg/errors
+          recommendations:
+            - errors
+            - fmt
+          reason: "the stdlib error wrapping with %w (Go 1.13+) replaced it; pkg/errors is in maintenance mode"
+    testifylint:
+      # All checkers on: any disabled checker carries its reason here.
+      enable-all: true
     gocritic:
       # style + performance are the whole stable-ish families. experimental
       # and opinionated are left off deliberately: they churn between

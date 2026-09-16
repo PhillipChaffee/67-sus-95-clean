@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/knip/schema.json",
+  // entry: the module's own entry point plus the test files that consume
+  // it. knip's vitest plugin auto-detects vitest.config.ts, so it needs no
+  // entry line here; node_modules and coverage stay out through knip's
+  // built-in ignoreDefaults, not through excludes carved here.
+  "entry": ["src/index.ts", "src/**/*.test.ts"],
+  // project covers exactly the shipped tree: a never-imported source file
+  // must appear in the report, so src/ is never excluded from its own
+  // report (the vitest coverage.include lesson).
+  "project": ["src/**/*.ts"],
+  // vite is vitest's peer dependency and is pinned explicitly in
+  // package.json because npm 11.4.x cannot build the install tree from the
+  // vitest peer chain (arborist bug) — the documented install path adds it
+  // directly, and knip cannot see it imported.
+  "ignoreDependencies": ["vite"],
+}

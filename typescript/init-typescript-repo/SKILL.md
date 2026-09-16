@@ -39,7 +39,13 @@ record the work.
    `vitest.config.ts -> vitest.config.ts`,
    `package.json -> package.json`,
    `.prettierignore -> .prettierignore`,
-   `ci.yml -> .github/workflows/ci.yml`.
+   `ci.yml -> .github/workflows/ci.yml`,
+   `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
+   `knip.jsonc -> knip.jsonc`,
+   `.dependency-cruiser.cjs -> .dependency-cruiser.cjs`, `lychee.toml ->
+   lychee.toml`, and the shared hygiene copies (`.typos.toml`,
+   `.markdownlint-cli2.jsonc`, `.gitleaks.toml`, `.jscpd.json`,
+   `.yamllint.yaml`) -> repository root.
 3. Substitute exactly one marked value: package.json's
    `"name": "rename-this-package"` becomes the project's own kebab-case
    name. Keep the devDependency pins verbatim — they are exact versions
@@ -83,8 +89,6 @@ record the work.
   decision explains any red), and `npm test` exits 0 at 100% on the
   skeleton.
 - `scripts/verify-sync.sh` in this reference repo still passes: templates
-  must be edits of the canonical files, not independent forks. (One
-  template, `.prettierignore`, is not yet paired in that script; treat the
-  canonical file as its source of truth until the pairing lands.)
+  must be edits of the canonical files, not independent forks.
 - If `npm install` cannot fetch dependencies or vitest cannot run, STOP and
   report the tooling failure; do not proceed with the gate quietly missing.

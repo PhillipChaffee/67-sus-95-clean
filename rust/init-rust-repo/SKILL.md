@@ -35,7 +35,12 @@ assume that reasoning and only record the work.
    Cargo.toml), `clippy.toml -> clippy.toml`,
    `rust-toolchain.toml -> rust-toolchain.toml`,
    `rustfmt.toml -> rustfmt.toml`, `ci.yml -> .github/workflows/ci.yml`,
-   `AGENTS.md.example -> AGENTS.md`.
+   `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
+   `mutation.yml -> .github/workflows/mutation.yml`,
+   `deny.toml -> deny.toml`, `lychee.toml -> lychee.toml`,
+   `AGENTS.md.example -> AGENTS.md`, and the shared hygiene copies
+   (`.typos.toml`, `.markdownlint-cli2.jsonc`, `.gitleaks.toml`,
+   `.jscpd.json`, `.yamllint.yaml`) -> repository root, all byte-identical.
    Use the contents of `Cargo.toml.example` to merge its `[workspace.lints]`
    table into the new `Cargo.toml` (do not overwrite the generated `[package]`
    block; keep the `[lints] workspace = true` wiring from the example), and

@@ -1,0 +1,6 @@
+# Link-check configuration. Retry then fail: a timeout must not pass
+# silently. Add exclusions here with a reason (none are needed today; the
+# OWNER/REPO coveralls placeholders resolve in CI contexts that lychee
+# accepts).
+max_retries = 2
+timeout = 20

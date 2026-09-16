@@ -7,6 +7,13 @@ four coverage axes) — and the coverage gate was proven to FAIL at 50%
 branches. Pinned tool versions: typescript 6.0.3, eslint 10.10.0 +
 typescript-eslint 8.70.0, eslint-plugin-jsdoc 64.3.8, vitest 5.0.0 +
 @vitest/coverage-v8 5.0.0, prettier 3.9.6 (verified 2026-09, node 24).
+Two dependency notes: `vite` is pinned explicitly in package.json because
+vitest declares it a peer and npm 11.4.x's arborist cannot build the tree
+from that peer chain (`npm install --legacy-peer-deps` then misses it);
+knip ignores it for the same reason (`knip.jsonc`). And
+`eslint-plugin-jsdoc` 64.3.8 declares a node engines range that excludes
+node 24.3.0 at the patch level — npm only warns (EBADENGINE), no gate runs
+`--engine-strict`, and every gate runs green on node 24 anyway.
 
 ## What is enforced
 
@@ -24,6 +31,49 @@ typescript-eslint 8.70.0, eslint-plugin-jsdoc 64.3.8, vitest 5.0.0 +
   `@typescript-eslint/no-floating-promises` reject a floating call.
 - A hand-picked strict slice of `eslint-plugin-jsdoc` (see Documentation),
   and eslint core's two comment rules (see Comments).
+- eslint core metric caps, explicit core entries (none is in any
+  typescript-eslint preset), each with its threshold and reason in the
+  config: `complexity` (max 10 — the McCabe reference point, parity with
+  the go folder's cyclop and rust's size family), `max-lines` (300, blank
+  lines and comments excluded — a file that does not fit a screen or two
+  is two modules), `max-statements` (40 — parity with go's funlen
+  statements cap), `max-lines-per-function` (60 with the same exclusions —
+  the readable-screen rule; max-lines bounds the sum, this bounds each
+  part), `max-depth` (4 — past that, extraction stops being optional), and
+  `max-params` (3, the eslint documented default — a 4th positional
+  parameter is an unnamed context object). All six proven both ways on the
+  template fixture: a seeded violation per family fails with the rule name
+  in the output.
+- Sonar's metric gates through `eslint-plugin-sonarjs` (4.2.1, pinned in
+  package.json next to the other pins), explicitly enabled as a slice: the
+  plugin's `recommended` bundle pulls in more surface than this slice
+  needs. `sonarjs/cognitive-complexity` at 15 (Sonar's own documented issue
+  threshold for S3776 — catches the deep shape `complexity` misses),
+  `sonarjs/no-duplicate-string` at 3 (S1192's documented default), and
+  `sonarjs/no-commented-code` (S125 — the plugin ships the rule, so the
+  audit's commented-out-code gap is closed). Proven both ways: a seeded
+  unnamed literal, a triple-repeated literal, and a commented-out block
+  each fail with the rule name.
+- `no-magic-numbers`, the go folder's mnd signal: unnamed literals in
+  logic fail; the allowance list carries a reason per entry (0, 1, -1 are
+  identity values; array indexes and field initializers name their own
+  values by position). Test files get the tests bar (literals are the
+  point of a test — mirrors python's PLR2004 carve-out). Proven: a seeded
+  `value > 42` fires.
+- Vitest's test-style gates through `@vitest/eslint-plugin` (1.6.27,
+  pinned in package.json; the plugin reads the project's installed vitest
+  version, so the rules track the vitest pin). Scoped to test files — the
+  rules cannot leak into shipped code. The slice, each rule its reason:
+  `expect-expect` makes an assertion-less test a build failure (the
+  assertion-less-test signal the audit targeted), `max-nested-describe`
+  at 3 keeps describe nesting readable, and `no-conditional-expect` keeps
+  assertions out of conditionals where the runner never reaches them.
+  Proven: a seeded assertion-less test and a 4-level describe both fail
+  with the rule name.
+- Stale suppressions fail the build: `linterOptions.reportUnusedDisableDirectives`
+  is escalated from eslint's warn default to `error`, so an
+  `eslint-disable` whose rule no longer fires is a build failure, not a
+  suggestion. Proven: a seeded stale directive fails the lint run.
 - Deliberately absent, with reasons: `spaced-comment` is deprecated in
   core (8.53.0, moved to @stylistic) and prettier owns comment whitespace
   in this stack; typescript-eslint's `stylistic` preset is opinion-heavy
@@ -94,7 +144,7 @@ Machine (eslint core comment rules):
 
 ### Coverage — the gate
 
-```
+```json
 "test": "vitest run --coverage"
 ```
 
@@ -117,8 +167,256 @@ THE GATE IS TESTED, both sides:
   Lines 66.66% (4/6)` with one `ERROR: Coverage for ...` line per axis.
 
 No threshold key beyond vitest's documented set is used ("reportOn"
-options do not exist for this purpose; `coverage.reportOnFailure` defaults
-to false and stays unset).
+options do not exist for this purpose). `coverage.reportOnFailure: true`
+is set deliberately: a red build still writes its lcov report, so the
+Coveralls upload shows the real number instead of going badge-less.
+
+### Hygiene — spell check (typos)
+
+`typos` checks every file for misspellings (typos 1.50.1, pinned in ci.yml;
+configuration in the repo-root `.typos.toml`).
+
+```bash
+typos
+```
+
+Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
+reason (the config carries five, each with its reason: a ruff rule
+family name, the deliberate mistyped-tag example, the seeded-proof quote
+words, and GNU grep's PCRE flag token from the typescript bidi step).
+Measured wall time: 0.02s on this repo.
+THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
+
+```text
+error: `recieve` should be `receive`
+  ╭▸ ./proof-seed-typo.md:1:1
+  │
+1 │ recieve the calender
+  ╰╴━━━━━━━
+```
+
+### Hygiene — markdown lint + link check
+
+`markdownlint-cli2` lints every markdown file (v0.23.2; config in the
+repo-root `.markdownlint-cli2.jsonc`) and `lychee` checks every link
+(v0.24.2; config in the repo-root `lychee.toml`, retry then fail).
+
+```bash
+markdownlint-cli2 "**/*.md"
+lychee --no-progress .
+```
+
+Remedy: fix the markdown or the link. The config carries four reasoned
+entries (hand-wrapped prose, skill-doc headings, the centered banner, tab
+indentation inside fenced shell). Measured wall times: markdown 0.3s,
+links 1.0s. THE GATE IS TESTED: a clean tree exits 0; seeded violations
+fail:
+
+```text
+markdownlint-cli2 "**/*.md":1 MD009/no-trailing-spaces Trailing spaces [Expected: 0 or 2; Actual: 3]
+lychee: [ERROR] http://127.0.0.1:9/dead (at 1:1) | Connection refused
+```
+
+### Hygiene — secret scan (gitleaks)
+
+`gitleaks` scans for committed credentials (v8.30.1, default rule set;
+config in the repo-root `.gitleaks.toml`). CI scans the full git history
+(`fetch-depth: 0`), so an already-committed secret is caught too; the local
+runner scans the working tree with `--no-git`.
+
+```bash
+gitleaks detect --source . --redact     # CI: full history
+gitleaks detect --no-git --redact       # local runner: working tree
+```
+
+Remedy: rotate the secret, purge it from history, and never allowlist a real
+credential. Allowlist entries need a reason. Measured wall time: 0.2s on
+this repo (20 commits). THE GATE IS TESTED: a clean tree exits 0 ("no leaks
+found"); a seeded fake AWS key fails:
+
+```text
+Finding:     aws_access_key_id (aws-access-key-id)
+Secret:      AKIA********************E/REDACTED
+File:        proof-seed-secret.txt:1
+```
+
+### Hygiene — copy-paste detection (jscpd)
+
+`jscpd` tokenizes every source file and fails above the duplication
+threshold (v5.2.0; config in the repo-root `.jscpd.json`, threshold 5).
+
+```bash
+jscpd
+```
+
+Remedy: extract the shared code into one place. The config ignores four
+intentionally-parallel shapes with reasons (template byte-copies, per-folder
+CI files, per-folder runners, and the folder READMEs' shared hygiene
+sections). Measured wall time: 0.04s on this repo. THE GATE IS TESTED: a
+clean tree exits 0 (0.00% duplicated). The threshold measures the whole
+tree, so the failure proof runs the same command on a scratch fixture with
+two identical 10-line functions (58 of 120 tokens, 48% against the 5%
+threshold) and records its exit code 1:
+
+```text
+Found 1 clones.
+Clone found (python)
+ - proof-dup-a.py [1:1 - 10:15] (10 lines, 58 tokens)
+   proof-dup-b.py [1:1 - 10:15]
+exit code: 1
+```
+
+### Hygiene — dependency advisories + licenses (osv-scanner)
+
+`osv-scanner` scans every lockfile for known vulnerabilities and reports
+dependency licenses against an allow-list (v2.5.1). This repository itself
+carries no lockfiles, so the step lives in each folder's CI and runner: it
+targets the initialized repository, where the lockfiles exist.
+
+```bash
+osv-scanner scan -r .
+osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
+```
+
+The allow-list is the shared house list; its wider entries (MPL-2.0,
+PSF-2.0, Unicode-3.0, Unlicense, CC0-1.0, 0BSD, Apache-1.1,
+BSD-3-Clause-Clear) carry the python lockfile's dependency licenses, so
+one list runs identically in every folder's CI and runner.
+
+Remedy: bump or replace the flagged dependency. License violations must be
+resolved or justified in review; the osv-scanner exit codes carry the
+verdict. Measured wall time: seconds (network-bound, advisory DB cached).
+THE GATE IS TESTED: a seeded package-lock.json with lodash 4.17.4 fails
+with five GHSA advisories; adding pm2 (AGPL-3.0) fails the license gate:
+
+```text
+| https://osv.dev/GHSA-fvqr-27wr-82fm | 6.5  | npm | lodash | 4.17.4 | 4.17.5 | package-lock.json |
+advisories exit code: 1
+| AGPL-3.0 | npm | pm2 | 5.1.0 | package-lock.json |
+license exit code: 130
+```
+
+### Hygiene — dependency hygiene (knip) + lockfile policy (lockfile-lint)
+
+`knip` (6.35.1, pinned in package.json, config in `knip.jsonc`) reports
+unused dependencies, unused exports, and dead files: entry is the module's
+own entry point plus the test files; `project` covers exactly
+`src/**` — a never-imported source file must appear in the report, so
+`src/` is never excluded from its own report (the vitest coverage.include
+lesson). `lockfile-lint` (5.0.1, pinned; CLI flags because the rc-file
+config is not supported at this pin) holds the lockfile policy: every
+package resolves from `registry.npmjs.org` (the official registry — no
+other host is allowlisted), over `https:` (resolved metadata must not
+cross the wire in cleartext), every entry names its own package (a
+mismatched name is a dependency-confusion vector), every integrity hash is
+sha512 (lockfile-lint validates the strongest type), and empty hostnames
+are rejected (`--empty-hostname false` — stricter than the default).
+
+```bash
+npm run knip
+npm run lint:lockfile
+```
+
+Remedy: remove the dead export or file, import the dependency where the
+code uses it, or fix the registry allowlist by policy change — never by
+widening it for one package. Measured wall time: knip 1s, lockfile-lint
+1s on the template fixture. THE GATE IS TESTED: the clean fixture exits 0
+on both; a seeded unused devDependency and a seeded dead export fail knip
+(exit 1), and a lockfile entry resolved from `evil.example.com` fails
+lockfile-lint (exit 1):
+
+```text
+Unused devDependencies (1)
+lodash  package.json:26:6
+Unused exports (1)
+deadExport  function  src/lib.ts:54:17
+✖ Error: security issues detected!
+```
+
+### Architecture — import layers and cycles (dependency-cruiser)
+
+`.dependency-cruiser.cjs` carries the dependency-graph contract, checked by
+`dependency-cruiser validate` (dependency-cruiser 18.3.1, pinned in
+package.json; the command runs `depcruise --validate` over `src`). The
+rules, each with its reason in the config: no circular imports (a cycle
+compiles but cannot be reasoned about top-down — the depcruiser equivalent
+of the python/rust layer contracts), no orphan modules (a module nothing
+imports and that is not an entry point is dead weight), and nothing may
+import the entry point (src/index.ts is the outbound edge of the package,
+not a layer below the shipped code).
+
+```bash
+npm run lint:graph
+```
+
+Remedy: break the cycle by extracting the shared shape, import the orphan
+or delete it, and leave the entry point alone — it is the outbound edge,
+not a layer below the shipped code. Measured wall time: 1s on the template
+fixture. THE GATE IS TESTED: the clean fixture exits 0; a seeded module
+that imports src/index.ts fails `entry-is-leaf`, and a seeded two-module
+cycle fails `no-circular`, both naming the modules (exit 1):
+
+```text
+error no-circular: src/cycle_a.ts → src/cycle_b.ts → src/cycle_a.ts
+error entry-is-leaf: src/entry_importer.ts → src/index.ts
+```
+
+### Hygiene — bidi and invisible-character hygiene (grep)
+
+A plain, auditable grep step (no new dependency) fails the build on bidi
+and invisible control characters in source files — the Trojan Source attack
+vector (Unicode Technical Standard #39). CI runs GNU grep with PCRE:
+
+```bash
+! grep -rPn "[\x{202A}-\x{202E}\x{2066}-\x{2069}\x{200B}-\x{200F}\x{2060}-\x{2064}\x{FEFF}\x{00AD}\x{180E}]" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.json' --include='*.md' --exclude-dir=node_modules --exclude-dir=coverage --exclude-dir=.git --exclude-dir=stryker-tmp --exclude-dir=mutants .
+```
+
+The banned classes, each a reason: U+202A-202E (bidi embedding and
+overrides — they reorder rendered text so the reviewer reads something
+else), U+2066-2069 (bidi isolates and first-strong overrides, same
+reordering vector), U+200B-200F (zero-width spaces and the LRM/RLM marks —
+invisible identifier-splitting), U+2060-2064 (invisible math operators),
+U+FEFF (zero-width no-break space / BOM, an invisible homoglyph), U+00AD
+(soft hyphen, invisible identifier-splitting), and U+180E (Mongolian vowel
+separator, historically a zero-width space). The boundary: ordinary
+non-ASCII text is fine — accented words and emoji in docs pass; only the
+invisible control characters are banned. `node_modules` and the report
+directories are excluded, so dependency trees carrying such characters in
+their own tables never fail your build. Remedy: rewrite the identifier or
+comment without the invisible characters. Measured wall time: 0.1s on the
+template fixture. THE GATE IS TESTED: the clean tree passes (grep exits 1
+— no match — and the inverted step exits 0); a seeded zero-width space
+inside an identifier fails (grep exit 0), while a seeded accented-word +
+emoji file still passes:
+
+```text
+1:export const spoofed = "bad​ident";
+```
+
+### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
+
+The repository's own shell scripts and workflow files are linted with the
+same severity as its code: shellcheck (v0.11.0), shfmt -d (v3.14.0),
+yamllint (v1.38.0, config in the repo-root `.yamllint.yaml`), and
+actionlint (v1.7.12) on every workflow file, including the per-folder ci.yml
+templates.
+
+```bash
+for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
+for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done
+yamllint ./.github/workflows/*.yml ./*/ci.yml
+actionlint ./.github/workflows/*.yml ./*/ci.yml
+```
+
+Remedy: fix the script or the workflow; yamllint deviations carry reasons in
+`.yamllint.yaml`. Measured wall time: 0.2s. THE GATE IS TESTED: a clean tree
+exits 0 (after fixing the findings this gate itself caught: an unguarded
+rm -rf and shfmt formatting); seeded violations fail:
+
+```text
+shellcheck: SC2086 on the seeded unquoted variable (exit 1)
+yamllint: proof-seed.yaml:2 syntax error (exit 1)
+```
 
 ### Formatter
 
@@ -136,6 +434,7 @@ repository's README.
 ## Commands
 
 ```bash
+./run-gates.sh             # run every gate below, in parallel
 npm ci                   # deterministic install against the committed lockfile
 npm run format:check     # prettier --check .             — format gate
 npm run typecheck        # tsc --noEmit                   — type gate (strict + the 8 flags)
@@ -145,6 +444,11 @@ npm test                 # vitest run --coverage           — the 95% gate, fou
 
 CI (`.github/workflows/ci.yml`) runs exactly these commands in this order,
 after `npm ci`, on node 24 with actions/setup-node@v7.
+
+Runner-CI parity: 19 runner entries <-> 19 CI gate steps (7 language gates including knip, lockfile-lint, and dependency-cruiser + 12 hygiene steps; the tool installs are not gates). The runner deliberately
+The runner carries no mutation gate: StrykerJS is a
+documented refusal at this pin (see the accepted-gaps section), so nothing
+nightly exists to exclude.
 
 ## Trade-offs ("strict but staying usable")
 
@@ -176,6 +480,41 @@ after `npm ci`, on node 24 with actions/setup-node@v7.
   is `^18.18.0 || ^20.9.0 || >=21.1.0`, so the floor holds with margin. A
   team pinning node via Volta adds its own `volta` block — deliberately not
   in the template so the pin belongs to the team using it.
+
+- Node floor is 22 (`engines`), verified on 24: tseslint's supported range
+  is `^18.18.0 || ^20.9.0 || >=21.1.0`, so the floor holds with margin. A
+  team pinning node via Volta adds its own `volta` block — deliberately not
+  in the template so the pin belongs to the team using it.
+
+### Accepted gaps — signals no gate in this stack can catch
+
+Stated as current facts, not a plan: nothing below is enforced today, and
+each entry names what changes the answer.
+
+- Mutation testing. StrykerJS was investigated and refused at this pin:
+  @stryker-mutator/core and the vitest runner (both 10.0.0, the latest
+  releases) against vitest 5.0.0 produce wrong verdicts — a scratch run on
+  the template fixture reports every covered mutant as Survived, including
+  a mutant the passing test provably kills (`return left + right` →
+  `return left - right` with `add(2, 3) === 5` asserted). The upstream
+  issues (stryker-js#6210, #6146, #6213, #6209) are open and the fix
+  (#6214) is unmerged; the scratch-run evidence is recorded in the epic's
+  `tasks/expand-lint-gates/notes/decision-stryker.md`. What changes the answer: a
+  stryker release containing that fix, verified against vitest 5.
+- SAST. The eslint ecosystem has no maintained TS-native static security
+  scanner (sonarjs ships correctness rules, not security analysis; the
+  taint-tracking scanners are not eslint rules). What changes the answer:
+  a maintained TS-native SAST gate mainstream enough to pin.
+- Sonar parity beyond the shipped slice: the plugin's three enabled rules
+  map to SonarQube S3776 (cognitive complexity), S1192 (duplicate string),
+  and S125 (commented-out code). The plugin ships more rules than this
+  slice enables; no SonarQube rule is claimed here that the pinned plugin
+  does not actually ship, and the remaining S-rules stay off by the
+  reasoned-slice decision, not by absence.
+- Refused families, not gaps: coupling/cohesion dashboards and
+  Halstead/Maintainability-Index/NPath were reviewed and refused — they are
+  not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/
+  refusal-decisions.md` records the reasons).
 
 ## The init skill
 
