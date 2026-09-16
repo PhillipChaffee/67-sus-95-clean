@@ -35,7 +35,7 @@ add "deny-advisories" "cargo deny check advisories"
 add "deny-licenses" "cargo deny check licenses"
 add "deny-bans" "cargo deny check bans"
 add "unused-deps" "cargo shear --deny-warnings"
-add "todo-policy" 'git grep -nE "TODO|FIXME" --untracked -- "*.rs" || test $? -eq 1'
+add "todo-policy" 'rc=0; git grep --untracked --no-recurse-submodules -nE "TODO|FIXME" -- "*.rs" || rc=$?; test "$rc" -eq 1'
 add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
 add "shell-format" 'for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done'
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml $(ls ./*/ci.yml ./*/mutation.yml 2>/dev/null)"
