@@ -116,14 +116,14 @@ fingerprint() {
 		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
 }
 expected_license='MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear,LGPL-3.0-only,BlueOak-1.0.0,CC-BY-3.0'
-for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml typescript/ci.yml; do
+for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml typescript/ci.yml python/run-gates.sh rust/run-gates.sh go/run-gates.sh typescript/run-gates.sh; do
 	fp="$(fingerprint "$f")"
 	if [[ "$fp" != "$(fingerprint .github/workflows/hygiene.yml)" ]]; then
 		echo "CROSS-FOLDER DRIFT: $f install block differs from .github/workflows/hygiene.yml"
 		fail=1
 	fi
 	if ! grep -qF "$expected_license" "$f"; then
-		echo "CROSS-FOLDER DRIFT: $f does not carry the shared 14-license allow-list"
+		echo "CROSS-FOLDER DRIFT: $f does not carry the shared license allow-list"
 		fail=1
 	fi
 done
