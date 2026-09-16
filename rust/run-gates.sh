@@ -33,6 +33,7 @@ add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-C
 add "deny-advisories" "cargo deny check advisories"
 add "deny-licenses" "cargo deny check licenses"
 add "deny-bans" "cargo deny check bans"
+add "unused-deps" "cargo shear --deny-warnings"
 add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
 add "shell-format" 'for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done'
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"

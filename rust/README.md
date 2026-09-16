@@ -241,6 +241,35 @@ exits 1 instead of scanning without data —
 and `deny.toml` adds `maximum-db-staleness = "P90D"`, so a cached database
 older than 90 days fails the gate rather than scanning with stale data.
 
+### Hygiene — unused dependencies (cargo-shear)
+
+`cargo-shear` parses every source file with rust-analyzer's parser and
+diffs the imports it finds against the dependencies the manifests declare:
+a crate declared in `[dependencies]` that no source file imports is the
+failing case (v1.13.4, pinned in ci.yml). CI runs it with
+`--deny-warnings` — unused *optional* dependencies, empty files, and
+unlinked files are warnings by default, and the house rule denies them.
+
+```bash
+cargo shear --deny-warnings
+```
+
+Detection limits, per its own docs: macro-generated imports are invisible
+without `--expand` (nightly only, significantly slower), and misplaced
+unit-test dependencies inside `#[cfg(test)]` cannot be detected. A crate the
+tool cannot see used goes into the package's
+`[package.metadata.cargo-shear] ignored` list — a suppress that suppresses
+nothing is reported as redundant, so stale ignores surface on their own.
+Remedy: remove the dependency, or document why the tool cannot see the use.
+Measured wall time on the example project: 0.05s. THE GATE IS TESTED: the
+clean example project exits 0; a seeded unused `serde` fails (exit 1):
+
+```text
+shear/unused_dependency
+  × unused dependency `serde`
+    ╰── not used in code
+```
+
 ### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
 
 The repository's own shell scripts and workflow files are linted with the

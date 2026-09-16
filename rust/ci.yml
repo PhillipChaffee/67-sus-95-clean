@@ -103,6 +103,8 @@ jobs:
         run: cargo deny check licenses
       - name: Dependency bans and duplicates (cargo-deny v0.20.2)
         run: cargo deny check bans
+      - name: Unused dependencies (cargo-shear v1.13.4)
+        run: cargo shear --deny-warnings
       - name: Shell lint (shellcheck v0.11.0)
         run: for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
       - name: Shell format (shfmt v3.14.0)
