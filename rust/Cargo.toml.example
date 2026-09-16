@@ -48,6 +48,12 @@ unimplemented = "warn"
 dbg_macro = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
+# An allow without a why is the bug: the suppression outlives its reason and
+# nothing records why the rule was silenced. The documented suppression path
+# is `#[expect(..., reason = "...")]` — an expect that stops firing fails the
+# build, so stale suppressions surface on their own; a bare allow silences a
+# lint forever and reads as code that passed review by accident.
+allow_attributes_without_reason = "warn"
 
 # Every crate in the workspace inherits the table ([lints] workspace = true
 # below); cargo will not mix an inherited table with a package-local one, so

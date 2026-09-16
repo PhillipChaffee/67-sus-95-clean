@@ -16,7 +16,11 @@ workspace until `cargo check` fails on any undocumented public item and
 - A shortlist of `restriction` picks: the failure modes specific to the code
   you are writing (in the phone app that was `unwrap_used`, `expect_used`,
   `panic`, `print_stdout`, `exit`...). Choose YOUR picks; every one gets a
-  reason, per house rule.
+  reason, per house rule. The template ships `allow_attributes_without_reason`
+  as a pick: an allow without a why is the bug — the suppression outlives its
+  reason and nothing records it. The suppression path stays
+  `#[expect(lint, reason = "...")]`: a reasoned expect does not trip the pick,
+  and an expect that stops firing fails the build on its own.
 - Every blanket exception documented in the table; one-offs in code as
   `#[expect(lint, reason = "...")]` — `expect`, not `allow`, so an exception
   that stops being needed fails the build instead of rotting.
@@ -59,6 +63,14 @@ Machine: the clippy/rustdoc doc lints above. Policy (no linter checks prose):
 the four house rules — present state only; why-not-what; `#NNN` cited only
 attached to a live constraint; nothing displays a number no server sends.
 Ship them verbatim in the new repo's AGENTS.md (the template carries them).
+
+Policy, enforced: a TODO or FIXME marker in Rust source fails the build —
+the uniform house TODO policy (python fails the marker through FIX002,
+TypeScript through no-warning-comments, go through godox). The rust half is
+a grep step: `git grep -nE "TODO|FIXME" --untracked -- '*.rs'` inverted, so
+any marker in tracked or new-but-untracked `*.rs` files fails CI, and there
+is no ignore mechanism — the remedy is to resolve the TODO, not to suppress
+the gate.
 
 ### Coverage — the gate
 
