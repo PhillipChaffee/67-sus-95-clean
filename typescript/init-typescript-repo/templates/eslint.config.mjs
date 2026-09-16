@@ -91,5 +91,49 @@ export default defineConfig(
       // downgrade this to get a build green.
       "no-warning-comments": ["error", { terms: ["todo", "fixme", "xxx"] }],
     },
+    // Stale suppressions fail the build: an eslint-disable whose rule no
+    // longer fires is dead weight that hides the next real finding. This is
+    // the escalation from warn (the eslint default for unused directives) to
+    // error, so a stale disable directive fails the lint run like any other
+    // violation.
+    linterOptions: { reportUnusedDisableDirectives: "error" },
+  },
+  {
+    // eslint core metric caps: NOT in any typescript-eslint preset, so these
+    // are explicit core entries on TS sources (the typescript-eslint parser
+    // feeds them). Every threshold is either a documented default or a metric
+    // gate shared with the other stacks (McCabe 10, screen-sized functions),
+    // and none of them judges whitespace — prettier owns the byte.
+    files: ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}"],
+    rules: {
+      // Cyclomatic complexity, max 10: the McCabe reference point (same as
+      // the go folder's cyclop max and Sonar's default). Remedy: extract a
+      // function.
+      complexity: ["error", 10],
+      // A file longer than a screen or two is two modules wearing a trench
+      // coat. skipComments/skipBlankLines so prose and formatting do not
+      // count. Overlaps max-lines-per-function: the file cap bounds the sum,
+      // the per-function cap bounds each part.
+      "max-lines": [
+        "error",
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
+      // 40 statements per function: parity with the go folder's funlen
+      // statements cap; the fix is mechanical (extract a function).
+      "max-statements": ["error", { max: 40 }],
+      // 60 lines per function (comments and blank lines excluded): the
+      // readable-screen rule, paired with max-statements which bounds
+      // density rather than length.
+      "max-lines-per-function": [
+        "error",
+        { max: 60, skipBlankLines: true, skipComments: true },
+      ],
+      // Nesting depth 4: deeper than that, extraction stops being optional.
+      "max-depth": ["error", 4],
+      // 3 positional parameters (the eslint documented default): a function
+      // with more is an object-taking function; 4th and 5th parameters hide
+      // a context object that should be named.
+      "max-params": ["error", { max: 3 }],
+    },
   },
 );

@@ -24,6 +24,23 @@ typescript-eslint 8.70.0, eslint-plugin-jsdoc 64.3.8, vitest 5.0.0 +
   `@typescript-eslint/no-floating-promises` reject a floating call.
 - A hand-picked strict slice of `eslint-plugin-jsdoc` (see Documentation),
   and eslint core's two comment rules (see Comments).
+- eslint core metric caps, explicit core entries (none is in any
+  typescript-eslint preset), each with its threshold and reason in the
+  config: `complexity` (max 10 — the McCabe reference point, parity with
+  the go folder's cyclop and rust's size family), `max-lines` (300, blank
+  lines and comments excluded — a file that does not fit a screen or two
+  is two modules), `max-statements` (40 — parity with go's funlen
+  statements cap), `max-lines-per-function` (60 with the same exclusions —
+  the readable-screen rule; max-lines bounds the sum, this bounds each
+  part), `max-depth` (4 — past that, extraction stops being optional), and
+  `max-params` (3, the eslint documented default — a 4th positional
+  parameter is an unnamed context object). All six proven both ways on the
+  template fixture: a seeded violation per family fails with the rule name
+  in the output.
+- Stale suppressions fail the build: `linterOptions.reportUnusedDisableDirectives`
+  is escalated from eslint's warn default to `error`, so an
+  `eslint-disable` whose rule no longer fires is a build failure, not a
+  suggestion. Proven: a seeded stale directive fails the lint run.
 - Deliberately absent, with reasons: `spaced-comment` is deprecated in
   core (8.53.0, moved to @stylistic) and prettier owns comment whitespace
   in this stack; typescript-eslint's `stylistic` preset is opinion-heavy
