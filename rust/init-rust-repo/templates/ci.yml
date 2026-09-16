@@ -24,10 +24,11 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
       # Gate AND report in one pass: llvm-cov writes the report before it
-      # evaluates --fail-under-lines, so the upload below can still run on a
-      # gate failure (measured: exit 1 with lcov.info on disk).
-      - name: Coverage gate
-        run: cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info
+      # evaluates the fail-under switches (lines, regions, functions), so the
+      # upload below can still run on a gate failure (measured: exit 1 with
+      # lcov.info on disk).
+      - name: Coverage gate (lines, regions, functions — 95 each)
+        run: cargo llvm-cov --workspace --fail-under-lines 95 --fail-under-regions 95 --fail-under-functions 95 --lcov --output-path lcov.info
       # Free for public repositories, no account and no secret: the action
       # takes the built-in GITHUB_TOKEN. Pinned action version. The lcov
       # format is Coveralls' native one.

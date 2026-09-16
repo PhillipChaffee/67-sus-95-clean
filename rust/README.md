@@ -75,14 +75,25 @@ the gate.
 ### Coverage — the gate
 
 ```bash
-cargo llvm-cov --workspace --fail-under-lines 95
+cargo llvm-cov --workspace --fail-under-lines 95 --fail-under-regions 95 --fail-under-functions 95
 ```
+
+Three axes, not one: the pinned cargo-llvm-cov (0.9.0) exposes fail-under
+switches for lines, regions, and functions in its CLI reference
+(`--fail-under-lines`, `--fail-under-regions`, `--fail-under-functions` —
+`cargo llvm-cov --help`), so the gate holds all three at 95. Regions are
+LLVM's branch-level coverage: an untested arm of a match or an if can pass
+a line gate while failing a region gate. Measured on the template fixture:
+a clean project sits at 100.00% on all three axes, and a seeded untested
+function drops lines to 86.36%, functions to 75.00%, regions to 86.36% —
+all three fail-under switches exit 1 on the same seed.
 
 Add `llvm-tools-preview` to the CI toolchain; see `ci.yml`. THE GATE IS
 TESTED: measured on the pinned toolchain (cargo-llvm-cov 0.9.0), a fixture
 with every statement covered exits 0 at 100.00% TOTAL, and the same fixture
-with one untested branch exits 1 at 0.00% TOTAL — the gate fails the build
-under 95% (that is its acceptance test).
+with one untested function exits 1 under the three-axis gate at
+86.36%/75.00%/86.36% — the gate fails the build under 95% (that is its
+acceptance test).
 
 ### Hygiene — spell check (typos)
 
