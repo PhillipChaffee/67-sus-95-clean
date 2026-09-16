@@ -40,11 +40,17 @@ assume that reasoning and only record the work.
    repository root: `pyproject.toml -> pyproject.toml`,
    `ci.yml -> .github/workflows/ci.yml` (create the directory),
    `mutation.yml -> .github/workflows/mutation.yml`,
+   `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
    `.gitignore -> .gitignore`,
    `vulture-allowlist.py -> vulture-allowlist.py`,
    `.importlinter -> .importlinter`,
-   `osv-scanner.toml -> osv-scanner.toml`. These are byte-copies of the
-   canonical files.
+   `osv-scanner.toml -> osv-scanner.toml`,
+   `requirements.in -> requirements.in`,
+   `requirements-lock.txt -> requirements-lock.txt` (the Lockfile
+   integrity CI step fails without it), and the shared hygiene copies
+   (`lychee.toml`, `.typos.toml`, `.markdownlint-cli2.jsonc`,
+   `.gitleaks.toml`, `.jscpd.json`, `.yamllint.yaml`) -> repository root.
+   These are byte-copies of the canonical files.
 4. Adapt exactly two placeholders, both spelling the same token so
    `grep -rn your_package` finds them: `[project] name` and the
    `--cov=<your_package>` token in

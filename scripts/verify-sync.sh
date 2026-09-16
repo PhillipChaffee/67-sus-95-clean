@@ -25,6 +25,8 @@ done < <(
 	cat <<'PAIRINGS'
 python/ci.yml			python/init-python-repo/templates/ci.yml
 python/run-gates.sh			python/init-python-repo/templates/run-gates.sh
+python/.gitignore			python/init-python-repo/templates/.gitignore
+python/.importlinter			python/init-python-repo/templates/.importlinter
 .typos.toml			python/init-python-repo/templates/.typos.toml
 .markdownlint-cli2.jsonc			python/init-python-repo/templates/.markdownlint-cli2.jsonc
 lychee.toml			python/init-python-repo/templates/lychee.toml

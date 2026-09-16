@@ -34,7 +34,7 @@ add "secret-scan" "gitleaks detect --no-git --redact"
 add "bidi-hygiene" "! grep -rPn \"[\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}\\x{200B}-\\x{200F}\\x{2060}-\\x{2064}\\x{FEFF}\\x{00AD}\\x{180E}]\" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.json' --include='*.md' --exclude-dir=node_modules --exclude-dir=coverage --exclude-dir=.git --exclude-dir=stryker-tmp --exclude-dir=mutants ."
 add "duplication" "jscpd"
 add "advisories" "osv-scanner scan -r ."
-add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Python-2.0,0BSD"
+add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
 add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
 add "shell-format" 'for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done'
 add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml"

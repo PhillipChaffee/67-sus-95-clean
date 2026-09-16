@@ -89,8 +89,6 @@ record the work.
   decision explains any red), and `npm test` exits 0 at 100% on the
   skeleton.
 - `scripts/verify-sync.sh` in this reference repo still passes: templates
-  must be edits of the canonical files, not independent forks. (One
-  template, `.prettierignore`, is not yet paired in that script; treat the
-  canonical file as its source of truth until the pairing lands.)
+  must be edits of the canonical files, not independent forks.
 - If `npm install` cannot fetch dependencies or vitest cannot run, STOP and
   report the tooling failure; do not proceed with the gate quietly missing.

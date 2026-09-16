@@ -266,8 +266,13 @@ targets the initialized repository, where the lockfiles exist.
 
 ```bash
 osv-scanner scan -r .
-osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Python-2.0,0BSD"
+osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
 ```
+
+The allow-list is the shared house list; its wider entries (MPL-2.0,
+PSF-2.0, Unicode-3.0, Unlicense, CC0-1.0, 0BSD, Apache-1.1,
+BSD-3-Clause-Clear) carry the python lockfile's dependency licenses, so
+one list runs identically in every folder's CI and runner.
 
 Remedy: bump or replace the flagged dependency. License violations must be
 resolved or justified in review; the osv-scanner exit codes carry the
@@ -432,8 +437,9 @@ CI (`.github/workflows/ci.yml`) runs exactly these commands in this order,
 after `npm ci`, on node 24 with actions/setup-node@v7.
 
 Runner-CI parity: 19 runner entries <-> 19 CI gate steps (7 language gates including knip, lockfile-lint, and dependency-cruiser + 12 hygiene steps; the tool installs are not gates). The runner deliberately
-excludes the nightly mutation gate (mutation.yml), so its absence there is
-the documented decision, not a miss.
+The runner carries no mutation gate: StrykerJS is a
+documented refusal at this pin (see the accepted-gaps section), so nothing
+nightly exists to exclude.
 
 ## Trade-offs ("strict but staying usable")
 

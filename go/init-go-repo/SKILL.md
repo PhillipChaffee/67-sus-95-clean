@@ -48,6 +48,7 @@ record the work.
    reason:
    - `golangci-lint config verify`
    - `go build ./...`
+   - `go mod tidy -diff` (the go-native unused-dependency gate)
    - `golangci-lint fmt --diff`
    - `go vet ./...`
    - `golangci-lint run`
@@ -73,7 +74,7 @@ record the work.
 
 # Gates
 
-- After step 5, ALL seven commands run green (or a documented, pre-existing
+- After step 5, ALL eight commands run green (or a documented, pre-existing
   decision explains any red).
 - `scripts/verify-sync.sh` in this reference repo still passes: templates
   must be edits of the canonical files, not independent forks.
