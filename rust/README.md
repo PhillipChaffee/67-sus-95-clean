@@ -190,6 +190,57 @@ advisories exit code: 1
 license exit code: 130
 ```
 
+### Hygiene — supply-chain policy (cargo-deny: RustSec advisories, licenses, bans)
+
+`cargo-deny` is the rust-native supply-chain engine on top of the
+cross-language osv-scanner pair above (v0.20.2, install
+`cargo install cargo-deny --locked --version 0.20.2`, config in `deny.toml`
+with a reason on every entry). It adds what osv-scanner cannot see:
+yanked releases (denied — a yanked release is a recall), unmaintained and
+unsound advisories on direct dependencies, banned crates with their
+replacement, duplicate-version convergence, and unknown registries or git
+sources. CI runs one labeled step per check so a failure names its gate.
+
+```bash
+cargo deny check advisories
+cargo deny check licenses
+cargo deny check bans
+```
+
+Remedy: bump or replace the flagged crate; ignore an advisory only with its
+parsed id and a reason carrying the review date; a truly unavoidable
+duplicate version goes in `[bans] skip-tree` with its reason. Measured wall
+time on the example project: advisories 0.9s (advisory DB cached), licenses
+0.1s, bans 0.1s. THE GATE IS TESTED, every check both ways: the clean
+example project exits 0 on all three; a seeded `chrono = "=0.4.19"` fails
+the advisories check with
+
+```text
+error[vulnerability]: Potential segfault in `localtime_r` invocations
+  ├ ID: RUSTSEC-2020-0159
+  ├ Advisory: https://rustsec.org/advisories/RUSTSEC-2020-0159
+exit code: 1
+```
+
+a seeded allow-list restricted to ISC alone fails the licenses check (exit
+1), and a seeded `openssl = "0.10"` fails the bans check with
+
+```text
+error[banned]: crate 'openssl = 0.10.81' is explicitly banned
+exit code: 2
+```
+
+Fail-closed on advisories: with the advisory database unavailable and
+fetching disabled (`--offline` against an empty database path), the check
+exits 1 instead of scanning without data —
+
+```text
+[ERROR] failed to get 'FETCH_HEAD' metadata: failed to get HEAD timestamp
+```
+
+and `deny.toml` adds `maximum-db-staleness = "P90D"`, so a cached database
+older than 90 days fails the gate rather than scanning with stale data.
+
 ### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
 
 The repository's own shell scripts and workflow files are linted with the

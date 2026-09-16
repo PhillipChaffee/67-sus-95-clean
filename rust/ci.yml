@@ -79,6 +79,10 @@ jobs:
           OSV_VERSION=2.5.1
           curl -sSfL "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_linux_amd64" -o /usr/local/bin/osv-scanner
           sudo chmod +x /usr/local/bin/osv-scanner
+          # cargo-deny ships prebuilt musl binaries inside a release subdirectory
+          DENY_VERSION=0.20.2
+          mkdir /tmp/denyx && curl -sSfL "https://github.com/EmbarkStudios/cargo-deny/releases/download/${DENY_VERSION}/cargo-deny-${DENY_VERSION}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp/denyx
+          sudo mv /tmp/denyx/cargo-deny-${DENY_VERSION}-x86_64-unknown-linux-musl/cargo-deny /usr/local/bin/
       - name: Spell check (typos v1.50.1)
         run: typos
       - name: Markdown lint (markdownlint-cli2 v0.23.2)
@@ -93,6 +97,12 @@ jobs:
         run: osv-scanner scan -r .
       - name: License check (osv-scanner v2.5.1)
         run: osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
+      - name: RustSec advisories (cargo-deny v0.20.2)
+        run: cargo deny check advisories
+      - name: License policy (cargo-deny v0.20.2)
+        run: cargo deny check licenses
+      - name: Dependency bans and duplicates (cargo-deny v0.20.2)
+        run: cargo deny check bans
       - name: Shell lint (shellcheck v0.11.0)
         run: for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
       - name: Shell format (shfmt v3.14.0)
