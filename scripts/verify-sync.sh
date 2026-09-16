@@ -65,6 +65,8 @@ python/pyproject.toml			python/init-python-repo/templates/pyproject.toml
 python/vulture-allowlist.py			python/init-python-repo/templates/vulture-allowlist.py
 python/requirements.in			python/init-python-repo/templates/requirements.in
 python/requirements-lock.txt			python/init-python-repo/templates/requirements-lock.txt
+python/osv-scanner.toml			python/init-python-repo/templates/osv-scanner.toml
+python/mutation.yml			python/init-python-repo/templates/mutation.yml
 typescript/tsconfig.json			typescript/init-typescript-repo/templates/tsconfig.json
 typescript/eslint.config.mjs			typescript/init-typescript-repo/templates/eslint.config.mjs
 typescript/vitest.config.ts			typescript/init-typescript-repo/templates/vitest.config.ts

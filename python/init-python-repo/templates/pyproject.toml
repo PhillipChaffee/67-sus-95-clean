@@ -142,3 +142,21 @@ fail_under = 95
 # allowlist is the noise valve, and every vulture-allowlist.py entry carries
 # its reason.
 min_confidence = 60
+
+[tool.mutmut]
+# mutmut runs nightly in the scheduled mutation workflow (mutation.yml),
+# never on the PR path: a full mutation run costs seconds on the template
+# skeleton but scales with the codebase, so it cannot sit between a commit
+# and a merge. source_paths carries the package name — the third
+# adaptation token, spelled the same as [project] name and --cov above so
+# `grep -rn your_package` still finds every point to adapt.
+source_paths = ["your_package"]
+# mutmut runs pytest to learn which tests reach which function; the tests/
+# selection keeps discovery from sweeping stray files.
+pytest_add_cli_args_test_selection = ["tests/"]
+# The coverage addopts above would run the 95% coverage gate against the
+# mutated trampolines inside mutants/ and fail stats collection before any
+# mutant is tested ("failed to collect stats. runner returned 1" — recorded
+# in the README proof). Clearing addopts is the documented mutmut override
+# for exactly this: mutation runs need pytest selection, not the cov gate.
+pytest_add_cli_args = ["-o", "addopts="]

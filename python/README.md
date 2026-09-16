@@ -4,7 +4,7 @@ The stack below is verified against the pinned tools, not folklore: every
 ignore carries its reason, and the coverage gate was proven to fail a build
 under 95% (both runs are recorded in the coverage section). Pin of record:
 ruff 0.16.6, mypy 2.3.1, pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.0,
-deptry 0.25.1, vulture 2.16, import-linter 2.15.
+deptry 0.25.1, vulture 2.16, import-linter 2.15, mutmut 3.8.0 (nightly).
 
 ## What is enforced
 
@@ -400,6 +400,52 @@ ERROR: In --require-hashes mode, all requirements must have their versions
 pinned with == and a hash. Hash checking failed.
 ```
 
+### Tests — mutation testing (mutmut, scheduled nightly)
+
+`mutmut` mutates the shipped package (operators, comparisons, literals) and
+runs the test suite against each mutant: a mutant the tests do not kill is a
+behavior the suite never pinned down (mutmut 3.8.0, pinned in mutation.yml —
+the scheduled workflow, not the PR path). Config lives in the
+`[tool.mutmut]` table of pyproject.toml: `source_paths` carries the package
+name, and `pytest_add_cli_args = ["-o", "addopts="]` strips the coverage
+gate from mutmut's internal pytest runs — the cov addopts would run the 95%
+gate against the mutated trampolines inside `mutants/` and fail stats
+collection before any mutant is tested ("failed to collect stats. runner
+returned 1", recorded from the first run).
+
+The score floor is 85, checked from `mutmut export-cicd-stats` (the
+documented stats export): `mutmut run` exits 0 even with survivors, so the
+floor is a separate step reading `killed/total` from the stats JSON.
+
+```bash
+mutmut run
+mutmut export-cicd-stats
+python3 -c "import json, sys; s = json.load(open('mutants/mutmut-cicd-stats.json')); score = 100 * s['killed'] // s['total']; print('mutation score %d%% (killed %d/%d, floor 85)' % (score, s['killed'], s['total'])); sys.exit(0 if score >= 85 else 1)"
+```
+
+The floor reason, from the first measured run on the template fixture:
+15/17 killed = 88%. The two survivors are equivalent mutants — `clamp`
+returns the bound itself at the boundary, so mutating `value < low` to
+`value <= low` cannot change behavior. A floor at 100% would fail on
+mutants only a code restructure can remove, so the floor sits just under
+the equivalent-mutant headroom, and any genuinely untested code drops the
+score below it. Remedy: add a test that kills the surviving mutant.
+
+Why nightly: a mutation run multiplies the test suite by the mutant count,
+so it cannot sit between a commit and a merge; the scheduled run keeps the
+score visible every night without blocking merges. `run-gates.sh` and the
+PR `ci.yml` deliberately exclude it. Trade-off accepted: a mutant that
+survives up to a day before the nightly run flags it.
+
+Measured wall time: 0.7s for a full run (17 mutants) on the template
+fixture. THE GATE IS TESTED: the clean fixture exits 0 (score 88% >= 85); a
+seeded function with no test drops the score below the floor and the floor
+step exits 1:
+
+```text
+mutation score 78% (killed 15/19, floor 85)
+```
+
 ### Formatter
 
 `ruff format --check .`. The formatter and the lint ignore list are
@@ -419,7 +465,7 @@ inserts the badge line into the new repository's README.
 
 ```bash
 ./run-gates.sh              # run every gate below, in parallel
-pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16" "import-linter==2.15"
+pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16" "import-linter==2.15" "mutmut==3.8.0"
 ruff check .           # lint + docstring gate
 ruff format --check .  # format gate
 mypy .                 # type gate
@@ -427,6 +473,7 @@ pytest                 # tests + the coverage gate (fail_under = 95, branch = tr
 deptry .               # unused-dependency gate
 vulture your_package vulture-allowlist.py  # dead-code gate
 lint-imports           # import-layer and cycle gate
+mutmut run; mutmut export-cicd-stats; python3 -c "import json, sys; s = json.load(open('mutants/mutmut-cicd-stats.json')); score = 100 * s['killed'] // s['total']; print('mutation score %d%% (killed %d/%d, floor 85)' % (score, s['killed'], s['total'])); sys.exit(0 if score >= 85 else 1)"  # nightly mutation-score gate (mutation.yml), not part of run-gates.sh
 ```
 
 ## Trade-offs ("strict but staying usable")
