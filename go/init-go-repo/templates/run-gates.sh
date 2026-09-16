@@ -22,6 +22,7 @@ add() {
 }
 add "schema" "golangci-lint config verify"
 add "build" "go build ./..."
+add "tidy" "go mod tidy -diff"
 add "format" "golangci-lint fmt --diff"
 add "vet" "go vet ./..."
 add "lint" "golangci-lint run"

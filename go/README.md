@@ -322,6 +322,7 @@ line into the new repository's README.
 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2  # pinned tool
 golangci-lint config verify                                             # schema check
 go build ./...                                                          # compiles
+go mod tidy -diff                                                       # go-native unused-dependency gate: fails when the module files and the imports disagree; remedy: go mod tidy
 golangci-lint fmt --diff                                                # format gate
 go vet ./...                                                            # vet
 golangci-lint run                                                       # lint gate
