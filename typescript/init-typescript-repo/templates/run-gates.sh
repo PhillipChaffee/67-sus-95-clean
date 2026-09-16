@@ -38,8 +38,8 @@ add "advisories" "osv-scanner scan -r ."
 add "license-check" "osv-scanner scan -r . --licenses=MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
 add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
 add "shell-format" 'for sh in $(git ls-files "*.sh"); do shfmt -d "$sh"; done'
-add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml ./*/ci.yml ./*/mutation.yml"
-add "workflow-lint" "actionlint ./.github/workflows/*.yml ./*/ci.yml ./*/mutation.yml"
+add "workflow-yaml-lint" "yamllint ./.github/workflows/*.yml $(ls ./*/ci.yml ./*/mutation.yml 2>/dev/null)"
+add "workflow-lint" "actionlint ./.github/workflows/*.yml $(ls ./*/ci.yml ./*/mutation.yml 2>/dev/null)"
 for i in "${!names[@]}"; do
 	name="${names[$i]}"
 	cmd="${cmds[$i]}"

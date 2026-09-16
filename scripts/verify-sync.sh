@@ -27,7 +27,7 @@ python/ci.yml			python/init-python-repo/templates/ci.yml
 python/run-gates.sh			python/init-python-repo/templates/run-gates.sh
 python/.gitignore			python/init-python-repo/templates/.gitignore
 python/.importlinter			python/init-python-repo/templates/.importlinter
-.typos.toml			python/init-python-repo/templates/.typos.toml
+python/.typos.toml			python/init-python-repo/templates/.typos.toml
 .markdownlint-cli2.jsonc			python/init-python-repo/templates/.markdownlint-cli2.jsonc
 lychee.toml			python/init-python-repo/templates/lychee.toml
 .gitleaks.toml			python/init-python-repo/templates/.gitleaks.toml
@@ -42,7 +42,7 @@ rust/deny.toml			rust/init-rust-repo/templates/deny.toml
 rust/ci.yml			rust/init-rust-repo/templates/ci.yml
 rust/run-gates.sh			rust/init-rust-repo/templates/run-gates.sh
 rust/mutation.yml			rust/init-rust-repo/templates/mutation.yml
-.typos.toml			rust/init-rust-repo/templates/.typos.toml
+rust/.typos.toml			rust/init-rust-repo/templates/.typos.toml
 .markdownlint-cli2.jsonc			rust/init-rust-repo/templates/.markdownlint-cli2.jsonc
 lychee.toml			rust/init-rust-repo/templates/lychee.toml
 .gitleaks.toml			rust/init-rust-repo/templates/.gitleaks.toml
@@ -50,7 +50,7 @@ lychee.toml			rust/init-rust-repo/templates/lychee.toml
 .yamllint.yaml			rust/init-rust-repo/templates/.yamllint.yaml
 go/ci.yml			go/init-go-repo/templates/ci.yml
 go/run-gates.sh			go/init-go-repo/templates/run-gates.sh
-.typos.toml			go/init-go-repo/templates/.typos.toml
+go/.typos.toml			go/init-go-repo/templates/.typos.toml
 .markdownlint-cli2.jsonc			go/init-go-repo/templates/.markdownlint-cli2.jsonc
 lychee.toml			go/init-go-repo/templates/lychee.toml
 .gitleaks.toml			go/init-go-repo/templates/.gitleaks.toml
@@ -58,7 +58,7 @@ lychee.toml			go/init-go-repo/templates/lychee.toml
 .yamllint.yaml			go/init-go-repo/templates/.yamllint.yaml
 typescript/ci.yml			typescript/init-typescript-repo/templates/ci.yml
 typescript/run-gates.sh			typescript/init-typescript-repo/templates/run-gates.sh
-.typos.toml			typescript/init-typescript-repo/templates/.typos.toml
+typescript/.typos.toml			typescript/init-typescript-repo/templates/.typos.toml
 .markdownlint-cli2.jsonc			typescript/init-typescript-repo/templates/.markdownlint-cli2.jsonc
 lychee.toml			typescript/init-typescript-repo/templates/lychee.toml
 .gitleaks.toml			typescript/init-typescript-repo/templates/.gitleaks.toml
@@ -99,7 +99,7 @@ fingerprint() {
 		grep -vE '^[[:space:]]*(- name:|- run:|run: \|?)?[[:space:]]*$' |
 		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
 }
-expected_license='MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear'
+expected_license='MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear,LGPL-3.0-only,BlueOak-1.0.0,CC-BY-3.0'
 for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml typescript/ci.yml; do
 	fp="$(fingerprint "$f")"
 	if [[ "$fp" != "$(fingerprint .github/workflows/hygiene.yml)" ]]; then

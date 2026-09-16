@@ -165,9 +165,12 @@ typos
 ```
 
 Remedy: fix the spelling, or add the identifier to `.typos.toml` with a
-reason (the config carries five, each with its reason: a ruff rule
-family name, the deliberate mistyped-tag example, the seeded-proof quote
-words, and GNU grep's PCRE flag token from the typescript bidi step).
+reason (the root config is the union this repo needs — a ruff rule family
+name, the deliberate mistyped-tag example, the seeded-proof quote words,
+and GNU grep's PCRE flag token from the typescript bidi step — and the
+python/, typescript/, go/, and rust/ folder canonicals carry the trimmed
+subsets a bootstrapped repo can actually hit, so a genuine misspelling the
+root union covers cannot hide behind an inert allowance there).
 Measured wall time: 0.02s on this repo.
 THE GATE IS TESTED: a clean tree exits 0; a seeded misspelling fails:
 
@@ -259,7 +262,7 @@ targets the initialized repository, where the lockfiles exist.
 
 ```bash
 osv-scanner scan -r .
-osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear"
+osv-scanner scan -r . --licenses="MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear,LGPL-3.0-only,BlueOak-1.0.0,CC-BY-3.0"
 ```
 
 The allow-list is the shared house list; its wider entries (MPL-2.0,

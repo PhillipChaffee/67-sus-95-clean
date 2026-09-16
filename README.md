@@ -24,6 +24,7 @@ the strict baseline instead of assembling it from memory.
 | `<lang>/init-<lang>-repo/` | the AI skill, plus `templates/` byte-copies so it is self-contained |
 | `add-language/` | skill that adds a NEW language to this repo |
 | `scripts/*.sh` | `verify-sync.sh` catches template drift; `install-skills.sh` installs the skills |
+| `tasks/expand-lint-gates/notes/` | the epic's evidence-backed decision notes: refused metric families, the go deadcode and typescript StrykerJS refusals |
 
 ## Languages
 
