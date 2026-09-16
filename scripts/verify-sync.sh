@@ -89,9 +89,14 @@ PAIRINGS
 # other three lag). Per-folder extras (python's pip tools, rust's cargo-deny)
 # are filtered before comparing.
 fingerprint() {
+	# Per-folder extras are filtered before comparing: python's pip tools
+	# (installed from the hash-pinned lock), rust's cargo-deny and cargo-shear
+	# downloads, and all pip/npm registry installs (which differ by folder by
+	# design).
 	awk '/Install pinned hygiene tools/,/Spell check/' "$1" |
-		grep -vE 'deptry|vulture|import-linter|DENY_VERSION|cargo-deny|deny\.|denyx|pinned versions' |
-		grep -vE '^\s*(#|- name:|- run:|run: \|?)?\s*$' |
+		grep -vE 'deptry|vulture|import-linter|DENY_VERSION|cargo-deny|deny\.|denyx|pinned versions|cargo-shear|SHEAR_VERSION|shear\.|pip install|npm install' |
+		grep -vE '^[[:space:]]*#' |
+		grep -vE '^[[:space:]]*(- name:|- run:|run: \|?)?[[:space:]]*$' |
 		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
 }
 expected_license='MIT,Apache-2.0,ISC,BSD-3-Clause,BSD-2-Clause,MPL-2.0,PSF-2.0,Unicode-3.0,Python-2.0,Unlicense,CC0-1.0,0BSD,Apache-1.1,BSD-3-Clause-Clear'
@@ -103,6 +108,20 @@ for f in .github/workflows/hygiene.yml python/ci.yml rust/ci.yml go/ci.yml types
 	fi
 	if ! grep -qF "$expected_license" "$f"; then
 		echo "CROSS-FOLDER DRIFT: $f does not carry the shared 14-license allow-list"
+		fail=1
+	fi
+done
+
+# Runner drift: the shared hygiene gate entries (same names, same commands)
+# must match across the four folder run-gates.sh files; per-language entries
+# are filtered out by name.
+runner_fingerprint() {
+	grep -E '^add "(spell-check|markdown-lint|link-check|secret-scan|duplication|advisories|license-check|shell-lint|shell-format|workflow-yaml-lint|workflow-lint)" ' "$1" |
+		sed 's/^[[:space:]]*//' | sort | sha256sum | awk '{print $1}'
+}
+for f in python/run-gates.sh rust/run-gates.sh go/run-gates.sh typescript/run-gates.sh; do
+	if [[ "$(runner_fingerprint "$f")" != "$(runner_fingerprint python/run-gates.sh)" ]]; then
+		echo "CROSS-FOLDER DRIFT: $f hygiene gate entries differ from python/run-gates.sh"
 		fail=1
 	fi
 done

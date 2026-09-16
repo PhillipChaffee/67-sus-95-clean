@@ -67,9 +67,10 @@ Ship them verbatim in the new repo's AGENTS.md (the template carries them).
 Policy, enforced: a TODO or FIXME marker in Rust source fails the build —
 the uniform house TODO policy (python fails the marker through FIX002,
 TypeScript through no-warning-comments, go through godox). The rust half is
-a grep step: `git grep -nE "TODO|FIXME" --untracked -- '*.rs'` inverted, so
-any marker in tracked or new-but-untracked `*.rs` files fails CI, and there
-is no ignore mechanism — the remedy is to resolve the TODO, not to suppress
+a grep step — `git grep -nE "TODO|FIXME" --untracked -- '*.rs' || test
+$? -eq 1` — so any marker in tracked or new-but-untracked `*.rs` files
+fails CI, and a scanner failure (corrupt index, bad pathspec) also fails
+the step instead of inverting to a green build; there is no ignore mechanism — the remedy is to resolve the TODO, not to suppress
 the gate.
 
 ### Coverage — the gate
@@ -135,6 +136,11 @@ or last edited the cron; scheduled workflows are also auto-disabled after
 about 60 days of repo inactivity. Keep Actions notifications on for that
 account and re-run via `gh workflow run mutation` if the nightly has not
 fired recently.
+Capacity note: the nightly job is capped at 60 minutes — free on public
+repos, and on a private initialized repo it bills against the free
+Actions minutes as the suite grows. When the suite outgrows 60 minutes
+the run dies on the job timeout: that red is a capacity signal, not a
+score-floor failure (the log shows the timeout, not the floor message).
 
 ```text
 mutation score 90% (caught 19/21, floor 85)     # clean, exit 0
@@ -408,7 +414,9 @@ the documented decision, not a miss.
   where upstream publishes checksums (lychee, gitleaks, osv-scanner,
   actionlint, cargo-deny) and release-tag-pinned where none is published
   (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
-  recorded in the install block and reviewed on every pin bump.
+  recorded in the install block and reviewed on every pin bump. yamllint is
+  the one registry-install exception: GPL-3.0-or-later, deliberately excluded
+  from the permissive-only python lockfile, installed by exact pin.
 - `missing_docs` was found firing ~330 times on a workspace whose docs would
   have been name-restatements; the way out was not an allow but a bar — each
   doc must say what the signature cannot. If you are initializing a repo with

@@ -83,7 +83,13 @@ jobs:
           # upstream (typos, shellcheck, shfmt, markdownlint, cargo-mutants) —
           # the recorded residual risk, reviewed on every pin bump. Every curl
           # is bounded (--connect-timeout/--max-time) so a hung download cannot
-          # stall the job to GitHub's 360-minute default.
+          # stall the job to GitHub's 360-minute default. Registry installs
+          # (npm global) are version-pinned and run with --ignore-scripts
+          # (markdownlint-cli2 and jscpd ship no install scripts); the python
+          # tools (where present) install from the hash-pinned lockfile, so no
+          # transitive dependency resolves live. yamllint is the one explicit
+          # exception: GPL-3.0-or-later, deliberately excluded from the
+          # permissive-only lockfile, installed by exact pin.
           TYPOS_VERSION=1.50.1
           mkdir /tmp/typosx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/crate-ci/typos/releases/download/v${TYPOS_VERSION}/typos-v${TYPOS_VERSION}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp/typosx
           sudo mv /tmp/typosx/typos /usr/local/bin/

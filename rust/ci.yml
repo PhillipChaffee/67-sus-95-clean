@@ -22,10 +22,10 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
       # rustup reads rust-toolchain.toml (channel, components incl.
       # llvm-tools-preview) on the first cargo call; no toolchain step needed.
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6  # v2
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
@@ -43,24 +43,32 @@ jobs:
       - name: Upload coverage to Coveralls
         if: always()
         continue-on-error: true
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329  # v2
         with:
           file: lcov.info
 
   doc-comments:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # bounds a hung network gate; GitHub's default is 360
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     env:
       RUSTDOCFLAGS: -D warnings
     steps:
-      - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6  # v2
       # The doc-quality lints are rustdoc's and fire under no other step.
       - run: cargo doc --workspace --no-deps
 
   hygiene:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # bounds a hung network gate; GitHub's default is 360
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0
       - name: Install pinned hygiene tools
@@ -72,11 +80,17 @@ jobs:
           # upstream (typos, shellcheck, shfmt, markdownlint, cargo-mutants) —
           # the recorded residual risk, reviewed on every pin bump. Every curl
           # is bounded (--connect-timeout/--max-time) so a hung download cannot
-          # stall the job to GitHub's 360-minute default.
+          # stall the job to GitHub's 360-minute default. Registry installs
+          # (npm global) are version-pinned and run with --ignore-scripts
+          # (markdownlint-cli2 and jscpd ship no install scripts); the python
+          # tools (where present) install from the hash-pinned lockfile, so no
+          # transitive dependency resolves live. yamllint is the one explicit
+          # exception: GPL-3.0-or-later, deliberately excluded from the
+          # permissive-only lockfile, installed by exact pin.
           TYPOS_VERSION=1.50.1
           mkdir /tmp/typosx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/crate-ci/typos/releases/download/v${TYPOS_VERSION}/typos-v${TYPOS_VERSION}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp/typosx
           sudo mv /tmp/typosx/typos /usr/local/bin/
-          npm install -g markdownlint-cli2@0.23.2
+          npm install -g --ignore-scripts markdownlint-cli2@0.23.2
           LYCHEE_VERSION=0.24.2
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz.sha256" -o /tmp/lychee.sha256
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/lychee.tar.gz
@@ -89,7 +103,7 @@ jobs:
           echo "$(grep "linux_x64.tar.gz" /tmp/gitleaks.sums | awk '{print $1}')  /tmp/gitleaks.tar.gz" | sha256sum --check --status
           mkdir /tmp/gitleaksx && tar xz -C /tmp/gitleaksx -f /tmp/gitleaks.tar.gz
           sudo mv /tmp/gitleaksx/gitleaks /usr/local/bin/
-          npm install -g jscpd@5.2.0
+          npm install -g --ignore-scripts jscpd@5.2.0
           SHELLCHECK_VERSION=0.11.0
           mkdir /tmp/shellcheckx && curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar xJ -C /tmp/shellcheckx
           sudo mv /tmp/shellcheckx/shellcheck-v${SHELLCHECK_VERSION}/shellcheck /usr/local/bin/
@@ -110,6 +124,11 @@ jobs:
           echo "$(grep "linux_amd64.tar.gz" /tmp/actionlint.sums | awk '{print $1}')  /tmp/actionlint.tar.gz" | sha256sum --check --status
           mkdir /tmp/actionlintx && tar xz -C /tmp/actionlintx -f /tmp/actionlint.tar.gz
           sudo mv /tmp/actionlintx/actionlint /usr/local/bin/
+          # cargo-shear ships prebuilt musl binaries; no checksum asset is
+          # published upstream, so it is release-tag-pinned (recorded residual).
+          SHEAR_VERSION=1.13.4
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/Boshen/cargo-shear/releases/download/v${SHEAR_VERSION}/cargo-shear-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/cargo-shear-x86_64-unknown-linux-musl/cargo-shear /usr/local/bin/ 2>/dev/null || sudo mv /tmp/cargo-shear /usr/local/bin/
           OSV_VERSION=2.5.1
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_linux_amd64" -o /tmp/osv-scanner
           curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_SHA256SUMS" -o /tmp/osv.sums
@@ -139,7 +158,7 @@ jobs:
       - name: Unused dependencies (cargo-shear v1.13.4)
         run: cargo shear --deny-warnings
       - name: TODO policy (no TODO/FIXME markers in Rust source)
-        run: "! git grep -nE 'TODO|FIXME' --untracked -- '*.rs'"
+        run: "git grep -nE 'TODO|FIXME' --untracked -- '*.rs' || test $? -eq 1"
       - name: Shell lint (shellcheck v0.11.0)
         run: for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done
       - name: Shell format (shfmt v3.14.0)

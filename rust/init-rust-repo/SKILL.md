@@ -58,7 +58,8 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
       copied `deny.toml`; a failed checksum or stale advisory database fails
       here)
    - `cargo shear --deny-warnings`
-   - `! git grep -nE "TODO|FIXME" --untracked -- "*.rs"` (the TODO policy
+   - `git grep -nE "TODO|FIXME" --untracked -- "*.rs" || test $? -eq 1`
+      (the TODO policy grep; the || test keeps it fail-closed on scanner errors)
       grep)
 5. Run every gate and make each one pass or fail for a known, acceptable
    reason:

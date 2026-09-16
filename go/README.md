@@ -348,7 +348,9 @@ nothing nightly exists to exclude.
   where upstream publishes checksums (lychee, gitleaks, osv-scanner,
   actionlint, cargo-deny) and release-tag-pinned where none is published
   (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
-  recorded in the install block and reviewed on every pin bump.
+  recorded in the install block and reviewed on every pin bump. yamllint is
+  the one registry-install exception: GPL-3.0-or-later, deliberately excluded
+  from the permissive-only python lockfile, installed by exact pin.
 - **Statement coverage only.** `go tool cover` counts statements; Go ships
   no branch-coverage mode, and 95% of statements still allows an untested
   branch of every if. Recorded here rather than papered over — the gate

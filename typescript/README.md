@@ -456,7 +456,9 @@ nightly exists to exclude.
   where upstream publishes checksums (lychee, gitleaks, osv-scanner,
   actionlint, cargo-deny) and release-tag-pinned where none is published
   (typos, shellcheck, shfmt, cargo-mutants) — the residual risk is
-  recorded in the install block and reviewed on every pin bump.
+  recorded in the install block and reviewed on every pin bump. yamllint is
+  the one registry-install exception: GPL-3.0-or-later, deliberately excluded
+  from the permissive-only python lockfile, installed by exact pin.
 - The inconveniencing tsc flags, named: `noUncheckedIndexedAccess` makes
   every index read `T | undefined` until you narrow (the noisiest flag in
   the table); `exactOptionalPropertyTypes` makes `undefined` different
