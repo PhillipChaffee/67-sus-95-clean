@@ -29,14 +29,14 @@ the strict baseline instead of assembling it from memory.
 
 Details and reasoning live in each folder's README; the shape:
 
-| folder | lint | types | docs | coverage | formatter |
-| --- | --- | --- | --- | --- | --- |
-| [`rust/`](rust/) | clippy: pedantic + nursery + cargo + picks; rustdoc group deny | rustc: `missing_docs` deny | rustdoc: all 10 stable lints | `llvm-cov` ≥ 95% | `rustfmt` |
-| [`python/`](python/) | ruff: ALL, 18 documented ignores | mypy `--strict` | ruff `D` (google) | `pytest-cov` ≥ 95% | `ruff format` |
-| [`typescript/`](typescript/) | eslint: `strictTypeChecked` + jsdoc | tsc `strict` + 8 extras | jsdoc: require + check | vitest ≥ 95% ×4 | `prettier` |
-| [`go/`](go/) | golangci-lint v2: strict extras | `go vet` + staticcheck | revive `exported` | gate script ≥ 95% | `gofumpt` |
+| folder | lint | types | docs | coverage | formatter | hygiene + supply-chain |
+| --- | --- | --- | --- | --- | --- | --- |
+| [`rust/`](rust/) | clippy: pedantic + nursery + cargo + picks; rustdoc group deny; `allow_attributes_without_reason` | rustc: `missing_docs` deny | rustdoc: all 10 stable lints | `llvm-cov` ≥ 95% on lines, regions, and functions | `rustfmt` | typos, gitleaks, jscpd, osv-scanner advisories + licenses, cargo-deny (RustSec, license policy, bans + duplicates), cargo-shear, TODO grep, artifact linting; `cargo-mutants` nightly |
+| [`python/`](python/) | ruff: ALL, documented ignores; TODO marker banned | mypy `--strict` | ruff `D` (google) | `pytest-cov` ≥ 95% | `ruff format` | typos, gitleaks, jscpd, osv-scanner advisories + licenses, deptry, vulture, import-linter, hash-pinned lockfile, artifact linting; `mutmut` nightly |
+| [`typescript/`](typescript/) | eslint: `strictTypeChecked` + jsdoc + metric caps + sonarjs + vitest plugin | tsc `strict` + 8 extras | jsdoc: require + check | vitest ≥ 95% ×4 | `prettier` | typos, gitleaks, jscpd, osv-scanner advisories + licenses, knip, lockfile-lint, dependency-cruiser, bidi grep, artifact linting |
+| [`go/`](go/) | golangci-lint v2: strict extras (size caps, hygiene, security, test-style) | `go vet` + staticcheck | revive `exported` | gate script ≥ 95% | `gofumpt` | typos, gitleaks, jscpd, osv-scanner advisories + licenses, `go mod tidy -diff`, artifact linting |
 
-(The full commands — `cargo llvm-cov --fail-under-lines 95`, `fail_under = 95` with branch coverage, vitest's four thresholds, the go `coverage-gate.sh` — are in the folders.)
+(The full commands — `cargo llvm-cov --fail-under-lines 95`, `fail_under = 95` with branch coverage, vitest's four thresholds, the go `coverage-gate.sh` — are in the folders. Mutation testing runs nightly where it is wired (python mutmut, rust cargo-mutants) with recorded score floors; where it is refused, the refusal carries the scratch-run evidence. Nothing here offers the refused families — coupling dashboards, Halstead/MI/NPath — as gates.)
 
 ## The house rules every folder shares
 
@@ -71,6 +71,16 @@ Details and reasoning live in each folder's README; the shape:
    all pinned, all with recorded two-way proofs, and all runnable locally
    through each folder's `run-gates.sh` (see the hygiene sections in the
    folder READMEs).
+8. **Unused dependencies, layer contracts, lockfile integrity, and TODO
+   markers are gated per language by the language's own tool**: deptry /
+   `go mod tidy -diff` / cargo-shear / knip for unused dependencies;
+   import-linter / dependency-cruiser / depguard for import layers;
+   hash-pinned installs (python) and lockfile-lint (TypeScript) for
+   lockfile integrity; a TODO marker fails the build in every stack (ruff
+   FIX002, godox, no-warning-comments, a rust grep). Mutation testing
+   where it is wired (mutmut and cargo-mutants nightly, with recorded
+   score floors) and recorded refusals where the pinned tools cannot tell
+   the truth (StrykerJS with vitest 5, x/tools deadcode).
 
 ## Adding a language
 
