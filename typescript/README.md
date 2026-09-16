@@ -490,7 +490,7 @@ each entry names what changes the answer.
   `return left - right` with `add(2, 3) === 5` asserted). The upstream
   issues (stryker-js#6210, #6146, #6213, #6209) are open and the fix
   (#6214) is unmerged; the scratch-run evidence is recorded in the epic's
-  `ws-05-typescript/notes/decision-stryker.md`. What changes the answer: a
+  `tasks/expand-lint-gates/notes/decision-stryker.md`. What changes the answer: a
   stryker release containing that fix, verified against vitest 5.
 - SAST. The eslint ecosystem has no maintained TS-native static security
   scanner (sonarjs ships correctness rules, not security analysis; the

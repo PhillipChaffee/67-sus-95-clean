@@ -9,7 +9,7 @@ Tested empirically, not from docs:
   latest, 2026-09-08): same report, **exit code 0**.
 
 The tool is a reporter, not a gate: it has no nonzero-exit-on-findings
-mode at either tested version, and the task forbids a wrapper script that
+mode at either tested version, and the gate contract forbids a wrapper script that
 fakes a nonzero exit. Refused.
 
 Go dead-code detection stays covered by the `unused` staticcheck-family

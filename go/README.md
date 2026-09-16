@@ -360,7 +360,7 @@ nothing nightly exists to exclude.
   command was investigated and refused: it reports unreachable functions
   but exits 0 on findings at both tested versions (v0.40.0 and v0.50.0,
   recorded with actual command output in the epic's
-  `ws-04-go/notes/decision-deadcode.md`), so it is not a binary gate and no
+  `tasks/expand-lint-gates/notes/decision-deadcode.md`), so it is not a binary gate and no
   wrapper substitutes for one. Unused unexported functions stay covered by
   the `unused` linter; unreachable *exported* functions are a signal no
   gate in this stack catches. What changes the answer: a deadcode exit-code
