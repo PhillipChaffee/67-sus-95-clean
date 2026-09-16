@@ -22,6 +22,19 @@ error out instead of silently misparsing once the version is declared):
   their false-positive budget), and `revive` with
   `enable-default-rules: true` plus the `exported` rule widened by its two
   additive flags (`check-private-receivers`, `check-public-interface`).
+- Size-and-shape caps, each with its threshold and reason in the config:
+  `cyclop` (cyclomatic complexity, max 10 — the McCabe reference point, same
+  as Sonar's default; remedy: extract a function), `gocognit` (cognitive
+  complexity, min 30 — the gocognit README's cited issue threshold; a flat
+  wide switch trips cyclop while deep nesting trips this one), `funlen`
+  (60 lines / 40 statements, the documented defaults), `nestif` (nested if
+  depth, min 5), `mnd` (unnamed literals in logic, default checks, nothing
+  whitelisted — `usestdlibvars` already covers the http-context literals),
+  `goconst` (a literal written 3+ times becomes a constant), and
+  `interfacebloat` (max 10 methods). Proven both ways on the template
+  fixture: the clean project runs 0 issues; a seeded violation per family
+  fires with output naming the linter and file (cyclop trips on a wide
+  switch — a chained nested-if shape trips gocognit first at this floor).
 - `issues.max-issues-per-linter: 0` and `max-same-issues: 0`: the report is
   never capped or deduplicated — a gate that stops listing after 50 findings
   lies about the state of the tree.

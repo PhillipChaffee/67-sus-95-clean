@@ -41,8 +41,62 @@ linters:
     # golint's replacement: the exported rule enforces the doc-comment bar
     # and with enable-default-rules every default check stays on.
     - revive
+    # Cyclomatic complexity above 10 is the classic McCabe reference point
+    # (Sonar uses the same default); the fix is mechanical: extract a
+    # function.
+    - cyclop
+    # Cognitive complexity over 30 per function is the gocognit README's
+    # cited issue threshold; it counts nesting and breaks, so a flat
+    # 10-branch switch does not trip it the way cyclop does.
+    - gocognit
+    # Function length caps at funlen's documented defaults (60 lines, 40
+    # statements): a function that does not fit a screen is two functions
+    # wearing a trench coat.
+    - funlen
+    # Nested if depth (nestif) above 5 is where extraction stops being
+    # optional: the nestif default is the documented strict floor.
+    - nestif
+    # Unnamed literals in logic (the eslint no-magic-numbers signal) with
+    # the mnd default checks: argument, case, condition, operation, return.
+    # usestdlibvars covers the http-context literals; mnd covers the rest.
+    - mnd
+    # A string written three or more times should be a constant (goconst
+    # documented default min-occurrences = 3).
+    - goconst
+    # An interface with more than 10 methods is a god interface
+    # (interfacebloat's documented default).
+    - interfacebloat
 
   settings:
+    cyclop:
+      # 10 is the McCabe reference threshold (Sonar's default as well).
+      max-complexity: 10
+    gocognit:
+      # 30 is the gocognit README's cited issue threshold: strict but
+      # leaves room for flat, high-branch switch tables.
+      min-complexity: 30
+    funlen:
+      # funlen's documented defaults; the cap is the screen, the reason is
+      # readability, and both axes exist because generated-tables code can
+      # be long and flat (lines) or short and dense (statements).
+      lines: 60
+      statements: 40
+    nestif:
+      # 5 is nestif's documented default: deeper than that, extraction is
+      # the remedy.
+      min-complexity: 5
+    mnd:
+      # The default checks (argument, case, condition, operation, return)
+      # stay on; no ignored numbers, files, or functions are whitelisted,
+      # so every unnamed literal in logic must be named.
+      ignored-numbers: []
+    goconst:
+      # 3 is goconst's documented default: twice is coincidence, three
+      # times is a constant.
+      min-occurrences: 3
+    interfacebloat:
+      # 10 is interfacebloat's documented default.
+      max: 10
     gocritic:
       # style + performance are the whole stable-ish families. experimental
       # and opinionated are left off deliberately: they churn between
