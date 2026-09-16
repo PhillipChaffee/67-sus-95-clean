@@ -92,6 +92,15 @@ linters:
     # deprecated in favor of its second major version (v2.12.0), which is
     # the shape pinned here.
     - gomodguard_v2
+    # A test helper that takes *testing.T must call t.Helper() first, or
+    # failure traces point at the helper instead of the caller.
+    - thelper
+    # Canonical testify assertion style, all checkers on: the linter knows
+    # which assertion shape the testify authors intended for each compare.
+    - testifylint
+    # A parallel subtest under a serial parent silently serializes;
+    # tparallel fires when the parallelism promise is broken.
+    - tparallel
 
   settings:
     cyclop:
@@ -151,6 +160,9 @@ linters:
             - errors
             - fmt
           reason: "the stdlib error wrapping with %w (Go 1.13+) replaced it; pkg/errors is in maintenance mode"
+    testifylint:
+      # All checkers on: any disabled checker carries its reason here.
+      enable-all: true
     gocritic:
       # style + performance are the whole stable-ish families. experimental
       # and opinionated are left off deliberately: they churn between

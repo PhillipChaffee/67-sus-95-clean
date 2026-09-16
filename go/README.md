@@ -51,6 +51,15 @@ error out instead of silently misparsing once the version is declared):
   bidi character, a hardcoded credential with a weak hash, an `unsafe`
   import, and a blocked module import each fire with output naming the
   linter and file.
+- Test-style linters: `thelper` (a test helper that takes `*testing.T` must
+  call `t.Helper()` first — otherwise failure traces point at the helper,
+  not the caller), `testifylint` (canonical testify assertion style, all
+  checkers on), and `tparallel` (a parallel subtest requires a parallel
+  parent, or the subtests serialize). All three run on their strictest
+  defaults; any disabled check carries a reason. Proven both ways on the
+  template fixture: a missing `t.Helper()`, a non-canonical assertion, and
+  a parallel subtest under a serial parent each fire with output naming the
+  linter and file.
 - `issues.max-issues-per-linter: 0` and `max-same-issues: 0`: the report is
   never capped or deduplicated — a gate that stops listing after 50 findings
   lies about the state of the tree.
