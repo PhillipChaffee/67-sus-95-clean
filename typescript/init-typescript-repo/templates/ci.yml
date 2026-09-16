@@ -88,6 +88,16 @@ jobs:
         run: lychee --no-progress .
       - name: Secret scan (gitleaks v8.30.1)
         run: gitleaks detect --source . --redact
+      # Trojan Source hygiene: bidi and invisible control characters fail
+      # the build. The class bans only the bidi-embedding/override block
+      # (U+202A-202E), the bidi isolate/override block (U+2066-2069), the
+      # zero-width and direction-mark range (U+200B-200F), invisible math
+      # marks (U+2060-2064), the zero-width no-break space / BOM (U+FEFF),
+      # the soft hyphen (U+00AD), and Mongolian vowel separator (U+180E):
+      # all invisible to a reviewer, all useful for spoofing identifiers.
+      # Ordinary non-ASCII text (accented words, emoji) passes.
+      - name: Bidi and invisible-character hygiene (grep)
+        run: "! grep -rPn \"[\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}\\x{200B}-\\x{200F}\\x{2060}-\\x{2064}\\x{FEFF}\\x{00AD}\\x{180E}]\" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.json' --include='*.md' --exclude-dir=node_modules --exclude-dir=coverage --exclude-dir=.git --exclude-dir=stryker-tmp --exclude-dir=mutants ."
       - name: Copy-paste detection (jscpd v5.2.0)
         run: jscpd
       - name: Dependency advisories (osv-scanner v2.5.1)

@@ -347,6 +347,38 @@ error no-circular: src/cycle_a.ts → src/cycle_b.ts → src/cycle_a.ts
 error entry-is-leaf: src/entry_importer.ts → src/index.ts
 ```
 
+### Hygiene — bidi and invisible-character hygiene (grep)
+
+A plain, auditable grep step (no new dependency) fails the build on bidi
+and invisible control characters in source files — the Trojan Source attack
+vector (Unicode Technical Standard #39). CI runs GNU grep with PCRE:
+
+```bash
+! grep -rPn "[\x{202A}-\x{202E}\x{2066}-\x{2069}\x{200B}-\x{200F}\x{2060}-\x{2064}\x{FEFF}\x{00AD}\x{180E}]" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.json' --include='*.md' --exclude-dir=node_modules --exclude-dir=coverage --exclude-dir=.git --exclude-dir=stryker-tmp --exclude-dir=mutants .
+```
+
+The banned classes, each a reason: U+202A-202E (bidi embedding and
+overrides — they reorder rendered text so the reviewer reads something
+else), U+2066-2069 (bidi isolates and first-strong overrides, same
+reordering vector), U+200B-200F (zero-width spaces and the LRM/RLM marks —
+invisible identifier-splitting), U+2060-2064 (invisible math operators),
+U+FEFF (zero-width no-break space / BOM, an invisible homoglyph), U+00AD
+(soft hyphen, invisible identifier-splitting), and U+180E (Mongolian vowel
+separator, historically a zero-width space). The boundary: ordinary
+non-ASCII text is fine — accented words and emoji in docs pass; only the
+invisible control characters are banned. `node_modules` and the report
+directories are excluded, so dependency trees carrying such characters in
+their own tables never fail your build. Remedy: rewrite the identifier or
+comment without the invisible characters. Measured wall time: 0.1s on the
+template fixture. THE GATE IS TESTED: the clean tree passes (grep exits 1
+— no match — and the inverted step exits 0); a seeded zero-width space
+inside an identifier fails (grep exit 0), while a seeded accented-word +
+emoji file still passes:
+
+```text
+1:export const spoofed = "bad​ident";
+```
+
 ### Hygiene — own-artifact linting (shellcheck, shfmt, yamllint, actionlint)
 
 The repository's own shell scripts and workflow files are linted with the

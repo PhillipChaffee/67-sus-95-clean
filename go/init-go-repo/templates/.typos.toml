@@ -10,3 +10,10 @@ retruns = "retruns"
 # finding the typos gate caught, they do not make one
 recieve = "recieve"
 calender = "calender"
+
+# Words and flag tokens that are not identifiers
+[default.extend-words]
+
+# GNU grep's PCRE flags in the typescript folder's bidi-hygiene step
+# (grep -rPn); typos reads it as a misspelling of "On"
+Pn = "Pn"
