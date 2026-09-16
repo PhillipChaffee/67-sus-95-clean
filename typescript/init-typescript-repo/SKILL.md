@@ -39,7 +39,13 @@ record the work.
    `vitest.config.ts -> vitest.config.ts`,
    `package.json -> package.json`,
    `.prettierignore -> .prettierignore`,
-   `ci.yml -> .github/workflows/ci.yml`.
+   `ci.yml -> .github/workflows/ci.yml`,
+   `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
+   `knip.jsonc -> knip.jsonc`,
+   `.dependency-cruiser.cjs -> .dependency-cruiser.cjs`, `lychee.toml ->
+   lychee.toml`, and the shared hygiene copies (`.typos.toml`,
+   `.markdownlint-cli2.jsonc`, `.gitleaks.toml`, `.jscpd.json`,
+   `.yamllint.yaml`) -> repository root.
 3. Substitute exactly one marked value: package.json's
    `"name": "rename-this-package"` becomes the project's own kebab-case
    name. Keep the devDependency pins verbatim — they are exact versions

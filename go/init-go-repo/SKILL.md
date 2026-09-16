@@ -34,8 +34,11 @@ record the work.
    repository root, byte-identical (they pair with the canonical files by the
    entries in `scripts/verify-sync.sh` of the strictest-setups repo):
    `.golangci.yml -> .golangci.yml`, `coverage-gate.sh -> coverage-gate.sh`
-   (then `chmod +x coverage-gate.sh`), `ci.yml ->
-   .github/workflows/ci.yml`.
+   (then `chmod +x coverage-gate.sh`), `run-gates.sh -> run-gates.sh`
+   (then `chmod +x run-gates.sh`), `ci.yml ->
+   .github/workflows/ci.yml`, and the shared hygiene copies (`lychee.toml`,
+   `.typos.toml`, `.markdownlint-cli2.jsonc`, `.gitleaks.toml`,
+   `.jscpd.json`, `.yamllint.yaml`) -> repository root.
 3. Pin the toolchain: `go mod edit -go=1.27.1 -toolchain=1.27.1` (match the
    current stable at bootstrap time for both lines, and keep the
    `GOTOOLCHAIN: go1.27.1` line in the copied ci.yml in sync with it).
