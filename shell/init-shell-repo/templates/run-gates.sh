@@ -7,8 +7,8 @@
 # shellcheck disable=SC2016,SC2027,SC2086,SC2154
 
 # Requires the pinned tools on PATH: shellcheck 0.11.0, shfmt 3.14.0,
-# kcov v42's prebuilt binary (see ci.yml's install block for the exact
-# download commands and sha256 digests).
+# ast-grep 0.45.3, kcov v42's prebuilt binary (see ci.yml's install block
+# for the exact download commands and sha256 digests).
 
 set -u -o pipefail
 
@@ -25,6 +25,8 @@ add "shell-lint" 'for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done'
 add "shell-format" "shfmt -d ."
 add "tests" "./test/run_tests.sh"
 add "coverage" "./coverage-gate.sh"
+add "file-length" "./effective-lines-gate.sh"
+add "doc-header" 'for sh in $(git ls-files "*.sh"); do ast-grep scan --rule ast-grep/header-comment.yml "$sh"; done'
 # The pattern is quote-split ("TOD""O") because this runner is itself a
 # *.sh file the gate scans: unsplit, the literal regex bytes here would
 # self-match and the gate could never go green. Options come BEFORE the

@@ -5,11 +5,14 @@ description: >-
   enforcement stack: ShellCheck at its default style severity with the man
   page's two optional checks and reasoned rc directives, shfmt gated by the
   .editorconfig via `shfmt -d .`, a kcov-based coverage-gate.sh that fails
-  the build below 95% line coverage with recorded proofs, release binaries
-  pinned by sha256 digest in CI, and the shared hygiene set (typos,
+  the build below 95% line coverage with recorded proofs, an effective-lines
+  file-length gate at 200 with a heredoc state machine, an ast-grep
+  header-comment presence gate (Google shell style section 4.1), release
+  binaries pinned by sha256 digest in CI, and the shared hygiene set (typos,
   markdownlint, lychee, gitleaks, jscpd, TODO grep, yamllint, actionlint).
   Use when the user asks to initialize, bootstrap, or set up a new shell
-  project or repository with strict linting and a code-coverage gate.
+  project or repository with strict linting, a code-coverage gate, and
+  file-length and doc-comment gates.
 ---
 
 # Initialize a strict shell repository
@@ -38,7 +41,10 @@ only record the work.
    by the entries in `scripts/verify-sync.sh` of the strictest-setups
    repo): `.shellcheckrc -> .shellcheckrc`, `.editorconfig ->
    .editorconfig`, `coverage-gate.sh -> coverage-gate.sh` (then
-   `chmod +x coverage-gate.sh`), `run-gates.sh -> run-gates.sh` (then
+   `chmod +x coverage-gate.sh`), `effective-lines-gate.sh ->
+   effective-lines-gate.sh` (then `chmod +x effective-lines-gate.sh`),
+   `ast-grep/header-comment.yml -> ast-grep/header-comment.yml`,
+   `run-gates.sh -> run-gates.sh` (then
    `chmod +x run-gates.sh`), `ci.yml -> .github/workflows/ci.yml`,
    `test/run_tests.sh -> test/run_tests.sh` (then `chmod +x
    test/run_tests.sh`), `src/greeter.sh -> src/greeter.sh`, and the
@@ -55,17 +61,20 @@ only record the work.
    folders, because shell has no package manager or build system to
    generate a test target and the coverage gate needs a runnable suite to
    exist.
-4. Install the pinned tools: `brew install shellcheck shfmt kcov` (macOS)
-   or download the same pinned release binaries the copied `ci.yml`
+4. Install the pinned tools: `brew install shellcheck shfmt kcov ast-grep`
+   (macOS) or download the same pinned release binaries the copied `ci.yml`
    installs on Linux — shellcheck 0.11.0, shfmt 3.14.0, kcov v42's
-   prebuilt binary. Verify the versions: `shellcheck --version`,
-   `shfmt --version`, `kcov --version`.
+   prebuilt binary, ast-grep 0.45.3. Verify the versions:
+   `shellcheck --version`, `shfmt --version`, `kcov --version`,
+   `ast-grep --version`.
 5. Run every gate and make each one pass or fail for a known, acceptable
    reason:
    - `for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done`
    - `shfmt -d .`
    - `./test/run_tests.sh`
    - `./coverage-gate.sh`
+   - `./effective-lines-gate.sh`
+   - `for sh in $(git ls-files "*.sh"); do ast-grep scan --rule ast-grep/header-comment.yml "$sh"; done`
    ShellCheck's default severity is style — every finding fails the
    build; write the code the rule asks for — never disable a rule to
    pass the build without a written reason in `.shellcheckrc`.
@@ -74,8 +83,8 @@ only record the work.
    check-unassigned-uppercase) may be dropped with a one-line reason if
    they prove noisy for the project's style, and the todo-policy gate may
    be widened to other extensions the project carries. The default
-   severity, the `.editorconfig` format gate, and the coverage gate are
-   not negotiable.
+   severity, the `.editorconfig` format gate, the coverage gate, the
+   file-length gate, and the header-comment gate are not negotiable.
 7. Wire the free coverage badge: the `ci.yml` template already uploads
    kcov's cobertura report to Coveralls (`coverallsapp/github-action@v2`
    runs on the built-in GITHUB_TOKEN and auto-detects cobertura reports).

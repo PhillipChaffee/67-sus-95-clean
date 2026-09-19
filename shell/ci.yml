@@ -9,7 +9,9 @@
 # shellcheck and shfmt the digest is the one the GitHub release API
 # records; kcov v42's tarball predates per-asset digests, so its digest
 # was computed from the asset itself — the same asset bats-core's own CI
-# downloads (kcov v43 publishes no Linux release assets).
+# downloads (kcov v43 publishes no Linux release assets). ast-grep 0.45.3
+# publishes no per-asset digests either, so its digest is computed from
+# the exact release asset at pin time, the kcov precedent.
 permissions:
   contents: read  # least privilege: no step in this workflow writes to the repo (GitHub secure-use reference)
 name: CI
@@ -48,6 +50,11 @@ jobs:
           echo "78aa17a5f6d27a867cc0540b1550051591d350423a1a0ef98d63c9ce7cc10f9d  /tmp/kcov.tar.gz" | sha256sum --check --status
           mkdir /tmp/kcovx && tar xz -C /tmp/kcovx -f /tmp/kcov.tar.gz
           sudo mv /tmp/kcovx/usr/local/bin/kcov /usr/local/bin/
+          ASTGREP_VERSION=0.45.3
+          curl --connect-timeout 10 --max-time 300 -sSfL "https://github.com/ast-grep/ast-grep/releases/download/${ASTGREP_VERSION}/app-x86_64-unknown-linux-gnu.zip" -o /tmp/astgrep.zip
+          echo "f8ac83088133d1edee6b2652f54798c0f4da5a827f2db38a08ee31117783ce8  /tmp/astgrep.zip" | sha256sum --check --status
+          mkdir /tmp/astgrepx && unzip -q /tmp/astgrep.zip -d /tmp/astgrepx
+          sudo mv /tmp/astgrepx/ast-grep /usr/local/bin/
       # No -S flag: ShellCheck's default severity is style, the strictest.
       # Exit code 1 (any issue at that severity) fails the step.
       - name: Shell lint
@@ -61,6 +68,13 @@ jobs:
       # build still uploads its red coverage and the badge tells the truth.
       - name: Coverage gate
         run: ./coverage-gate.sh
+      - name: File length (effective lines)
+        run: ./effective-lines-gate.sh
+      # Parse-aware header-comment presence (Google shell style 4.1): the
+      # shebang is skipped, so a "#" inside a heredoc can never stand in
+      # for the header. Exit 1 on error-severity matches fails the step.
+      - name: Header comment presence (ast-grep 0.45.3)
+        run: for sh in $(git ls-files "*.sh"); do ast-grep scan --rule ast-grep/header-comment.yml "$sh"; done
       # Free for public repositories on the built-in GITHUB_TOKEN, no
       # secret. kcov writes cobertura.xml inside its per-run report
       # directories; with no file/files input the Coveralls reporter

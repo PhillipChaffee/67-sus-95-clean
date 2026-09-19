@@ -1,12 +1,13 @@
 # shell/ — the shell strict baseline
 
 The stack below is verified, not theoretical: it was exercised against
-ShellCheck **0.11.0**, shfmt **3.14.0**, and kcov (Homebrew 43_1 on macOS
-for the recorded proofs; the CI template installs v42's prebuilt Linux
-binary — v43 publishes none — and the gate parses kcov's documented
-coverage.json schema, identical across both). Its coverage gate was run
-three times on a scratch project — passing at 100.00%, failing at 85.71%,
-and failing on a red suite. Every enable below carries its reason.
+ShellCheck **0.11.0**, shfmt **3.14.0**, ast-grep **0.45.3**, and kcov
+(Homebrew 43_1 on macOS for the recorded proofs; the CI template installs
+v42's prebuilt Linux binary — v43 publishes none — and the gate parses
+kcov's documented coverage.json schema, identical across both). Its
+coverage gate was run three times on a scratch project — passing at
+100.00%, failing at 85.71%, and failing on a red suite. Every enable below
+carries its reason.
 
 ## What is enforced
 
@@ -63,17 +64,185 @@ static analysis (unquoted expansions, unassigned variables, dead code,
 SC2034/SC2059-class data errors) plus shfmt's exhaustive static parse.
 Recorded here rather than invented around.
 
-### Documentation & comments
+### Complexity — cognitive (refused, after a measured candidate was probed)
 
-No stable checker for shell comment or doc-comment prose exists — the
-ShellCheck rule index carries no doc-comment content rule (SC2148, "add a
-shebang", is the nearest comment-adjacent check), and the doc generators
-under that name have no official docs or releases to pin. The house
-comment rules (why-not-what, present state only, no caller references)
-remain human policy, shipped in the new repo's AGENTS.md by the init
-skill. Machine enforcement stays where shellcheck does have it: a script
-without a shebang is a finding, and `shell=bash` directives on sourced
-libraries are checkable facts.
+Cognitive complexity is the only complexity metric this stack would gate
+(the family-wide consolidation decision), and shell now has a candidate:
+**panbanda/omen** (`omen-cli` 4.30.0, Apache-2.0, tree-sitter-bash, binary
+gate `omen -p <dir> complexity --gate error --max-cognitive 15` → exit 2).
+It was adopted-if-measured on the rust/arborist-cli precedent: a spec
+battery of shell fixtures with hand-computed SonarSource scores, plus a
+supply-chain review of the pinned install (release tarballs with per-asset
+sha256 sidecars — the same trust anchor this stack's downloads already
+use). The probes measured, and **the binding probe failed: the fallback
+the ratifying decision named fired — the refusal stands, naming omen's
+measured divergences.**
+
+What the 4.30.0 probes measured (markdown output, `omen -p <dir>
+complexity`):
+
+```text
+if/elif/elif/else chain        -> 4     spec 4   (exact)
+case with three arms           -> 1     spec 1   (exact: switch +1, arms add nothing)
+if nested in for               -> 3     spec 3   (exact)
+two fors nesting an if         -> 6     spec 6   (exact)
+while + nested case + until    -> 4     spec 4   (exact)
+if/else inside $( ) subshell   -> 2     spec 2   (subshell contents count)
+flat "a && b && c" sequences   -> 0     spec 2   (LOGICAL SEQUENCES NEVER COUNT)
+all-top-level script (if/else + for, no fn) -> no items (TOP-LEVEL NEVER SCORED)
+```
+
+Two divergences, both source-confirmed against the pinned release:
+
+1. **Top-level code outside functions is never scored.** omen's bash
+   complexity entries are extracted from `function_definition` nodes only
+   (`src/parser/mod.rs`, `get_function_node_types`); the analyzer walks
+   only extracted functions (`src/analyzers/complexity.rs`), and there is
+   no config to change it. The ratifying decision made this probe binding:
+   shell gate scripts are mostly top-level, so a per-function-only gate is
+   near-vacuous where shell needs it most. On this reference tree the
+   result: `shell/coverage-gate.sh` and most of `scripts/verify-sync.sh`
+   are invisible to it.
+2. **`&&`/`||` sequences never count in bash.** omen's cognitive walker
+   scores logical operators on the `binary_expression`/`logical_expression`
+   /`boolean_operator` node kinds — kinds that do not exist in the
+   tree-sitter-bash grammar (command lists are `list` nodes), so every
+   `&&`/`||` sequence scores zero even inside functions (spec: +1 per
+   sequence, the whitepaper's structural increment). The under-count is
+   confirmed by source, not just probes: the idiom-heavy shell lines the
+   whitepaper's sequences rule exists for are exactly the ones omitted.
+
+What passed is recorded so the refusal is honest: if/elif/else chains,
+case, for/while/case nesting are spec-exact; the file-length and
+doc-substance gates below carry the rest. What changes the answer: an omen
+version whose bash entries include top-level code (or a script mode) and
+whose bash walker counts logical-operator sequences — re-probe then.
+
+Remedy for oversized functions in the meantime: human review, backed by
+the file-length gate below (a function complex enough to matter usually
+pushes its file past 200 effective lines first).
+
+### File length — the effective-lines gate
+
+```bash
+./effective-lines-gate.sh
+```
+
+No native shell tool enforces a file-length limit (shellcheck's rule index
+has no file-level check; shfmt is formatter-only — research #15). The gate
+is a script on the coverage-gate.sh pattern: pure bash + one POSIX awk
+program, no dependencies. "Effective lines" counts a physical line unless
+it is blank or its first non-whitespace character is `#` — the same
+definition eslint gives TypeScript's `max-lines` (skipBlankLines +
+skipComments). One shell-specific exception: inside a heredoc body a `#`
+is content, not a comment, so a queue-based heredoc state machine
+(bash-exact on `<<-` tab-stripped terminators, quoted delimiters,
+whitespace between operator and word, and one-command-many-heredocs)
+reclassifies `#` lines inside heredocs as code. The counting is
+deliberately line-shaped, and that shape carries a documented imprecision
+in the script header: a `<<` inside a string literal or an arithmetic
+shift is mistaken for a heredoc operator, so the following lines count
+until a line matching the fake delimiter — always the conservative
+(higher-count) direction for a maximum. An unreadable file fails the
+gate: fail closed, never silently.
+
+- Threshold: **200 effective lines** — ratified per-language (shell idiom
+  is short files); no parity with go 750 / python & rust 1000 / TS 300.
+- Scope: every `*.sh` file git tracks, repo-wide, tests included, no
+  generated-file exemption (shell generates no code).
+- Remedy: split the script.
+
+THE GATE IS TESTED (recorded runs on scratch fixtures):
+
+```text
+201 effective lines                                       -> FAIL (exit 1)
+exactly 200 effective                                     -> PASS (exit 0)
+5 "#"-leading lines inside a heredoc body                 -> 9 effective (counted as content)
+"<<-" body with tab-indented terminator                   -> 5 effective (terminator pops)
+two heredocs opened on one line (queue)                   -> 6 effective (A body, A term, B body, B term)
+"<<<" here-string                                         -> 1 effective (not a heredoc; comment excluded)
+"$((1 << 2))" shift                                       -> 2 effective (fake start: over-count, conservative)
+100 code + 60 comments + 40 blanks                        -> 100 effective
+unreadable file (chmod 000)                               -> FAIL: "cannot read ...; fix the
+                                                             tooling, never skip the gate" (exit 1)
+```
+
+### Documentation & comments — the header-comment gate (ast-grep)
+
+```bash
+for sh in $(git ls-files "*.sh"); do ast-grep scan --rule ast-grep/header-comment.yml "$sh"; done
+```
+
+The narrowed doc-gate bundle, per the ratified decision:
+
+- **Comment prose quality: REFUSED (unchanged).** Nothing mechanical
+  checks comment prose in shell: ShellCheck's 421-rule index has no
+  comment-prose rule, bashate's check list touches nothing comment-related
+  (and is unmaintained since 2022), vale's code-comment table has no shell
+  entry, proselint is prose-file-only, textlint has no `.sh` parser,
+  LanguageTool has no code-comment mode, and Google Shell Style Guide
+  §4.1/§4.2 have no implementing tool. What changes the answer: a stable,
+  pinned shell comment-prose checker.
+- **Header-comment presence: ADOPTED** — the mechanical slice of §4.1
+  ("Every file must have a top-level comment including a brief overview
+  of its contents"), as an **ast-grep 0.45.3 house rule**
+  (`ast-grep/header-comment.yml`): parse-aware, so the shebang is skipped
+  (tree-sitter-bash parses it as a comment) and a `#` inside a heredoc can
+  never stand in for the header — regex cannot say that. The rule wants a
+  non-shebang comment at the file's first node, or as the second node when
+  a shebang leads; error severity, exit 1 on any finding.
+
+```yaml
+id: shell-file-missing-header-comment
+language: bash
+severity: error
+rule:
+  kind: program
+  any:
+    # No shebang: the first node must already be the header comment.
+    - not:
+        has:
+          kind: comment
+          stopBy: neighbor
+          nthChild: 1
+    # Shebang: a header comment must follow it before any code.
+    - all:
+        - has:
+            kind: comment
+            stopBy: neighbor
+            nthChild: 1
+            regex: '^#!'
+        - not:
+            has:
+              kind: comment
+              stopBy: neighbor
+              nthChild: 2
+```
+
+THE GATE IS TESTED (recorded runs on scratch fixtures, ast-grep 0.45.3):
+
+```text
+shebang + header comment                                  -> PASS
+shebang + code, no header                                 -> FAIL (exit 1)
+code only, no shebang                                     -> FAIL (exit 1)
+header comment only, no shebang                           -> PASS
+shebang + blank line + header comment                     -> PASS
+shebang only, nothing else                                -> FAIL (exit 1)
+shebang + code + trailing comment                         -> FAIL (exit 1)
+"# shellcheck shell=bash" directive first                 -> PASS (mechanical ceiling: presence only)
+heredoc-heavy file with a real header                     -> PASS
+empty file                                                -> PASS (ast-grep matches nothing; documented)
+```
+
+- **Function-comment presence (§4.2) not adopted** — noise risk on
+  one-liner helper functions. Escape hatch: if code review repeatedly
+  catches one specific failure, add that single rule with the recorded
+  incidents.
+- **shdoc-ng refused** — an opt-in `## @tag` annotation validator that
+  never flags undocumented functions; adopting it would impose an
+  annotation convention the narrow reopen never demanded.
+- Unchanged: SC2148 (shebang) and the fail-closed TODO grep stay active;
+  comment spelling is already gated by typos' byte-level scan.
 
 ### Coverage — the gate
 
@@ -317,10 +486,12 @@ for sh in $(git ls-files "*.sh"); do shellcheck "$sh"; done  # lint gate
 shfmt -d .                     # format gate
 ./test/run_tests.sh            # tests
 ./coverage-gate.sh             # coverage gate
-brew install shellcheck shfmt kcov  # local tool install (see ci.yml for the pinned CI downloads)
+./effective-lines-gate.sh      # file-length gate
+for sh in $(git ls-files "*.sh"); do ast-grep scan --rule ast-grep/header-comment.yml "$sh"; done  # header-comment gate
+brew install shellcheck shfmt kcov ast-grep  # local tool install (see ci.yml for the pinned CI downloads)
 ```
 
-Runner-CI parity: 12 runner entries <-> 12 CI gate steps (4 language
+Runner-CI parity: 14 runner entries <-> 14 CI gate steps (6 language
 gates + 8 hygiene steps; the tool installs are not gates). No
 advisories/license steps exist to mirror: osv-scanner scans dependency
 lockfiles, a shell repository carries none, and the pinned scanner exits
@@ -363,10 +534,19 @@ and each entry names what changes the answer.
 - No type system. ShellCheck's static analysis is the ceiling; there is
   no annotation or inference layer to enable. What changes the answer: a
   maintained shell type checker with official standing.
-- No doc-comment gate. Nothing mechanical checks comment prose quality
-  or requires a header comment per script (SC2148 requires only the
-  shebang). The house comment rules stay human policy. What changes the
-  answer: a stable, pinned doc-comment checker for shell.
+- No doc-comment prose gate. Nothing mechanical checks comment prose
+  quality (the header-comment presence gate above closed the presence
+  hole); the house comment rules stay human policy. What changes the
+  answer: a stable, pinned shell comment-prose checker.
+- No cognitive-complexity gate. The only tool that computes SonarSource
+  cognitive complexity for shell, omen 4.30.0, was probed and refused on
+  measured spec divergences: it never scores top-level code outside
+  functions (bash entries come from `function_definition` nodes only, so
+  most shell gate scripts score nothing) and it never counts `&&`/`||`
+  sequences in bash (the walker's logical-operator node kinds do not
+  exist in the tree-sitter-bash grammar). What changes the answer: an
+  omen version that scores top-level bash code (or ships a script mode)
+  and counts logical-operator sequences — re-probe then.
 - No `set -euo pipefail` enforcement. No ShellCheck rule requires the
   flag set (SC2164 and SC2312 catch nearest-by effects, not the policy).
   What changes the answer: a ShellCheck rule keyed on the missing set
