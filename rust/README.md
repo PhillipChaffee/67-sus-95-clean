@@ -35,6 +35,112 @@ workspace until `cargo check` fails on any undocumented public item and
 CI runs `cargo clippy --workspace --all-targets -- -D warnings` — so every
 warn level here is an error in CI. The doc lints do not take that courtesy path.
 
+### Complexity — cognitive (arborist)
+
+```bash
+arborist --threshold 15 --exceeds-only --gitignore --languages rust .
+```
+
+Cognitive complexity is the only complexity metric this stack gates (the
+consolidation decision). The gate is **arborist-cli 0.2.1**, installed
+`cargo install --locked --version 0.2.1 arborist-cli` — the most
+spec-faithful *measured* rust implementation of the SonarSource
+cognitive-complexity whitepaper (17/23 spec probes match at this pin).
+Clippy's own `cognitive_complexity` restriction lint was considered and
+refused as the spec gate: it self-disclaims in source — "left in
+`restriction` so as to not mislead users into using this lint as a
+measurement tool" — and counts flat decisions only.
+
+- Threshold: **15** — Sonar's own S3776 default, the parity anchor every
+  language in this baseline gates at (go gocognit 15, python complexipy 15,
+  shell omen 15, TS sonarjs 15). arborist has no config file, so the
+  threshold lives in the gate command (ci.yml and run-gates.sh); raise it
+  only with a written reason there.
+- Measured divergences from the whitepaper, recorded honestly: flat `else
+  if` chains inflate (a 4-way chain scores 9 where the spec counts 4,
+  monotonic in chain depth — the conservative direction); labeled breaks
+  and indirect recursion each under-count by one; a nested fn's body
+  scores inside its enclosing function at nesting 0, not as a separate
+  entry.
+- Binary gate: exit 0 when nothing exceeds; exit 1 when any function
+  scores above the threshold (a `!` marks the row); exit 2 on a missing
+  file. Scope is the whole tree — tests included, no carve-out;
+  `--gitignore` keeps `target/` out (traversal honors .gitignore inside a
+  git checkout) and `--languages rust` keeps the gate scoped to rust
+  sources.
+- Supply chain: the version is pinned with `--locked`; the tool is an
+  external binary, not a dev-dependency, so none of its ~300-package tree
+  enters the gated repository's lockfile or its cargo-deny/osv-scanner
+  gates. The trade-offs section records the lockfile review.
+
+THE GATE IS TESTED (recorded runs on the template fixture at the pin):
+
+```text
+clean tree                          -> exit 0
+seeded fn scoring 21 (6 nested ifs) -> "21 !", exit 1 (threshold 15)
+score-15 seed (5 nested ifs)        -> exit 0 (boundary: 15 passes, 16+ fails)
+missing.rs                          -> "error: file not found", exit 2
+```
+
+### File length — the effective-lines gate
+
+```bash
+./effective-lines-gate.sh
+```
+
+Clippy has no file-length rule (verified against the pinned toolchain's
+full lint list: the only lines-count option, `too-many-lines-threshold`,
+caps *functions* — `clippy::too_many_lines`; `max-include-file-size` is a
+byte cap for `include_bytes!` payloads; rustfmt is layout-only). The gate
+is a script on the coverage-gate.sh pattern that carries its own counter —
+a stdlib-only Rust program embedded in the bash script and compiled by the
+rustc the pinned toolchain already provides, so the repository it gates
+gains no Rust source its linters, coverage, or dependency gates would have
+to see.
+
+Effective lines count a physical line unless it is blank, is a whole-line
+comment (opens with `//` — covering `///` and `//!` — or the nesting-aware
+`/* */` scanner leaves no code outside the comment), or lies inside a `/*
+*/` block; attributes count as code. The counting is deliberately
+line-shaped, not a token stream: the `//` and `/*` tokens inside a string
+literal — a raw string `r#"..."#` most visibly — are classified as
+comment markers, so such lines can shift the count a line or two, always
+in the conservative (lower-count) direction. A file that cannot be read
+fails the gate: fail closed, never silently.
+
+- Threshold: **1000 effective lines** — ratified per-language to match
+  python's cap; Sonar's per-language file defaults are 1000 *raw* lines,
+  so 1000 *effective* is stricter than any of them (blanks and comments
+  drop out). No parity with TypeScript's 300.
+- Scope: every `*.rs` file from the repository root, skipping exactly what
+  cargo never reviews: hidden directories, `target/` (build output), and
+  `vendor/` (vendored third-party sources). Generated files are exempt:
+  the canonical `// Code generated ... DO NOT EDIT.` header line in the
+  leading comment section. Test files are capped identically: no test
+  carve-out (a table too big for the cap is data and belongs in a
+  fixture).
+- Remedy: split the file by responsibility (clippy::too_many_lines stays
+  as the per-function axis).
+
+THE GATE IS TESTED (recorded runs on scratch fixtures):
+
+```text
+1001 effective lines                                     -> FAIL (exit 1)
+exactly 1000 effective                                   -> PASS (exit 0)
+1091 physical = 1000 effective (54 whole-line comments,
+  36 blank lines excluded)                               -> PASS (exit 0)
+1003 physical, everything inside nested /* */ blocks     -> 0 effective, PASS
+999 attribute lines + 3 fn lines = 1002 effective        -> FAIL (attributes count)
+1004 physical raw-string lines opening with //           -> 4 effective, PASS
+   (the documented imprecision, conservative direction)
+generated file with the DO NOT EDIT header at 1001
+  effective                                              -> skipped (exempt)
+tests/over_test.rs with 1002 effective                   -> FAIL (exit 1): no test carve-out
+target/gen/over.rs with 1001 effective                   -> skipped (target/)
+chmod-000 file                                           -> "could not run; fix
+  the tooling, never skip the gate"                      -> FAIL (exit 1): never a silent pass
+```
+
 ### Documentation — rustdoc + rustc (deny）
 
 - `[workspace.lints.rustdoc] all = "deny"`: the whole stable group in one
@@ -45,6 +151,20 @@ warn level here is an error in CI. The doc lints do not take that courtesy path.
   with the channel and demands a runnable example on every documented item.
 - `missing_docs = "deny"` under `[workspace.lints.rust]`: no undocumented
   public item compiles, in local builds too.
+- `clippy::doc_paragraphs_missing_punctuation` (restriction, warn — err-as-
+  error in CI): the one mechanical doc-*substance* rule that exists in any
+  rust tooling — every paragraph of a doc comment ends in punctuation, the
+  Google-style period rule. Adopted after the lint ran clean on the
+  template workspace (exit 0, zero findings on idiomatic docs) and proved
+  to fail a seeded unpunctuated paragraph (exit 101 under `-D warnings`).
+  Completeness lints (`missing_errors_doc`, `missing_panics_doc`) are
+  pedantic picks already on; rustdoc's `all = deny` owns the structural
+  side. Prose quality beyond punctuation is review, not lints.
+  THE GATE IS TESTED: the template workspace with idiomatic docs exits 0
+  under `-D warnings`; a seeded paragraph without terminal punctuation
+  fails with "doc paragraphs should end with a terminal punctuation mark"
+  (exit 101), and the one measured false-positive shape (a paragraph
+  ending inside a code span) is recorded in Trade-offs.
 - Because rustdoc lints fire under `cargo doc` only (never under
   `cargo clippy`), CI adds a `Doc comments` job:
   `RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps`.
@@ -408,13 +528,18 @@ cargo clippy --workspace --all-targets -- -D warnings   # lint gate
 RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps   # doc gate
 cargo test --workspace                                  # also runs doc tests
 cargo llvm-cov --workspace --fail-under-lines 95 --lcov --output-path lcov.info
+cargo install --locked --version 0.2.1 arborist-cli     # once, for the cognitive gate
+arborist --threshold 15 --exceeds-only --gitignore --languages rust .   # cognitive gate
+./effective-lines-gate.sh                               # file-length gate (max 1000)
 cargo fmt --all -- --check                              # format gate
 # ...and CI uploads the lcov.info to Coveralls for the free badge
 ```
 
-Runner-CI parity: 21 runner entries <-> 21 CI gate steps (5 language gates + 16 hygiene gates, cargo-deny's three among them; the Coveralls upload, the doc job's rust-cache step, and the tool installs are not gates). The runner deliberately
-excludes the nightly mutation gate (mutation.yml), so its absence there is
-the documented decision, not a miss.
+Runner-CI parity: 23 runner entries <-> 23 CI gate steps (7 language gates
+and 16 hygiene gates, cargo-deny's three among them; the Coveralls upload,
+the doc job's rust-cache step, and the tool installs are not gates). The
+runner deliberately excludes the nightly mutation gate (mutation.yml), so
+its absence there is the documented decision, not a miss.
 
 ## Trade-offs ("strict but staying usable")
 
@@ -425,6 +550,30 @@ the documented decision, not a miss.
   recorded in the install block and reviewed on every pin bump. yamllint is
   the one registry-install exception: GPL-3.0-or-later, deliberately excluded
   from the permissive-only python lockfile, installed by exact pin.
+- arborist-cli is a crates.io registry build (`cargo install --locked
+  --version 0.2.1`), not a digest-pinned release download: the pin is the
+  crate version plus the 300-package lockfile the crate itself ships, so
+  the tree is reproducible byte-for-byte. Its lockfile was reviewed at
+  adoption (osv-scanner + license scan against the shipped lock): 18 known
+  advisories across 8 packages, all in the self-updater's reqwest/tokio/
+  rustls/tar network stack — unreachable from the analysis path the gate
+  runs (pure filesystem) and all carrying upstream fixes, re-check on any
+  pin bump; two licenses sit outside the house allow-list (Zlib on
+  foldhash, CDLA-Permissive-2.0 on webpki-root-certs) and are tool-tree
+  only — nothing of this tree enters the gated repository's lockfile,
+  which is exactly why arborist must never become a dev-dependency. The
+  shipped `self_update` 0.43 self-updater is dormant: only the `update`
+  subcommand touches the network, and against a cargo-installed binary it
+  refuses to self-update and only version-checks; the gate command never
+  invokes it. Residual: no checksum anchor beyond crates.io's own; CI
+  compiles the tree on every runner (~3 min measured locally, rust-cache
+  does not persist `~/.cargo/bin`) — accepted for the template; a
+  digest-pinned prebuilt download is the alternative if that cost bites.
+- `doc_paragraphs_missing_punctuation` has one measured false-positive
+  shape: a paragraph whose last character sits inside a code span (it ends
+  with `` `foo()` ``, not with a sentence) fires. Remedy: end the
+  paragraph with prose, or `#[expect(lint, reason = "...")]`. Bullets and
+  headings are exempt (measured).
 - `missing_docs` was found firing ~330 times on a workspace whose docs would
   have been name-restatements; the way out was not an allow but a bar — each
   doc must say what the signature cannot. If you are initializing a repo with
@@ -441,11 +590,6 @@ the documented decision, not a miss.
 Stated as current facts, not a plan: nothing below is enforced today, and
 each entry names what changes the answer.
 
-- Cognitive complexity. Clippy has no cognitive-complexity rule; the close
-  cousin `clippy::cognitive_complexity` measures a McCabe-style branching
-  score, not Sonar's cognitive complexity, and it is not a stable thresholded
-  gate here. What changes the answer: clippy shipping a cognitive-complexity
-  restriction rule with a defensible threshold.
 - Nesting-depth caps. No clippy/rustc lint counts nesting depth (the
   `nestif`-style signal). What changes the answer: a nesting-depth rule in
   clippy's stable set.

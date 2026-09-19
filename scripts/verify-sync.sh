@@ -41,6 +41,7 @@ rust/AGENTS.md.example			rust/init-rust-repo/templates/AGENTS.md.example
 rust/deny.toml			rust/init-rust-repo/templates/deny.toml
 rust/ci.yml			rust/init-rust-repo/templates/ci.yml
 rust/run-gates.sh			rust/init-rust-repo/templates/run-gates.sh
+rust/effective-lines-gate.sh			rust/init-rust-repo/templates/effective-lines-gate.sh
 rust/mutation.yml			rust/init-rust-repo/templates/mutation.yml
 rust/.typos.toml			rust/init-rust-repo/templates/.typos.toml
 .markdownlint-cli2.jsonc			rust/init-rust-repo/templates/.markdownlint-cli2.jsonc

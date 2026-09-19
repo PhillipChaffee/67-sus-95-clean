@@ -3,21 +3,25 @@ name: init-rust-repo
 description: >-
   Initializes a new Rust repository with the strictest workable enforcement stack:
   clippy pedantic/nursery/cargo plus restriction picks as workspace lints, the
-  rustdoc stable group denied, missing_docs denied, a pinned rust-toolchain.toml,
-  a CI workflow running lint/type/doc/coverage gates, and cargo llvm-cov enforced
-  at >=95% line coverage with a tested fail-under gate. Use when the user asks to
-  initialize, bootstrap, or set up a new Rust project or repository with strict
-  linting, documentation enforcement, and a code-coverage gate.
+  rustdoc stable group denied, missing_docs denied, doc_paragraphs_missing_punctuation
+  as the doc-substance pick, arborist-cli 0.2.1 as the cognitive-complexity gate at
+  15, an effective-lines-gate.sh file-length gate at 1000, a pinned rust-toolchain.toml,
+  a CI workflow running lint/doc/complexity/file-length/coverage gates, and cargo
+  llvm-cov enforced at >=95% line coverage with a tested fail-under gate. Use when
+  the user asks to initialize, bootstrap, or set up a new Rust project or repository
+  with strict linting, documentation enforcement, and a code-coverage gate.
 ---
 
 # Initialize a strict Rust repository
 
 Sets up a brand-new Rust repository so that `cargo check` fails on any
 undocumented public item, `cargo doc` fails on any broken doc link, clippy's
-strict groups/lints run as errors in CI, and `cargo llvm-cov
---fail-under-lines 95` fails the build below 95% line coverage. Read this
-repo's `rust/README.md` for the reasoning behind every piece; the steps below
-assume that reasoning and only record the work.
+strict groups/lints run as errors in CI, `arborist --threshold 15
+--exceeds-only` fails on any function above cognitive complexity 15,
+`./effective-lines-gate.sh` fails on any file above 1000 effective lines,
+and `cargo llvm-cov --fail-under-lines 95` fails the build below 95% line
+coverage. Read this repo's `rust/README.md` for the reasoning behind every
+piece; the steps below assume that reasoning and only record the work.
 
 # Preconditions
 
@@ -38,6 +42,8 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    `rust-toolchain.toml -> rust-toolchain.toml`,
    `rustfmt.toml -> rustfmt.toml`, `ci.yml -> .github/workflows/ci.yml`,
    `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
+   `effective-lines-gate.sh -> effective-lines-gate.sh` (then
+   `chmod +x effective-lines-gate.sh`),
    `mutation.yml -> .github/workflows/mutation.yml`,
    `deny.toml -> deny.toml`, `lychee.toml -> lychee.toml`,
    `AGENTS.md.example -> AGENTS.md`, and the shared hygiene copies
@@ -64,13 +70,21 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    - `cargo deny check bans` (the three supply-chain policy checks over the
       copied `deny.toml`; a stale advisory database fails the run)
    - `cargo shear --deny-warnings`
+   - `cargo install --locked --version 0.2.1 arborist-cli && arborist
+      --threshold 15 --exceeds-only --gitignore --languages rust .` — any
+      function above cognitive complexity 15 fails
+   - `./effective-lines-gate.sh` (any file above 1000 effective lines fails)
    - the TODO policy grep as shipped in ci.yml: `rc=0; git grep --untracked
       --no-recurse-submodules -nE "TODO|FIXME" -- "*.rs" || rc=$?;
       test "$rc" -eq 1` — a marker or a scanner failure fails the step; only
       "no matches" passes (fail-closed)
    `missing_docs = "deny"` means an undocumented pub item FAILS the build;
    write the doc or scope a `#[expect(missing_docs, reason = "...")]` —
-   never delete the lint to pass the build.
+   never delete the lint to pass the build. The cognitive gate means an
+   over-threshold function FAILS; split the function — never raise the
+   threshold to pass the build. The effective-lines gate means an
+   over-cap file FAILS; split the file by responsibility — never raise
+   the threshold to pass the build.
 6. Edit the restriction picks in `[workspace.lints.clippy]` to the failure
    modes this project actually has, one reason per pick; the template ships
    the crash-and-printer picks common to shipped binaries.
@@ -85,7 +99,7 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
 
 # Gates
 
-- After step 5, ALL ten commands run green (or a documented, pre-existing
+- After step 5, ALL twelve commands run green (or a documented, pre-existing
   decision explains any red).
 - `scripts/verify-sync.sh` in this reference repo still passes: templates
   must be edits of the canonical files, not independent forks.

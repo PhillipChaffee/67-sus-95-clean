@@ -23,6 +23,8 @@ add "lint" "cargo clippy --workspace --all-targets -- -D warnings"
 add "doc" "RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps"
 add "tests" "cargo test --workspace"
 add "coverage" "cargo llvm-cov --workspace --fail-under-lines 95 --fail-under-regions 95 --fail-under-functions 95 --lcov --output-path lcov.info"
+add "cognitive" "arborist --threshold 15 --exceeds-only --gitignore --languages rust ."
+add "file-length" "./effective-lines-gate.sh"
 
 add "spell-check" "typos"
 add "markdown-lint" "markdownlint-cli2 \"**/*.md\""

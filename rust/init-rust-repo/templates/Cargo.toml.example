@@ -54,6 +54,14 @@ print_stderr = "warn"
 # build, so stale suppressions surface on their own; a bare allow silences a
 # lint forever and reads as code that passed review by accident.
 allow_attributes_without_reason = "warn"
+# Doc prose has exactly one mechanically checkable substance rule in any
+# rust tooling: each paragraph of a doc comment ends in punctuation
+# (restriction; the Google-style period rule). Adopted after the lint ran
+# clean on the template workspace and proved to fail a seeded unpunctuated
+# paragraph — the mechanical ceiling of doc-substance checking here, since
+# completeness lints (missing_errors_doc/missing_panics_doc) are pedantic
+# picks already on and prose quality itself is review, not lints.
+doc_paragraphs_missing_punctuation = "warn"
 
 # Every crate in the workspace inherits the table ([lints] workspace = true
 # below); cargo will not mix an inherited table with a package-local one, so

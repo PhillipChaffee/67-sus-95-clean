@@ -35,6 +35,23 @@ jobs:
       # lcov.info on disk).
       - name: Coverage gate (lines, regions, functions — 95 each)
         run: cargo llvm-cov --workspace --fail-under-lines 95 --fail-under-regions 95 --fail-under-functions 95 --lcov --output-path lcov.info
+      # Cognitive complexity is the only complexity metric this stack gates
+      # (the consolidation decision). Threshold 15 is Sonar's S3776 default,
+      # the parity anchor every language in this baseline gates at. arborist
+      # has no config file, so the threshold lives in this step and
+      # run-gates.sh; raise it only with a written reason here. Measured
+      # divergences from the SonarSource whitepaper (full list in
+      # rust/README.md): flat else-if chains inflate (a 4-way chain scores 9
+      # where the spec counts 4 — the conservative direction), labeled breaks
+      # under-count by one, and a nested fn's body scores inside its
+      # enclosing function at nesting 0. The tool is pinned --locked and its
+      # self-updater is dormant: the analysis path never touches the network.
+      - name: Cognitive-complexity gate (arborist-cli 0.2.1 --locked, threshold 15)
+        run: |
+          cargo install --locked --version 0.2.1 arborist-cli
+          arborist --threshold 15 --exceeds-only --gitignore --languages rust .
+      - name: Effective-lines gate (max 1000, from effective-lines-gate.sh)
+        run: ./effective-lines-gate.sh
       # Free for public repositories, no account and no secret: the action
       # takes the built-in GITHUB_TOKEN. Pinned action version. The lcov
       # format is Coveralls' native one.
