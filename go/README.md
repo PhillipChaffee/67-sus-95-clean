@@ -230,6 +230,8 @@ same shape as real whole-line comments -> 742 effective -> PASS (exit 0)
 big_test.go with 751 effective lines -> FAIL (exit 1): no test carve-out
 internal/big.go with 751 effective lines -> FAIL (exit 1): nested packages are scanned
 .git/, vendor/, testdata/ over-cap files -> skipped (exit 0)
+no go toolchain on PATH -> FAIL with the tooling error printed (exit 1):
+fail closed, never a silent pass
 ```
 
 ### Hygiene — spell check (typos)
