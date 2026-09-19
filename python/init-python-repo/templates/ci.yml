@@ -38,6 +38,10 @@ jobs:
       - run: mypy .
       - name: Coverage gate (fail_under = 95, from pyproject.toml)
         run: pytest
+      - name: Cognitive-complexity gate (max-complexity-allowed = 15, from pyproject.toml)
+        run: complexipy .
+      - name: Effective-lines gate (max 1000, from effective-lines-gate.sh)
+        run: ./effective-lines-gate.sh
       # pytest-cov writes coverage.xml before it evaluates fail_under, so the
       # upload below still runs on a red gate and the badge tells the truth.
       # Free for public repositories, no account and no secret: the action

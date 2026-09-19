@@ -40,6 +40,15 @@ ignore = [
     "CPY001",       # demands a copyright stamp on every file; a legal-layer policy, not a code-quality signal
     "TRY003",       # fires on every `raise` carrying a message, demanding a custom class per message; EM101/EM102 keep the message discipline instead
     "TD002",        # TODO authorship is git blame's job; the comment cannot stay in sync
+    # --- complexity consolidation: cognitive complexity is the only
+    # complexity metric this stack gates (complexipy, below). The unweighted
+    # counters of the cyclomatic family left with it: C901 (McCabe) and the
+    # branch/return counters PLR0912/PLR0911 judged the same shape the
+    # cognitive gate now owns. PLR0915 (too-many-statements) STAYS as the
+    # per-function size axis.
+    "C901",         # cyclomatic complexity (McCabe); superseded by complexipy's cognitive score
+    "PLR0911",      # too-many-returns is an unweighted cyclomatic-family counter
+    "PLR0912",      # too-many-branches is unweighted and nesting-blind where cognitive complexity is not
     # --- the uniform TODO policy: FIX002 stays ON, a TODO marker fails the
     # build. This matches the house rule in every other stack: TypeScript
     # fails any todo/fixme comment (no-warning-comments), go fails any
@@ -73,6 +82,20 @@ convention = "google"
     "EM101", "EM102",                       # tests raise short inline messages
     "INP001",                               # the tests directory is not an importable package
 ]
+
+[tool.complexipy]
+# The cognitive-complexity gate (complexipy 8.0.1, the pin in
+# requirements-lock.txt): any function scoring above max-complexity-allowed
+# fails `complexipy .` with exit 1. Threshold 15 — complexipy's documented
+# default, cited as Sonar's own S3776 default, the parity anchor every
+# language in this baseline gates at. complexipy documents its scoring as
+# anchored on the SonarSource cognitive-complexity whitepaper; one measured
+# divergence is recorded honestly: same-operator boolean runs count
+# per-operator (`a and b and c` = 2 where the whitepaper counts 1; mixed
+# `a and b or c` = 3 where it counts 2), so a boolean-heavy chain can read
+# slightly stricter than the spec. Remedy: extract a function
+# (`--suggest-refactors` prints deterministic plans).
+max-complexity-allowed = 15
 
 [tool.mypy]
 strict = true

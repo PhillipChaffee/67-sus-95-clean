@@ -3,8 +3,9 @@
 The stack below is verified against the pinned tools, not folklore: every
 ignore carries its reason, and the coverage gate was proven to fail a build
 under 95% (both runs are recorded in the coverage section). Pin of record:
-ruff 0.16.6, mypy 2.3.1, pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.0,
-deptry 0.25.1, vulture 2.16, import-linter 2.15, mutmut 3.8.0 (nightly).
+ruff 0.16.6, mypy 2.3.1, complexipy 8.0.1, pytest 9.1.1, pytest-cov 7.1.0,
+coverage 7.16.0, deptry 0.25.1, vulture 2.16, import-linter 2.15, mutmut
+3.8.0 (nightly).
 
 ## What is enforced
 
@@ -33,6 +34,17 @@ deptry 0.25.1, vulture 2.16, import-linter 2.15, mutmut 3.8.0 (nightly).
     exception class per message while EM101/EM102 keep the message
     discipline instead; TD002 demands TODO authorship git blame already
     owns.
+  - **Complexity consolidation** (C901, PLR0911, PLR0912): cognitive
+    complexity is the only complexity metric this stack gates (complexipy,
+    below), and the cyclomatic family left with that decision — C901 is
+    McCabe's unweighted counter, PLR0912/PLR0911 count branches and
+    returns unweighted and nesting-blind. PLR0915 (too-many-statements)
+    stays on as the per-function size axis. The proven removal: a
+    thirteen-arm flat dispatch fires exactly C901 (13 > 10), PLR0912
+    (13 > 12), and PLR0911 (8 > 6) under `select = ["ALL"]`, and after the
+    ignores `ruff check` passes it while complexipy scores it 13 — under
+    the 15 cap, because a flat sibling chain is exactly what cognitive
+    complexity prices cheaply.
   - **TODO policy** — the uniform house one, with FIX002 back ON: a TODO
     marker fails the build, matching every other stack (TypeScript fails
     any todo/fixme comment through no-warning-comments, go fails any
@@ -107,6 +119,103 @@ Known-flaky beyond-strict flags, documented here instead of enabled:
   one unannotated third-party call into an unmanageable spray.
 - `disallow_any_unimported` — bans `Any`s inferred through unfollowed
   imports; useful late, punishing before the stub situation is settled.
+
+### Complexity — cognitive (complexipy)
+
+```bash
+complexipy .   # the threshold lives in [tool.complexipy] of pyproject.toml
+```
+
+Cognitive complexity is the only complexity metric this stack gates (the
+consolidation decision — the cyclomatic family C901/PLR0911/PLR0912 is in
+the ignore list above, with its reason). The gate is **complexipy 8.0.1**:
+a Rust wheel (no dependency chain — the lockfile adds the package alone),
+MIT, config in pyproject.toml under `[tool.complexipy]`.
+
+- Threshold: **15** — complexipy's documented default, cited as Sonar's
+  own S3776 default, the parity anchor every language in this baseline
+  gates at (go gocognit 15, rust arborist 15, shell omen 15, TS sonarjs
+  15). complexipy documents its scoring as anchored on the SonarSource
+  cognitive-complexity whitepaper; one measured divergence is recorded in
+  the config comment: same-operator boolean runs count per-operator
+  (`a and b and c` = 2 where the whitepaper counts 1; mixed `a and b or
+  c` = 3 where it counts 2), so a boolean-heavy chain can read slightly
+  stricter than the spec.
+- Measured spec fidelity (probes on the pin): nesting increments exact
+  (three nested ifs = 6), elif chains flat (a 4-arm chain scores 3, no
+  escalation), recursion +1, `with` = 0.
+- Binary gate: `complexipy .` reads the threshold from pyproject.toml and
+  exits 1 when any function scores above it. Scope is the whole tree —
+  tests included, no carve-out (file discovery honors .gitignore, so
+  caches and .venv stay out).
+- Remedy: extract a function; `complexipy . --failed --suggest-refactors`
+  prints deterministic refactor plans. Inline `# complexipy: ignore` exists
+  but suppression needs a live reason like every other stack's carve-out.
+
+THE GATE IS TESTED (recorded runs on scratch fixtures at the pin):
+
+```text
+clean tree            -> exit 0
+seed.py  sixteen 16   -> "16  ❌ FAILED", exit 1 (max-complexity-allowed = 15)
+same seed, threshold 16 in pyproject.toml -> exit 0 (config is honored)
+score-15 seed         -> exit 0; score-16 seed -> exit 1 (boundary: 15 passes, 16 fails)
+```
+
+### File length — the effective-lines gate
+
+```bash
+./effective-lines-gate.sh
+```
+
+Ruff has no file-length rule (verified across its rule index: the
+`too-many-*` family is function/class-level only), and pylint's
+`max-module-lines` counts raw physical lines. The gate is a script on the
+coverage-gate.sh pattern that carries its own counter — a stdlib `ast` +
+`tokenize` program embedded in the bash script, so the repository it
+gates gains no Python source its linters, coverage, vulture, or
+dependency gates would have to see.
+
+Effective lines count a physical line unless it is blank, is a whole-line
+comment, or lies inside a module, class, or function docstring — the same
+definition eslint gives TypeScript's max-lines (`skipBlankLines` +
+`skipComments`), with docstrings in the role doc comments play for
+eslint: python documentation lives in docstrings (PEP 257) and this stack
+mandates Google docstrings, so counting them would penalize required
+behavior. Whole-line comments are classified by `tokenize` COMMENT
+tokens, not by text shape, so a "#" inside a string literal is never
+mistaken for a comment and a non-docstring triple-quoted string counts
+as code, line by line. A file that does not tokenize counts every
+non-blank line: fail closed, never silently.
+
+- Threshold: **1000 effective lines** — pylint's `max-module-lines` and
+  Sonar's per-language defaults are 1000 *raw*; 1000 *effective* is
+  stricter than both because blanks, whole-line comments, and docstrings
+  drop out. Ratified per-language, no parity with TypeScript's 300.
+- Scope: every `*.py` file from the repository root, skipping exactly the
+  precursor's `EXCLUDED_DIRS` (.venv, .git, `__pycache__`, .mypy_cache,
+  .pytest_cache — caches and VCS metadata a gate must never measure).
+  Test files are capped identically: no test carve-out (a table too big
+  for the cap is data and belongs in a fixture).
+- Remedy: split the file by responsibility (PLR0915 stays as the
+  per-function size axis).
+
+THE GATE IS TESTED (recorded runs on scratch fixtures):
+
+```text
+1001 effective lines                                   -> FAIL (exit 1)
+exactly 1000 effective (1001 physical)                 -> PASS (exit 0)
+1073 physical = 962 effective (54 whole-line comments,
+  54 blank lines, 3 docstring lines excluded)          -> PASS (exit 0)
+1101 docstring lines in one function -> 1 effective    -> PASS (docstrings excluded)
+999-assignment file + triple-quoted string whose interior
+lines look like comments -> 1003 effective             -> FAIL (string content counts)
+tests/over_test.py with 1001 effective                 -> FAIL (exit 1): no test carve-out
+.venv/over_venv.py with 1001 effective                 -> skipped (EXCLUDED_DIRS, exit 0)
+syntax-error file: 1022 non-blank counted where the
+valid twin counts 402                                  -> FAIL: fail closed
+no python3 on PATH -> "the counter could not run; fix
+the tooling, never skip the gate"                      -> FAIL (exit 1): never a silent pass
+```
 
 ### Comments — machine + policy
 
@@ -487,18 +596,20 @@ inserts the badge line into the new repository's README.
 
 ```bash
 ./run-gates.sh              # run every gate below, in parallel
-pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16" "import-linter==2.15" "mutmut==3.8.0"
+pip install "ruff==0.16.6" "mypy==2.3.1" "complexipy==8.0.1" "pytest==9.1.1" "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1" "vulture==2.16" "import-linter==2.15" "mutmut==3.8.0"
 ruff check .           # lint + docstring gate
 ruff format --check .  # format gate
 mypy .                 # type gate
 pytest                 # tests + the coverage gate (fail_under = 95, branch = true)
+complexipy .           # cognitive-complexity gate (max 15, from pyproject.toml)
+./effective-lines-gate.sh  # file-length gate (max 1000 effective lines)
 deptry .               # unused-dependency gate
 vulture your_package vulture-allowlist.py  # dead-code gate
 lint-imports           # import-layer and cycle gate
 mutmut run; mutmut export-cicd-stats; python3 -c "import json, sys; s = json.load(open('mutants/mutmut-cicd-stats.json')); score = 100 * s['killed'] // s['total']; print('mutation score %d%% (killed %d/%d, floor 85)' % (score, s['killed'], s['total'])); sys.exit(0 if score >= 85 else 1)"  # nightly mutation-score gate (mutation.yml), not part of run-gates.sh
 ```
 
-Runner-CI parity: 19 runner entries <-> 19 CI gate steps (4 language gates + 15 hygiene steps; the Coveralls upload and the tool installs are not gates). The runner deliberately
+Runner-CI parity: 21 runner entries <-> 21 CI gate steps (6 language gates + 15 hygiene steps; the Coveralls upload and the tool installs are not gates). The runner deliberately
 excludes the nightly mutation gate (mutation.yml), so its absence there is
 the documented decision, not a miss.
 
@@ -531,6 +642,20 @@ the documented decision, not a miss.
   calls) to keep it spurious-free, and when a platform branch truly splits
   the flow, `# type: ignore[unreachable]` with a reason beats dropping the
   flag.
+- **complexipy is single-maintainer and spec-divergent.** One maintainer,
+  the same bus-factor class as this stack's pinned mutmut and vulture; the
+  score is documented as SonarSource-anchored but counts same-operator
+  boolean runs per-operator, so the config comment records the divergence
+  instead of claiming spec identity. A threshold bump re-runs the boundary
+  proof (15 passes, 16 fails) in the same commit as the version strings.
+- **The file-length gate compiles nothing but reads everything.** The
+  embedded counter is stdlib-only and runs on the interpreter python/
+  already requires, so the gated repository gains no source — in exchange,
+  the counter's precision ceiling is the docstring-only exclusion: a
+  non-docstring triple-quoted string counts, line by line, which is the
+  decided direction (string content is code). A file that fails to
+  tokenize counts every non-blank line, and a missing interpreter fails
+  the gate loudly — never a silent pass.
 - Initializing onto a large existing codebase: the D bar can fire hundreds
   of times on docstrings that would have been name-restatements. Budget the
   writing pass, or per-file-ignores the legacy modules with a dated reason —
@@ -541,22 +666,35 @@ the documented decision, not a miss.
 Stated as current facts, not a plan: nothing below is enforced today, and
 each entry names what changes the answer.
 
-- Cognitive complexity. No rule in ruff or mypy computes it (ruff's rule
-  index has no cognitive-complexity rule; mypy type-checks, it does not
-  score readability). What changes the answer: ruff shipping a stable
-  cognitive-complexity rule at a non-preview pin — the TypeScript baseline
-  runs exactly that check through eslint-plugin-sonarjs.
 - Nesting-depth caps. Ruff has no nesting-depth rule (the `nestif`-style
-  signal) and mypy does not count nesting. What changes the answer: a
-  nesting-depth rule in ruff's stable set.
+  signal) and mypy does not count nesting. complexipy prices nesting inside
+  the cognitive score (three nested ifs score 6), but no gate caps nesting
+  on its own. What changes the answer: a nesting-depth rule in ruff's
+  stable set.
 - Repeated literal promoted to a constant. PLR2004 only flags magic values
   used in comparisons; a string repeated across branches is invisible to
   the ruff/mypy surface. What changes the answer: a repeated-literal rule
   in ruff (the `goconst`-style check).
 - Interface and class-size caps. Ruff's size family is stable for functions
-  (PLR0911–PLR0915) but the class-side cap (PLR0906, too many public
+  (PLR0915 stays after the cyclomatic cut; PLR0911–PLR0912 are ignored as
+  cyclomatic-family) but the class-side cap (PLR0906, too many public
   methods) is preview-only, and preview stays off by the baseline's own
   rule. What changes the answer: PLR0906 graduating to stable.
+- Module-level script complexity. complexipy scores functions; module-level
+  control flow outside any function is unscored unless the analysis opts in
+  with `--check-script`, which the gate deliberately does not (the repo's
+  python is package code, not scripts). What changes the answer: a repo
+  that ships executable modules — opt the gate in per that repo.
+- Doc-substance beyond ruff D. ruff `D`/google is the doc gate: presence
+  (D1xx), tag shape, and D417 auditing an existing `Args:` section against
+  the signature. The residual hole: a multi-line docstring, args present,
+  no `Args:` section — Google-nonconformant, yet it passes ruff at the pin
+  (measured exit 0) and pydoclint's default mode, and pydoclint was refused
+  after its fix claim failed empirical verification (neither skip-short
+  mode is Google-faithful). What changes the answer: a stable ruff DOC rule
+  auditing section-less docstrings, or the hole biting in practice — the
+  proven fallback is pydoclint with `--skip-checking-short-docstrings=False`
+  (deliberately stricter than Google).
 - Assertion-less tests. Nothing static here detects a test whose body runs
   no assertion — it passes vacuously. The nightly mutation run covers the
   signal instead: an untested behavior survives as a mutant and fails the

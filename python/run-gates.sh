@@ -22,6 +22,8 @@ add "lint" "ruff check ."
 add "format" "ruff format --check ."
 add "types" "mypy ."
 add "tests+coverage" "pytest"
+add "cognitive" "complexipy ."
+add "file-length" "./effective-lines-gate.sh"
 
 add "spell-check" "typos"
 add "markdown-lint" "markdownlint-cli2 \"**/*.md\""
