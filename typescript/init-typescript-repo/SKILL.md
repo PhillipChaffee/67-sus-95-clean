@@ -73,8 +73,7 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    - `npm test` (the 95% × 4 axes gate: fails under 95% on lines, functions, branches, or statements)
    - `npm run knip` (the dependency-hygiene gate; config in `knip.jsonc`)
    - `npm run lint:lockfile` (the lockfile policy gate)
-   - `npm run lint:graph` (the dependency-cruiser layer/cycle gate) (fine under 95% on any of lines / functions / branches /
-     statements)
+   - `npm run lint:graph` (the dependency-cruiser layer/cycle gate)
    `jsdoc/require-description` means an undocumented exported function
    FAILS the build; write the doc — never delete the rule to pass the
    build. The coverage FAIL output names the axis and the aggregate; fix

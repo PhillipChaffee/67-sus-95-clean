@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>67 sus, 95 clean — strict lint + coverage baselines that make vibe coding and agentic dev safe</title>
-<meta name="description" content="One folder per language carrying strict linting, type checking, docstring and comment rules, and a machine-enforced 95% code-coverage gate, plus hygiene and supply-chain gates (spelling, secrets, duplication, links, dependency advisories and licenses) — with installable AI skills that initialize a new repository from the baseline.">
+<meta name="description" content="One folder per language carrying strict linting, type checking, docstring and comment rules, and a machine-enforced 95% code-coverage gate, plus hygiene and supply-chain gates (spelling, secrets, duplication, links, and — for the manifest-bearing stacks — dependency advisories and licenses) — with installable AI skills that initialize a new repository from the baseline.">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -81,6 +81,14 @@
         <li><code>go tool cover -func</code> total ≥ 95 gate script; <code>go mod tidy -diff</code></li>
       </ul>
     </div>
+    <div class="card">
+      <h3><a href="https://github.com/PhillipChaffee/67-sus-95-clean/tree/main/shell">shell/</a></h3>
+      <ul>
+        <li>shellcheck with a strict <code>.shellcheckrc</code> (every key carries its reason); <code>shfmt -d</code> as the format gate</li>
+        <li>kcov coverage gate script ≥ 95%; TODO marker banned (fail-closed grep)</li>
+        <li>advisories/license refused — shell carries no dependency lockfile manifest</li>
+      </ul>
+    </div>
   </div>
 
   <h2>The gate that has teeth</h2>
@@ -89,12 +97,16 @@
     records two real runs: <strong>covered fixture → passes</strong>, and the same
     fixture with one untested path → <strong>fails the build</strong>.
   </div>
-  <p>Every folder also runs the same pinned hygiene and supply-chain gates, each
+  <p>Every folder also runs the same pinned hygiene gates, each
   with a recorded two-way proof: <code>typos</code>, <code>gitleaks</code>,
   <code>jscpd</code>, <code>markdownlint-cli2</code>, <code>lychee</code>,
-  <code>osv-scanner</code> (advisories + licenses), <code>shellcheck</code>,
-  <code>shfmt</code>, <code>yamllint</code>, and <code>actionlint</code> — all
-  runnable locally through each folder's <code>run-gates.sh</code>.</p>
+  <code>shellcheck</code>, <code>shfmt</code>, <code>yamllint</code>, and
+  <code>actionlint</code> — all runnable locally through each folder's
+  <code>run-gates.sh</code>. The four manifest-bearing folders (rust, python,
+  typescript, go) additionally run <code>osv-scanner</code> advisories +
+  licenses and their language's lockfile-integrity gate; <code>shell</code>
+  refuses them deliberately (a shell repository carries no dependency
+  manifest).</p>
 <pre><code>$ cargo llvm-cov --workspace --fail-under-lines 95 --fail-under-regions 95 --fail-under-functions 95   # rust/
  $ pytest                                             # python/ — coverage's fail_under = 95
  $ npm test                                           # typescript/ — vitest thresholds 95 × 4 axes
