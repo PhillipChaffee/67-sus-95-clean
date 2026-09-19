@@ -29,6 +29,7 @@ add "vet" "go vet ./..."
 add "lint" "golangci-lint run"
 add "tests" "go test ./..."
 add "coverage" "./coverage-gate.sh"
+add "file-length" "./effective-lines-gate.sh"
 
 add "spell-check" "typos"
 add "markdown-lint" "markdownlint-cli2 \"**/*.md\""

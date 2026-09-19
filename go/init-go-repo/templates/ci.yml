@@ -53,6 +53,8 @@ jobs:
       - run: go test ./...
       - name: Coverage gate
         run: ./coverage-gate.sh
+      - name: Effective-lines gate
+        run: ./effective-lines-gate.sh
       # The gate script keeps cover.out on BOTH branches, so a red build still
       # uploads its red coverage and the badge tells the truth. Free for
       # public repositories, no account and no secret: the action takes the

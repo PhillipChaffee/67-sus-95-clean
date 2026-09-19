@@ -4,11 +4,13 @@ description: >-
   Initializes a new Go repository with the strictest workable enforcement
   stack: golangci-lint v2 with the standard set plus hand-picked strict extras
   (gocritic style+performance tags, revive default rules with the exported
-  rule), gofumpt as the formatter gate, a pinned tool version, a
-  pinned Go toolchain in go.mod, and a coverage-gate.sh script that fails the
-  build below 95% statement coverage with recorded proofs. Use when the user
-  asks to initialize, bootstrap, or set up a new Go project or repository with
-  strict linting, documentation enforcement, and a code-coverage gate.
+  rule, godoclint's deprecated and no-unused-link rules), gofumpt as the
+  formatter gate, a pinned tool version, a pinned Go toolchain in go.mod, a
+  coverage-gate.sh script that fails the build below 95% statement coverage
+  with recorded proofs, and an effective-lines-gate.sh file-length gate that
+  fails above 750 effective lines. Use when the user asks to initialize,
+  bootstrap, or set up a new Go project or repository with strict linting,
+  documentation enforcement, and a code-coverage gate.
 ---
 
 # Initialize a strict Go repository
@@ -36,11 +38,12 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    repository root, byte-identical (they pair with the canonical files by the
    entries in `scripts/verify-sync.sh` of the strictest-setups repo):
    `.golangci.yml -> .golangci.yml`, `coverage-gate.sh -> coverage-gate.sh`
-   (then `chmod +x coverage-gate.sh`), `run-gates.sh -> run-gates.sh`
-   (then `chmod +x run-gates.sh`), `ci.yml ->
-   .github/workflows/ci.yml`, and the shared hygiene copies (`lychee.toml`,
-   `.typos.toml`, `.markdownlint-cli2.jsonc`, `.gitleaks.toml`,
-   `.jscpd.json`, `.yamllint.yaml`) -> repository root.
+   (then `chmod +x coverage-gate.sh`), `effective-lines-gate.sh ->
+   effective-lines-gate.sh` (then `chmod +x effective-lines-gate.sh`),
+   `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
+   `ci.yml -> .github/workflows/ci.yml`, and the shared hygiene copies
+   (`lychee.toml`, `.typos.toml`, `.markdownlint-cli2.jsonc`,
+   `.gitleaks.toml`, `.jscpd.json`, `.yamllint.yaml`) -> repository root.
 3. Pin the toolchain: `go mod edit -go=1.27.1 -toolchain=1.27.1` (match the
    current stable at bootstrap time for both lines, and keep the
    `GOTOOLCHAIN: go1.27.1` line in the copied ci.yml in sync with it).
@@ -56,14 +59,17 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    - `golangci-lint run`
    - `go test ./...`
    - `./coverage-gate.sh`
+   - `./effective-lines-gate.sh`
    revive `exported` means an undocumented exported item FAILS
    `golangci-lint run`; write the doc comment — never delete the rule to
+   pass the build. The effective-lines gate means an over-cap Go file
+   FAILS; split the file by responsibility — never raise the threshold to
    pass the build.
 6. Review the hand-picked linters in `.golangci.yml` against what the project
    actually is (if it never touches HTTP, `noctx` rests; if it does not build
    dynamic errors, `err113` rests), and drop those with a one-line reason in
-   the config. The standard set, revive/exported, gocritic tags, gofumpt and
-   the coverage gate are not negotiable.
+   the config. The standard set, revive/exported, gocritic tags, gofumpt, the
+   coverage gate and the file-length gate are not negotiable.
 7. Wire the free coverage badge: the `ci.yml` template already uploads
    cover.out to Coveralls (`coverallsapp/github-action@v2` runs on the
    built-in GITHUB_TOKEN, free for a public repo).
@@ -76,7 +82,7 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
 
 # Gates
 
-- After step 5, ALL eight commands run green (or a documented, pre-existing
+- After step 5, ALL nine commands run green (or a documented, pre-existing
   decision explains any red).
 - `scripts/verify-sync.sh` in this reference repo still passes: templates
   must be edits of the canonical files, not independent forks.

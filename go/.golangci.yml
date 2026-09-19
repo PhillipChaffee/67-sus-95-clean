@@ -41,13 +41,19 @@ linters:
     # golint's replacement: the exported rule enforces the doc-comment bar
     # and with enable-default-rules every default check stays on.
     - revive
-    # Cyclomatic complexity above 10 is the classic McCabe reference point
-    # (Sonar uses the same default); the fix is mechanical: extract a
-    # function.
-    - cyclop
-    # Cognitive complexity over 30 per function is the gocognit README's
-    # cited issue threshold; it counts nesting and breaks, so a flat
-    # 10-branch switch does not trip it the way cyclop does.
+    # Doc comments that lie fail the build — godoclint's two ratified rules
+    # (built into the pinned golangci-lint since v2.5.0, zero new
+    # dependencies): `deprecated` (a doc comment claiming deprecation must
+    # carry the canonical "Deprecated: " paragraph that go tooling parses)
+    # and `no-unused-link` (a [link] definition in a doc comment must be
+    # referenced). A completeness layer (args/returns prose policing) is
+    # refused here: canonical go doc comments are prose-first
+    # (go.dev/doc/comment), so a python-style gate is a category error, not
+    # a gap.
+    - godoclint
+    # Cognitive complexity is the only complexity metric this stack gates
+    # (the consolidation decision removed cyclop, the cyclomatic cousin).
+    # Nesting-weighted control flow is the smell; the remedy is extraction.
     - gocognit
     # Function length caps at funlen's documented defaults (60 lines, 40
     # statements): a function that does not fit a screen is two functions
@@ -103,13 +109,22 @@ linters:
     - tparallel
 
   settings:
-    cyclop:
-      # 10 is the McCabe reference threshold (Sonar's default as well).
-      max-complexity: 10
     gocognit:
-      # 30 is the gocognit README's cited issue threshold: strict but
-      # leaves room for flat, high-branch switch tables.
-      min-complexity: 30
+      # 15 is Sonar's own Go S3776 default — a parity anchor, not a claim
+      # that gocognit implements Sonar's counting (gocognit's else-body
+      # nesting and else-if-chain divergences stand). golangci-lint's
+      # reference config ships "Default: 30 (but we recommend 10–20)" in
+      # the same band; 15 sits inside that recommendation.
+      min-complexity: 15
+    godoclint:
+      # default: none plus an explicit enable list — only the two ratified
+      # rules run. The schema's `basic` set would also switch on require-doc,
+      # start-with-name and friends: a completeness layer the doc decision
+      # refuses for prose-first go doc comments.
+      default: none
+      enable:
+        - deprecated
+        - no-unused-link
     funlen:
       # funlen's documented defaults; the cap is the screen, the reason is
       # readability, and both axes exist because generated-tables code can

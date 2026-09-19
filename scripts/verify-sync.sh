@@ -79,6 +79,7 @@ typescript/package.json			typescript/init-typescript-repo/templates/package.json
 typescript/.prettierignore			typescript/init-typescript-repo/templates/.prettierignore
 go/.golangci.yml			go/init-go-repo/templates/.golangci.yml
 go/coverage-gate.sh			go/init-go-repo/templates/coverage-gate.sh
+go/effective-lines-gate.sh			go/init-go-repo/templates/effective-lines-gate.sh
 shell/ci.yml			shell/init-shell-repo/templates/ci.yml
 shell/run-gates.sh			shell/init-shell-repo/templates/run-gates.sh
 shell/coverage-gate.sh			shell/init-shell-repo/templates/coverage-gate.sh
