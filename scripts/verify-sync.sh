@@ -85,6 +85,8 @@ go/effective-lines-gate.sh			go/init-go-repo/templates/effective-lines-gate.sh
 shell/ci.yml			shell/init-shell-repo/templates/ci.yml
 shell/run-gates.sh			shell/init-shell-repo/templates/run-gates.sh
 shell/coverage-gate.sh			shell/init-shell-repo/templates/coverage-gate.sh
+shell/effective-lines-gate.sh			shell/init-shell-repo/templates/effective-lines-gate.sh
+shell/ast-grep/header-comment.yml			shell/init-shell-repo/templates/ast-grep/header-comment.yml
 shell/.shellcheckrc			shell/init-shell-repo/templates/.shellcheckrc
 shell/.editorconfig			shell/init-shell-repo/templates/.editorconfig
 shell/test/run_tests.sh			shell/init-shell-repo/templates/test/run_tests.sh
