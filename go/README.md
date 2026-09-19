@@ -2,9 +2,11 @@
 
 The stack below is verified, not theoretical: it was exercised against
 golangci-lint **v2.13.2** (config verified against that binary's own schema,
-including the failure mode of a made-up settings key being rejected), and
-its coverage gate was run twice on a scratch module — passing at 100.0% and
-failing at 25.0%. Every enable below carries its reason.
+including the failure mode of a made-up settings key being rejected), its
+coverage gate was run twice on a scratch module — passing at 100.0% and
+failing at 25.0% — and its file-length and doc-substance gates were proven
+both ways on scratch fixtures (records in the sections below). Every
+enable below carries its reason.
 
 ## What is enforced
 
@@ -23,18 +25,21 @@ error out instead of silently misparsing once the version is declared):
   `enable-default-rules: true` plus the `exported` rule widened by its two
   additive flags (`check-private-receivers`, `check-public-interface`).
 - Size-and-shape caps, each with its threshold and reason in the config:
-  `cyclop` (cyclomatic complexity, max 10 — the McCabe reference point, same
-  as Sonar's default; remedy: extract a function), `gocognit` (cognitive
-  complexity, min 30 — the gocognit README's cited issue threshold; a flat
-  wide switch trips cyclop while deep nesting trips this one), `funlen`
+  `gocognit` (cognitive complexity, min 15 — Sonar's own Go S3776 default
+  as a parity anchor, inside golangci-lint's reference config band
+  "Default: 30 (but we recommend 10–20)"; nesting-weighted control flow is
+  the smell, remedy: extract a function), `funlen`
   (60 lines / 40 statements, the documented defaults), `nestif` (nested if
   depth, min 5), `mnd` (unnamed literals in logic, default checks, nothing
   whitelisted — `usestdlibvars` already covers the http-context literals),
   `goconst` (a literal written 3+ times becomes a constant), and
-  `interfacebloat` (max 10 methods). Proven both ways on the template
-  fixture: the clean project runs 0 issues; a seeded violation per family
-  fires with output naming the linter and file (cyclop trips on a wide
-  switch — a chained nested-if shape trips gocognit first at this floor).
+  `interfacebloat` (max 10 methods). Cyclomatic complexity is deliberately
+  absent: cognitive complexity is the only complexity metric this stack
+  gates (the consolidation decision). Proven both ways on the template
+  fixture: the clean project runs 0 issues; a sixteen-branch function with
+  cognitive complexity 16 passes at the old threshold of 30 and fails at 15
+  with output naming the linter and file (`cognitive complexity 16 of func
+  Cog is high (> 15)`).
 - Hygiene and security linters, each with its policy in the config:
   `godox` (TODO and FIXME markers fail the build — the uniform house TODO
   policy; BUG stays out as a tracker state; remedy: resolve the TODO, there
@@ -76,17 +81,41 @@ error out instead of silently misparsing once the version is declared):
 surface — the vet/staticcheck pair IS the strict mode, and the extra linters
 above (predeclared, unconvert, wastedassign) carry the "beyond strict" picks.
 
-### Documentation & comments — revive `exported`
+### Documentation & comments — revive `exported` + godoclint
 
-The machine enforcement is revive's `exported` rule (fired in validation as
+The presence floor is revive's `exported` rule (fired in validation as
 `exported: exported function NoDoc should have comment or be unexported`):
 every exported package, function, method, type, const and var needs a doc
 comment, and the default rules revive carries stay on through
-`enable-default-rules: true`. There is no stable checker for *inline comment
-prose quality* — the why-not-what / present-state-only house rules remain
-human policy, shipped in the new repo's AGENTS.md by the init skill. (godot,
-the nearest mechanical candidate — punctuation policing — is refused; the
-policy lives on content, not final periods.)
+`enable-default-rules: true`.
+
+On top of presence, godoclint's two ratified rules (built into the pinned
+golangci-lint since v2.5.0 — zero new dependencies) fail the build on doc
+comments that lie about their own syntax:
+
+- `deprecated`: a paragraph starting with a deprecation-like marker must
+  start it exactly with `Deprecated:` plus one trailing space — the form
+  go tooling parses. Fired in validation as `deprecation note should be
+  formatted as "Deprecated: "` on a seeded `DEPRECATED:` paragraph; the
+  canonical form does not fire. godoclint parses with go/doc/comment, so it
+  only sees paragraph-initial markers; a lowercase `deprecated:` in the
+  middle of a paragraph is caught by gocritic's `deprecatedComment` checker
+  instead — the two linters cover the shapes the other cannot parse.
+- `no-unused-link`: a `[name]: URL` link definition in a doc comment must
+  be referenced. Fired in validation as `godoc has unused link ("Orphaned
+  Page")` on a seeded orphaned definition; a referenced definition and a
+  valid `[Symbol]` shorthand stay silent.
+
+godoclint runs with `default: none` and only these two rules enabled — the
+schema's `basic` set would also switch on require-doc, start-with-name and
+friends, a completeness layer that is refused for go: canonical go doc
+comments are prose-first (go.dev/doc/comment), so a python-style
+args/returns gate is a category error, not a gap. There is also no stable
+checker for *inline comment prose quality* — the why-not-what /
+present-state-only house rules remain human policy, shipped in the new
+repo's AGENTS.md by the init skill. (godot, the nearest mechanical
+candidate — punctuation policing — is refused; the policy lives on
+content, not final periods.)
 
 ### Coverage — the gate
 
@@ -154,6 +183,56 @@ covered → `PASS — total statement coverage 100.0% ≥ 95%` (exit 0, profile
 deleted); an uncovered helper added → `FAIL — total statement coverage is
 25.0%, required 95%` (exit 1, profile kept); a compile-broken suite →
 `FAIL — go test failed` (exit 1, profile kept).
+
+### File length — the effective-lines gate
+
+```bash
+./effective-lines-gate.sh
+```
+
+`.golangci.yml` has no file-length rule to turn on: golangci-lint's
+linters cap functions (`funlen`) and line length (`lll`), never files.
+The gate is a script on the coverage-gate.sh pattern that carries its own
+counter — a `go/token` scanner with `ScanComments`, embedded in the script
+and run from a temporary stdlib-only module, so the repository it gates
+gains no Go source that its linters, coverage, or dependency gates would
+have to see.
+
+Effective lines count a physical line unless it is blank, is a whole-line
+comment, or lies inside a block comment — the same definition eslint gives
+TypeScript's max-lines (`skipBlankLines` + `skipComments`). Because the
+scanner tokenizes, a `//` inside a raw string literal is never mistaken
+for a comment and block-comment interiors are never mistaken for code. A
+file the scanner cannot read cleanly counts every non-blank line: fail
+closed, never silently.
+
+- Threshold: **750 effective lines** — Sonar's Go S104 default
+  (`GO_DEFAULT_FILE_LINE_MAX = 750`), the only directly citable
+  effective-lines number for Go.
+- Exemption: a file whose section before the package clause carries the
+  canonical `// Code generated ... DO NOT EDIT.` header line
+  (go.dev/s/generatedcode) — the house principle that generated code is
+  not reviewed here.
+- Scope: the scan walks exactly what `go build ./...` sees — dot-prefixed,
+  underscore-prefixed, `vendor`, and `testdata` directories are skipped.
+- `_test.go` files are capped identically: no test carve-out. A table too
+  big for the cap is data and belongs in a fixture.
+
+Remedy: split the file by responsibility (`funlen` stays as the
+per-function axis). THE GATE IS TESTED. Recorded runs on scratch fixtures:
+
+```text
+751 effective lines -> over.go: 751 effective lines exceeds the maximum of 750 (exit 1)
+776 physical = 701 effective (55 whole-line comments + 20 blank lines excluded) -> PASS (exit 0)
+901 effective lines under the generated-code header -> PASS (exempt, exit 0)
+raw string with 11 "//"-looking lines -> string lines count as code: 753 effective -> FAIL (exit 1)
+same shape as real whole-line comments -> 742 effective -> PASS (exit 0)
+big_test.go with 751 effective lines -> FAIL (exit 1): no test carve-out
+internal/big.go with 751 effective lines -> FAIL (exit 1): nested packages are scanned
+.git/, vendor/, testdata/ over-cap files -> skipped (exit 0)
+no go toolchain on PATH -> FAIL with the tooling error printed (exit 1):
+fail closed, never a silent pass
+```
 
 ### Hygiene — spell check (typos)
 
@@ -338,9 +417,10 @@ go vet ./...                                                            # vet
 golangci-lint run                                                       # lint gate
 go test ./...                                                           # tests
 ./coverage-gate.sh                                                      # coverage gate
+./effective-lines-gate.sh                                               # file-length gate
 ```
 
-Runner-CI parity: 19 runner entries <-> 19 CI gate steps (8 language gates including the schema check + 11 hygiene steps; the tool installs are not gates). The runner deliberately
+Runner-CI parity: 20 runner entries <-> 20 CI gate steps (9 language gates including the schema check + 11 hygiene steps; the tool installs are not gates). The runner deliberately
 The runner carries no mutation gate: the mutation-testing
 family is a documented refusal for go (see the accepted-gaps section), so
 nothing nightly exists to exclude.
@@ -359,6 +439,13 @@ nothing nightly exists to exclude.
   branch of every if. Recorded here rather than papered over — the gate
   measures what the toolchain can see.
 - **No fail-under on `go test`** (see above) — the script is the switch.
+- **The file-length gate compiles its counter at run time.** The embedded
+  scanner builds in a temp module on every gate run (a stdlib-only
+  compile; about a second) in exchange for carrying no Go source inside
+  the gated repository. A scanner that cannot run fails the gate with the
+  tooling error printed — never a silent pass. The generated-code
+  exemption trusts the canonical header line: a hand-written file claiming
+  it is out of scope the same way `go build ./...` treats it.
 - `gocritic`'s whole-tag enables mean a new stable check arriving in a
   gocritic bump can fire on old code. The pinned version makes that
   deterministic; the bump policy is fix-what-moved in the same commit.
@@ -398,6 +485,14 @@ each entry names what changes the answer.
   without the gate-contract proofs would be the half state those workstreams
   refused. What changes the answer: one of these tools reaching a stable
   pin with score-floor semantics.
+- Doc-comment substance beyond presence and syntax. revive `exported` plus
+  godoclint's `deprecated`/`no-unused-link` are go's mechanical ceiling:
+  nothing enforces that a doc comment says more than the signature
+  restates, and a python-style args/returns completeness layer is a
+  category error for prose-first doc comments (go.dev/doc/comment), so it
+  is refused rather than recorded as missing. What changes the answer: a
+  maintained tool that mechanically enforces substance for go doc
+  comments.
 - Refused families, not gaps: coupling/cohesion dashboards and
   Halstead/Maintainability-Index/NPath were reviewed and refused — they are
   not accepted gaps and must not be built (`tasks/expand-lint-gates/notes/refusal-decisions.md` records the reasons).
