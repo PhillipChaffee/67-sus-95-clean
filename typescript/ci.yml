@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      # The one npm install that may run package lifecycle scripts; the
+      # committed lockfile (sha512 integrity via lockfile-lint) bounds the
+      # supply chain, and the single hasInstallScript entry (fsevents) is
+      # darwin-optional and skipped on this ubuntu runner.
       - run: npm ci
       - run: npm run format:check
       - run: npm run typecheck
