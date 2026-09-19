@@ -65,6 +65,7 @@ lychee.toml			typescript/init-typescript-repo/templates/lychee.toml
 .jscpd.json			typescript/init-typescript-repo/templates/.jscpd.json
 .yamllint.yaml			typescript/init-typescript-repo/templates/.yamllint.yaml
 python/pyproject.toml			python/init-python-repo/templates/pyproject.toml
+python/effective-lines-gate.sh			python/init-python-repo/templates/effective-lines-gate.sh
 python/vulture-allowlist.py			python/init-python-repo/templates/vulture-allowlist.py
 python/requirements.in			python/init-python-repo/templates/requirements.in
 python/requirements-lock.txt			python/init-python-repo/templates/requirements-lock.txt

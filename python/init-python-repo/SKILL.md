@@ -4,10 +4,12 @@ description: >-
   Initializes a new Python repository with the strictest workable enforcement
   stack: ruff with ALL-minus-documented-ignores plus Google-convention docstring
   enforcement (D), mypy --strict with warn_unreachable beyond it, ruff format,
-  and pytest-cov with branch coverage gated at >=95% by fail_under. Use when the
-  user asks to initialize, bootstrap, or set up a new Python project or
-  repository with strict linting, docstring requirements, type checking, and a
-  code-coverage gate.
+  complexipy as the cognitive-complexity gate at 15, an effective-lines-gate.sh
+  file-length gate that fails above 1000 effective lines, and pytest-cov with
+  branch coverage gated at >=95% by fail_under. Use when the user asks to
+  initialize, bootstrap, or set up a new Python project or repository with
+  strict linting, docstring requirements, type checking, complexity and
+  file-length limits, and a code-coverage gate.
 ---
 
 # Initialize a strict Python repository
@@ -15,7 +17,9 @@ description: >-
 Sets up a brand-new Python repository so that `ruff check .` fails on any
 lint or docstring violation (including every undocumented module, class,
 method, function, or package), `mypy .` runs `--strict` plus
-`warn_unreachable`, `ruff format --check .` is clean, and `pytest` fails the
+`warn_unreachable`, `ruff format --check .` is clean, `complexipy .` fails
+on any function above cognitive complexity 15, `./effective-lines-gate.sh`
+fails on any file above 1000 effective lines, and `pytest` fails the
 build when branch coverage drops under 95%. Read this repo's
 `python/README.md` for the reasoning behind every piece; the steps below
 assume that reasoning and only record the work.
@@ -25,7 +29,7 @@ assume that reasoning and only record the work.
 One repository, one language: the init skills all write `.github/workflows/ci.yml` (and `mutation.yml` where shipped), so initializing two languages into one repo silently overwrites the first folder's workflows.
 
 - A Python 3.12+ interpreter with `python -m venv` and network access to
-  PyPI for the nine pinned tools.
+  PyPI for the ten pinned tools.
 - You know the project name and it is valid in both places it appears
   (PEP 508 `name`, importable package directory).
 
@@ -34,7 +38,7 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
 1. Create the skeleton: the package directory `<name>/` with `__init__.py`,
    a `tests/` directory, and a `.venv` (`python -m venv .venv`).
 2. Install the pinned tools into the venv:
-   `pip install "ruff==0.16.6" "mypy==2.3.1" "pytest==9.1.1"
+   `pip install "ruff==0.16.6" "mypy==2.3.1" "complexipy==8.0.1" "pytest==9.1.1"
    "pytest-cov==7.1.0" "coverage[toml]==7.16.0" "deptry==0.25.1"
    "vulture==2.16" "import-linter==2.15" "mutmut==3.8.0"` — these pins feed
    `requirements.in`, and `requirements-lock.txt` (which ci.yml and
@@ -44,6 +48,8 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    `ci.yml -> .github/workflows/ci.yml` (create the directory),
    `mutation.yml -> .github/workflows/mutation.yml`,
    `run-gates.sh -> run-gates.sh` (then `chmod +x run-gates.sh`),
+   `effective-lines-gate.sh -> effective-lines-gate.sh` (then
+   `chmod +x effective-lines-gate.sh`),
    `.gitignore -> .gitignore`,
    `vulture-allowlist.py -> vulture-allowlist.py`,
    `.importlinter -> .importlinter`,
@@ -68,6 +74,11 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    - `ruff format --check .`
    - `mypy .`
    - `pytest`
+   - `complexipy .` (any function above cognitive complexity 15 fails;
+      remedy: extract a function)
+   - `./effective-lines-gate.sh` (any file above 1000 effective lines
+      fails; split the file by responsibility — never raise the threshold
+      to pass the build)
    - `deptry .` (fires once `[project.dependencies]` declares dependencies;
       a template with no dependencies passes vacuously)
    - `vulture your_package vulture-allowlist.py` (the command carries the
@@ -86,6 +97,10 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    `per-file-ignores` entry with a reason — never delete the rule to pass
    the build. Test files get the tests bar from the template's
    `per-file-ignores`; if the repo's layout differs, adapt the glob there.
+   The cyclomatic-family rules (C901, PLR0911, PLR0912) are deliberately
+   ignored in the template: cognitive complexity is the only complexity
+   metric this stack gates. Test files carry no file-length relief — the
+   effective-lines gate caps them identically.
 6. Prove the coverage gate the way `python/README.md` records it: all tests
    passing must exit 0, and temporarily commenting ONE test out must fail
    `pytest` with `FAIL Required test coverage of 95.0% not reached` and a
@@ -101,8 +116,8 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
 
 # Gates
 
-- After step 5, ALL eight commands run green (or a documented, pre-existing
-  decision explains any red), and step 6 showed the gate failing under 95%.
+- After step 5, ALL ten commands run green (or a documented, pre-existing
+   decision explains any red), and step 6 showed the gate failing under 95%.
 - `mutation.yml` is present as `.github/workflows/mutation.yml`: the
   nightly mutation-score gate the README documents (floor 85, reason
   recorded there), never on the PR path.
