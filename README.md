@@ -9,12 +9,12 @@ Every folder ships:
 - 🚦 **Coverage gate** — fails below 95%.
   - ✅ Free Coveralls badge.
 - 🧹 **Linting + type checking** — the language's strictest:
-  - 🚫 Deny when allowed.
-  - 🏷️ Reason on every rule.
   - 📚 Doc comment substance.
   - 🧠 Cognitive complexity ≤ 15.
   - 📏 File length.
   - 📦 Unused deps, import layers, lockfiles, TODOs.
+  - 🚫 Deny when allowed.
+  - 🏷️ Reason on every rule.
 - 📌 **Pinned tools** — CI matches the README.
 - 🧾 **Refusals** — evidence-backed, never silent.
 
