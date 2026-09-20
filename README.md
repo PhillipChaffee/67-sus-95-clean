@@ -56,15 +56,16 @@ Beside the code gates, every folder runs the shared hygiene set:
 - own-artifact lint (shellcheck, shfmt, yamllint, actionlint)
 - dependency advisories + licenses
 
-All pinned, each with a recorded proof it fails on demand. Run them locally:
-the folder's `run-gates.sh`. Per-language extras — deptry, vulture,
-cargo-deny, knip, `go mod tidy -diff`, the rest — live in the folder
-READMEs. shell skips advisories + licenses: no lockfile manifest.
+All pinned, each with a recorded proof it fails on demand:
 
-Mutation testing runs nightly where wired (mutmut for python, cargo-mutants
-for rust), score floors recorded. Refused after measurement, never gated:
-coupling dashboards, Halstead, Maintainability Index, NPath. Refusals in
-`tasks/*/notes/`.
+- local run — the folder's `run-gates.sh`
+- per-language extras — deptry, vulture, cargo-deny, knip, `go mod tidy -diff`, the rest — in the folder READMEs
+- shell skips advisories + licenses: no lockfile manifest
+- mutation testing nightly where wired (mutmut for python, cargo-mutants for
+  rust), score floors recorded
+- refused after measurement, never gated: coupling dashboards, Halstead,
+  Maintainability Index, NPath
+- refusal notes in `tasks/*/notes/`
 
 ## 🗺️ Layout
 
