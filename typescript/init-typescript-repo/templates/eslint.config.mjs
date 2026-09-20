@@ -63,11 +63,29 @@ export default defineConfig(
         },
       ],
       // A doc that restates the bare signature is the bug this repo's rules
-      // exist to catch: the block description is required, so "@param x the x"
-      // alone will not pass.
+      // exist to catch. require-description scopes the block description
+      // only; the tag-level holes close below: an empty `@param` description
+      // fails require-param-description, an empty `@returns` description
+      // fails require-returns-description, and a description that only
+      // repeats the name it describes fails informative-docs.
       "jsdoc/require-description": "error",
       "jsdoc/require-param": "error", // Each parameter documented (fired even without a block otherwise)
       "jsdoc/require-returns": "error", // A returning function documents what it returns
+      // The tag-level substance floor: a tag carries a description, not just
+      // a name. Remedy: write what the caller needs that the type does not
+      // show; informative-docs below then judges whether it says anything.
+      "jsdoc/require-param-description": "error",
+      "jsdoc/require-returns-description": "error",
+      // The mechanical half of the prose policy: a description (block or
+      // tag) that only restates the name it describes now fails the build.
+      // Kept at the rule's documented defaults (aliases { a: ["an", "our"] },
+      // uselessWords [a, an, i, in, of, s, the]) after a scratch
+      // false-positive run on the init-skill skeleton. One added word flips
+      // the verdict ("Retrieved user id." passes for userId where "The user
+      // id." fails — are-docs-informative's own documented example); a pure
+      // verbalization of a multi-word identifier fires by design, because
+      // that IS the restate-the-signature bug this block exists to reject.
+      "jsdoc/informative-docs": "error",
       "jsdoc/check-param-names": "error", // @param names must match the signature, drift die
       "jsdoc/check-tag-names": "error", // Tags are from the known vocabulary; typos like @retruns do not pass silently
       "jsdoc/require-hyphen-before-param-description": "error", // `@param name - description` punctuation is fixed, because diffs across param lines should not restyle themselves
@@ -110,8 +128,11 @@ export default defineConfig(
     plugins: { sonarjs },
     rules: {
       // Cognitive complexity, 15: Sonar's own documented issue threshold for
-      // the metric (S3776); counting nesting and breaks, it catches the deep
-      // shape cyclomatic complexity (complexity above) does not.
+      // the metric (S3776) and the folder's only complexity metric — the
+      // cyclomatic gate (eslint core `complexity`) was removed when this
+      // effort consolidated on cognitive complexity family-wide. Counting
+      // nesting and breaks, it catches the deep shape a linear McCabe count
+      // does not.
       "sonarjs/cognitive-complexity": ["error", 15],
       // A string repeated three or more times is a constant (S1192; the
       // plugin's documented default threshold).
@@ -125,8 +146,8 @@ export default defineConfig(
     // eslint core metric caps: NOT in any typescript-eslint preset, so these
     // are explicit core entries on TS sources (the typescript-eslint parser
     // feeds them). Every threshold is either a documented default or a metric
-    // gate shared with the other stacks (McCabe 10, screen-sized functions),
-    // and none of them judges whitespace — prettier owns the byte. The
+    // gate shared with the other stacks (screen-sized functions), and none
+    // of them judges whitespace — prettier owns the byte. The
     // eslint config files themselves sit outside this block: their own
     // thresholds are literals by definition, and a metric gate that flags
     // its own config trains people to ignore the gate.
@@ -145,10 +166,6 @@ export default defineConfig(
           ignoreClassFieldInitialValues: true,
         },
       ],
-      // Cyclomatic complexity, max 10: the McCabe reference point (same as
-      // the go folder's cyclop max and Sonar's default). Remedy: extract a
-      // function.
-      complexity: ["error", 10],
       // A file longer than a screen or two is two modules wearing a trench
       // coat. skipComments/skipBlankLines so prose and formatting do not
       // count. Overlaps max-lines-per-function: the file cap bounds the sum,

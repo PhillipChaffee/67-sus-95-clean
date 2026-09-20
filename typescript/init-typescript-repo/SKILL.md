@@ -62,7 +62,14 @@ One repository, one language: the init skills all write `.github/workflows/ci.ym
    documented function and `src/index.test.ts` covering every line, branch
    and function of it. The doc comment must carry a block description (a
    bare `@param` pair will not pass `jsdoc/require-description`), matching
-   parameter names, and `@param name - description` hyphens. Templates for
+   parameter names, and `@param name - description` hyphens. Every tag
+   description must exist (`jsdoc/require-param-description`,
+   `jsdoc/require-returns-description`) and say something
+   (`jsdoc/informative-docs`): a description that only restates the name it
+   describes — `"@param path - The path."`, or a block that verbalizes the
+   function's name — fails. Write one word the signature cannot
+   (`"@param path - The module specifier the name is parsed out of."`).
+   Templates for
    these two files are NOT shipped: write them fresh, because the coverage
    gate only stays honest when the skeleton is the project's own.
 7. Run every gate and make each one pass or fail for a known, acceptable

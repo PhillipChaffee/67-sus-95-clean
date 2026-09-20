@@ -33,22 +33,26 @@ node 24.3.0 at the patch level — npm only warns (EBADENGINE), no gate runs
   and eslint core's two comment rules (see Comments).
 - eslint core metric caps, explicit core entries (none is in any
   typescript-eslint preset), each with its threshold and reason in the
-  config: `complexity` (max 10 — the McCabe reference point, parity with
-  the go folder's cyclop and rust's size family), `max-lines` (300, blank
+  config: `max-lines` (300, blank
   lines and comments excluded — a file that does not fit a screen or two
   is two modules), `max-statements` (40 — parity with go's funlen
   statements cap), `max-lines-per-function` (60 with the same exclusions —
   the readable-screen rule; max-lines bounds the sum, this bounds each
   part), `max-depth` (4 — past that, extraction stops being optional), and
   `max-params` (3, the eslint documented default — a 4th positional
-  parameter is an unnamed context object). All six proven both ways on the
+  parameter is an unnamed context object). All five proven both ways on the
   template fixture: a seeded violation per family fails with the rule name
-  in the output.
+  in the output. Cyclomatic `complexity` was removed when this effort
+  consolidated on cognitive complexity family-wide (every language in this
+  repo now gates cognitive complexity only); the per-function size axes are
+  not cyclomatic and stay.
 - Sonar's metric gates through `eslint-plugin-sonarjs` (4.2.1, pinned in
   package.json next to the other pins), explicitly enabled as a slice: the
   plugin's `recommended` bundle pulls in more surface than this slice
   needs. `sonarjs/cognitive-complexity` at 15 (Sonar's own documented issue
-  threshold for S3776 — catches the deep shape `complexity` misses),
+  threshold for S3776 — the folder's only complexity metric now; counting
+  nesting and breaks, it catches the deep shape a linear McCabe count does
+  not),
   `sonarjs/no-duplicate-string` at 3 (S1192's documented default), and
   `sonarjs/no-commented-code` (S125 — the plugin ships the rule, so the
   audit's commented-out-code gap is closed). Proven both ways: a seeded
@@ -114,22 +118,58 @@ Machine (the jsdoc strict slice):
   arrow-function and function-expression consts via two extra AST contexts —
   the default contexts miss arrows, and arrows ship. Declared (`declare
   function`) surface is covered by the defaults too.
-- `require-description`: the block description is mandatory; a doc that
-  only restates the signature is the thing this folder exists to reject.
+- `require-description`: the block description is mandatory. The rule scopes
+  the block, not the tags — the tag-level holes close below.
 - `require-param`, `require-returns`: parameters and returned values
   documented (a function with parameters and no doc block at all fails, so
   the two rules make `require-jsdoc` non-bypassable).
+- `require-param-description`, `require-returns-description`: the tag must
+  carry a description, not just a name — the hole where `"@param x - x"`
+  passed `require-param` alone is closed. Remedy: write the description.
+- `informative-docs`: the mechanical half of the prose policy — a
+  description (block or tag) that only restates the name it describes
+  fails the build. Kept at the rule's documented defaults (aliases
+  `{ a: ["an", "our"] }`, uselessWords
+  `["a", "an", "i", "in", "of", "s", "the"]`) after a scratch
+  false-positive run on the init-skill skeleton: the canonical doc shape
+  passes, and the multi-word-identifier class passes as soon as the
+  description adds one word ("Retrieved user id." is informative for
+  `userId` where "The user id." is not — are-docs-informative's own
+  documented example; "Retrieves the package name from path segments."
+  passes for `getPackageNameFromPath` while the pure verbalization "The
+  package name from path." fails). A pure verbalization failing is the
+  rule working as intended: it IS the restate-the-signature bug, and one
+  word the signature cannot say flips the verdict.
 - `check-param-names`: `@param` names must match the signature.
 - `check-tag-names`: tags come from the known vocabulary; a typo like
   `@retruns` does not pass silently.
 - `require-hyphen-before-param-description`: `@param name - description` is
   the fixed shape, so diffs don't reformat param lines.
 
-Policy (nothing checks the prose): doc comments carry what the signature
-cannot — the non-finite input that flows through, the thrown whose
-exception class the type does not name, the default the type does not show.
-A restate-the-signature doc passes every linter in the stack and is still
-the bug; review treats it as one.
+Refused from the substance family, with reasons: `require-property-description`
+and `require-throws` (beyond the adopted ceiling — properties and throws are
+optional at this strictness bar), `require-description-complete-sentence`
+(noisier than the value; python already refused sentence-completeness
+enforcement under Google convention — consistency), and `require-example`
+(researched as noise).
+
+Policy: doc comments carry what the signature cannot — the non-finite input
+that flows through, the thrown whose exception class the type does not
+name, the default the type does not show. The machine now enforces the
+floor: a description exists on every required tag and block, and it is not
+a verbalization of the name. Whether the sentence is the right one stays
+review's job.
+
+THE GATE IS TESTED, both sides, on the init-skill skeleton shape (clean
+file exits 0; each seeded hole fails `npm run lint` with the rule name):
+
+```text
+1:1  error  This description only repeats the name it describes      jsdoc/informative-docs
+3:1  error  Missing JSDoc @param "left" description                  jsdoc/require-param-description
+4:1  error  This tag description only repeats the name it describes  jsdoc/informative-docs
+5:1  error  Missing JSDoc @returns description                       jsdoc/require-returns-description
+exit code: 1
+```
 
 Machine (eslint core comment rules):
 
@@ -472,10 +512,11 @@ nightly exists to exclude.
   and the unused pair are cheap. The package is strict-but-workable — the
   proof repo compiles clean under all of them.
 - The jsdoc admin load is real: every export needs a doc block with a real
-  description, matching param names and hyphens. Budget that upkeep, or
-  the exported surface will churn the gate. The way out is not blanketing
-  `allow` — it is writing the one sentence the signature cannot, per the
-  policy above.
+  description, matching param names and hyphens, tag descriptions that say
+  something, and prose that is not a verbalization of the name. Budget
+  that upkeep, or the exported surface will churn the gate. The way out is
+  not blanketing `allow` — it is writing the one sentence the signature
+  cannot, per the policy above.
 - Typed linting costs a project type pass on every `eslint .` run; fine at
   small scale, grows with the repo, editors recover it via caching. The
   alternative (dropping type information) is rejected — the typed rules
