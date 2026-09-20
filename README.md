@@ -21,7 +21,7 @@ Every folder ships the same guarantees:
 - Deny-level enforcement wherever the tool allows it.
 - A reason attached to every enabled rule.
 - Doc-comment substance enforced where a stable linter exists.
-- Cognitive complexity only, capped at 15.
+- Cognitive complexity capped at 15.
 - File length capped in effective lines, blanks and comments excluded.
 - Unused dependencies, import layers, lockfiles, and TODOs gated per language.
 - Pinned tool versions, and CI that matches the README.
