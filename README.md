@@ -16,16 +16,16 @@ setup.
 
 Every folder ships the same guarantees:
 
-- A coverage gate that fails the build below 95%.
-- A free coverage badge on every build, red included.
-- Deny-level enforcement wherever the tool allows it.
-- A reason attached to every enabled rule.
-- Doc-comment substance enforced where a stable linter exists.
-- Cognitive complexity capped at 15.
-- File length capped in effective lines, blanks and comments excluded.
-- Unused dependencies, import layers, lockfiles, and TODOs gated per language.
-- Pinned tool versions, and CI that matches the README.
-- Refusals documented with evidence, never silent.
+- 🚦 A coverage gate that fails the build below 95%.
+- 🏅 A free coverage badge on every build, red included.
+- 🚫 Deny-level enforcement wherever the tool allows it.
+- 🏷️ A reason attached to every enabled rule.
+- 📚 Doc-comment substance enforced where a stable linter exists.
+- 🧠 Cognitive complexity capped at 15.
+- 📏 File length capped in effective lines, blanks and comments excluded.
+- 📦 Unused dependencies, import layers, lockfiles, and TODOs gated per language.
+- 📌 Pinned tool versions, and CI that matches the README.
+- 🧾 Refusals documented with evidence, never silent.
 
 ## How to use it
 
