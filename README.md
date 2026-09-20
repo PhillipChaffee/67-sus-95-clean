@@ -1,16 +1,9 @@
-# 🛡️ 67-sus-95-clean
+# 🛡️ full-lint
 
-<p align="center">
-  <img src="docs/meme.png" alt="Drake in landscape: turning away from 67% VIBES on the left, pointing at 95% CLEAN on the right" width="560">
-</p>
-
-One folder per language. Each folder holds the strictest workable enforcement
-stack for that language: linting, type checking, doc-comment rules, size
-gates, and a code-coverage gate at 95% minimum. "Strictest workable" means
-the strict setup that stays usable day to day. Each folder ships the example
-configuration files, a README that explains what every enforcement is for,
-and an installable skill that initializes a new repository with the whole
-setup.
+One folder per language. Each folder holds the strictest setup that still
+stays usable day to day: linting, type checking, doc-comment rules, size
+gates, and a 95% coverage floor. Every folder ships its configuration files,
+a README, and an installable skill that sets up a new repository in one run.
 
 ## 🎁 What you get
 
