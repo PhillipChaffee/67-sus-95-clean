@@ -2,6 +2,12 @@
 
 One folder per language — the strictest setup that stays usable.
 
+[![hygiene](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml/badge.svg)](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml)
+
+**Same guarantees in every folder · every gate proven to fail · refusals with evidence**
+
+[What you get](#-what-you-get) · [How to use it](#-how-to-use-it) · [The languages](#️-the-languages) · [Hygiene gates](#-the-shared-hygiene-gates) · [Adding a language](#-adding-a-language)
+
 ## 🎁 What you get
 
 Every folder ships:
