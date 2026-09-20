@@ -12,6 +12,21 @@ configuration files, a README that explains what every enforcement is for,
 and an installable skill that initializes a new repository with the whole
 setup.
 
+## What you get
+
+Every folder ships the same guarantees:
+
+- A coverage gate that fails the build below 95%.
+- A free coverage badge on every build, red included.
+- Deny-level enforcement wherever the tool allows it.
+- A reason attached to every enabled rule.
+- Doc-comment substance enforced where a stable linter exists.
+- Cognitive complexity only, capped at 15.
+- File length capped in effective lines, blanks and comments excluded.
+- Unused dependencies, import layers, lockfiles, and TODOs gated per language.
+- Pinned tool versions, and CI that matches the README.
+- Refusals documented with evidence, never silent.
+
 ## How to use it
 
 You are starting a new project in one of the five languages.
@@ -56,35 +71,8 @@ advisories and licenses because it carries no lockfile manifest.
 Mutation testing runs nightly where it is wired (mutmut for python,
 cargo-mutants for rust) with recorded score floors. Some metric families are
 refused after measurement, and no config gates them: coupling dashboards,
-Halstead, Maintainability Index, NPath.
-
-## What every folder shares
-
-1. The coverage gate fails the build below 95%.
-2. Every rule enabled by hand carries its reason in the config or the README,
-   and a rule without a reason gets deleted at the next review.
-3. Configs use deny where the tool allows it. The warn level appears only
-   where the CI wrapper makes warnings fatal anyway, and the README
-   documents each case.
-4. A comment that only restates the signature is a bug. A stable linter
-   enforces this where one exists. Where none exists, the README states the
-   policy for the human reviewer.
-5. Tool versions are pinned (`rust-toolchain.toml`, `python_version`,
-   `engines`, `run.go`), nightly-only options are marked, and CI runs
-   exactly the commands in the README.
-6. Every folder's CI ships its coverage report to
-   [Coveralls](https://coveralls.io) with `coverallsapp/github-action@v2`.
-   The action is free for public repositories and needs no account and no
-   secret. The report is written before the gate runs, so it uploads even
-   when the build fails and red builds still get the badge.
-7. Each language's own tool gates unused dependencies, import layers,
-   lockfile integrity, and TODO markers. A TODO marker fails the build in
-   every stack.
-8. Cognitive complexity is the only complexity metric, capped at 15 where a
-   gate exists (gocognit, complexipy, arborist, sonarjs). File length counts
-   effective lines, blank and comment lines excluded, with caps from 750
-   (go) to 200 (shell). Doc substance is gated where a mechanical check
-   exists. Refusals are documented in `tasks/*/notes/`.
+Halstead, Maintainability Index, NPath. Refusals are documented in
+`tasks/*/notes/`.
 
 ## Layout
 
