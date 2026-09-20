@@ -9,7 +9,7 @@ Every folder ships:
 - 🚦 **Coverage gate** — fails below 95%.
   - ✅ Free Coveralls badge.
 - 🧹 **Linting + type checking** — the language's strictest:
-  - 🚫 Deny-level wherever the tool allows.
+  - 🚫 Deny when allowed.
   - 🏷️ Reason on every rule.
   - 📚 Doc comment substance.
   - 🧠 Cognitive complexity ≤ 15.
