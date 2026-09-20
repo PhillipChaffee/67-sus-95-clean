@@ -14,7 +14,7 @@ description: >-
 Add one new language folder to the strictest-setups repository with the same
 guarantees the existing folders have: strict-but-workable lint, types, docs,
 comments, and a machine-enforced 95% coverage gate. Read the repo root
-`README.md` first — its "house rules" section is the contract every folder
+`README.md` first — its "What you get" section is the contract every folder
 meets, and the invariant it names (a folder is not merged until its coverage
 gate provably fails a build under 95%) is the acceptance test for this skill
 too.
