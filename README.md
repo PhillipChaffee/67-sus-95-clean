@@ -2,7 +2,7 @@
 
 One folder per language — the strictest setup that stays usable.
 
-[![hygiene](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml/badge.svg)](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml)
+[![hygiene](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml/badge.svg)](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Same guarantees in every folder · every gate proven to fail · refusals with evidence**
 
