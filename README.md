@@ -1,4 +1,4 @@
-# 67-sus-95-clean
+# 🛡️ 67-sus-95-clean
 
 <p align="center">
   <img src="docs/meme.png" alt="Drake in landscape: turning away from 67% VIBES on the left, pointing at 95% CLEAN on the right" width="560">
@@ -12,7 +12,7 @@ configuration files, a README that explains what every enforcement is for,
 and an installable skill that initializes a new repository with the whole
 setup.
 
-## What you get
+## 🎁 What you get
 
 Every folder ships the same guarantees:
 
@@ -27,7 +27,7 @@ Every folder ships the same guarantees:
 - 📌 Pinned tool versions, and CI that matches the README.
 - 🧾 Refusals documented with evidence, never silent.
 
-## How to use it
+## 🧭 How to use it
 
 You are starting a new project in one of the five languages.
 
@@ -38,7 +38,7 @@ You are starting a new project in one of the five languages.
 3. Run the installed skill in your new repository. It writes the configuration
    files and the gate scripts.
 
-## The languages
+## 🗂️ The languages
 
 The table shows the code gates only. Details and reasoning live in each
 folder's README.
@@ -51,7 +51,7 @@ folder's README.
 | [`go/`](go/) | golangci-lint v2: strict extras | `go vet` + staticcheck | revive `exported` + godoclint | `gocognit` 15, cognitive-only. ≤ 750 effective lines | gate script ≥ 95% | `gofumpt` |
 | [`shell/`](shell/) | shellcheck: default severity + two optional checks | refused: no shell type checker exists | ast-grep header-comment gate; prose checker refused | cognitive refused (omen probed, failed). ≤ 200 effective lines | gate script ≥ 95% (kcov) | `shfmt -d .` via `.editorconfig` |
 
-## The shared hygiene gates
+## 🧼 The shared hygiene gates
 
 Every folder also runs hygiene and supply-chain gates beside the code gates.
 The shared set:
@@ -74,7 +74,7 @@ refused after measurement, and no config gates them: coupling dashboards,
 Halstead, Maintainability Index, NPath. Refusals are documented in
 `tasks/*/notes/`.
 
-## Layout
+## 🗺️ Layout
 
 | path | what it is |
 | --- | --- |
@@ -86,13 +86,13 @@ Halstead, Maintainability Index, NPath. Refusals are documented in
 | `scripts/install-skills.sh` | installs the skills into `~/.agents/skills/` |
 | `tasks/*/notes/` | evidence-backed decision notes from the enforcement efforts: refusals and the parity audit |
 
-## Adding a language
+## ➕ Adding a language
 
 Run the `add-language` skill (see `add-language/SKILL.md`). The skill walks
 the loop: research the language, author the folder, validate the gates. It
 updates the list above. The invariant holds: a language folder is not merged
 until its coverage gate provably fails a build below 95%.
 
-## License
+## ⚖️ License
 
 MIT. See [LICENSE](LICENSE).
