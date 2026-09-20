@@ -58,45 +58,33 @@ cargo-mutants for rust) with recorded score floors. Some metric families are
 refused after measurement, and no config gates them: coupling dashboards,
 Halstead, Maintainability Index, NPath.
 
-## House rules
+## What every folder shares
 
-1. The coverage gate fails the build below 95%. Each folder wires it with its
-   own tool: llvm-cov, pytest-cov, vitest, or a gate script for go and shell.
-2. Every rule enabled by hand carries its reason in the config or the README.
-   A rule without a reason is deleted at the next review.
-3. The configs use deny where the tool allows it. Where a CI wrapper makes
-   warnings fatal anyway, the config uses warn, and the folder README
-   documents the case.
-4. A comment or docstring that only restates the signature is a bug. A stable
-   linter enforces comment content where one exists: ruff D,
-   eslint-plugin-jsdoc, revive `exported`, and the rustdoc and clippy doc
-   lints. Where no stable checker exists, the folder README records the
+1. The coverage gate fails the build below 95%.
+2. Every rule enabled by hand carries its reason in the config or the README,
+   and a rule without a reason gets deleted at the next review.
+3. Configs use deny where the tool allows it. The warn level appears only
+   where the CI wrapper makes warnings fatal anyway, and the README
+   documents each case.
+4. A comment that only restates the signature is a bug. A stable linter
+   enforces this where one exists. Where none exists, the README states the
    policy for the human reviewer.
 5. Tool versions are pinned (`rust-toolchain.toml`, `python_version`,
-   `engines`, `run.go`). Nightly-only options are marked as such. CI runs
+   `engines`, `run.go`), nightly-only options are marked, and CI runs
    exactly the commands in the README.
 6. Every folder's CI ships its coverage report to
    [Coveralls](https://coveralls.io) with `coverallsapp/github-action@v2`.
-   The action is free for public repositories on the built-in `GITHUB_TOKEN`,
-   so it needs no account and no secret. The report is written before the
-   gate runs and is uploaded even when the build fails, so red builds still
-   get the badge.
-7. Each language's own tool gates its unused dependencies, its import layers,
-   its lockfile integrity, and its TODO markers. The tools are deptry
-   (python), `go mod tidy -diff` (go), cargo-shear (rust), and knip
-   (typescript) for unused dependencies, import-linter and dependency-cruiser
-   for import layers, and hash-pinned installs and lockfile-lint for lockfile
-   integrity. A TODO marker fails the build in every stack: ruff FIX002,
-   godox, no-warning-comments, a rust grep. Where the pinned tools cannot
-   tell the truth, the refusal is recorded in `tasks/*/notes/` (StrykerJS
-   with vitest 5, x/tools deadcode).
-8. Complexity is cognitive-only, file length counts effective lines, and doc
-   substance is gated where a mechanical check exists. Cognitive complexity
-   is capped at 15, Sonar's own default (gocognit, complexipy, arborist,
-   sonarjs). The shell candidate was probed and refused, and cyclomatic is
-   removed everywhere. The file-length caps are per language, from 750 (go)
-   to 200 (shell). Every refusal is documented in
-   `tasks/enforce-gates/notes/`.
+   The action is free for public repositories and needs no account and no
+   secret. The report is written before the gate runs, so it uploads even
+   when the build fails and red builds still get the badge.
+7. Each language's own tool gates unused dependencies, import layers,
+   lockfile integrity, and TODO markers. A TODO marker fails the build in
+   every stack.
+8. Cognitive complexity is the only complexity metric, capped at 15 where a
+   gate exists (gocognit, complexipy, arborist, sonarjs). File length counts
+   effective lines, blank and comment lines excluded, with caps from 750
+   (go) to 200 (shell). Doc substance is gated where a mechanical check
+   exists. Refusals are documented in `tasks/*/notes/`.
 
 ## Layout
 
