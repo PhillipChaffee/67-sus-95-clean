@@ -1,9 +1,6 @@
 # 🛡️ full-lint
 
-One folder per language. Each folder holds the strictest setup that still
-stays usable day to day: linting, type checking, doc-comment rules, size
-gates, and a 95% coverage floor. Every folder ships its configuration files,
-a README, and an installable skill that sets up a new repository in one run.
+One folder per language. The strictest setup that still stays usable day to day.
 
 ## 🎁 What you get
 
@@ -11,6 +8,7 @@ Every folder ships the same guarantees:
 
 - 🚦 A coverage gate that fails the build below 95%.
 - 🏅 A free coverage badge on every build, red included.
+- 🧹 Linting and type checking at the language's strictest level.
 - 🚫 Deny-level enforcement wherever the tool allows it.
 - 🏷️ A reason attached to every enabled rule.
 - 📚 Doc-comment substance enforced where a stable linter exists.
