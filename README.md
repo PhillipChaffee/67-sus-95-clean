@@ -6,17 +6,17 @@ One folder per language. The strictest setup that still stays usable day to day.
 
 Every folder ships the same guarantees:
 
-- 🚦 **A coverage gate** — fails the build below 95%.
-  - 🏅 A free coverage badge on every build, red included.
-- 🧹 **Linting and type checking at the language's strictest level:**
-  - 🚫 Deny-level enforcement wherever the tool allows it.
-  - 🏷️ A reason attached to every enabled rule.
-  - 📚 Doc-comment substance enforced where a stable linter exists.
-  - 🧠 Cognitive complexity capped at 15.
-  - 📏 File length capped in effective lines, blanks and comments excluded.
-  - 📦 Unused dependencies, import layers, lockfiles, and TODOs gated per language.
-- 📌 **Pinned tool versions** — and CI that matches the README.
-- 🧾 **Refusals documented with evidence** — never silent.
+- 🚦 **Coverage gate** — fails below 95%.
+  - 🏅 Free coverage badge, red included.
+- 🧹 **Linting + type checking** — the language's strictest:
+  - 🚫 Deny-level wherever the tool allows.
+  - 🏷️ Reason on every rule.
+  - 📚 Doc-comment substance enforced where stable linters exist.
+  - 🧠 Cognitive complexity ≤ 15.
+  - 📏 File length capped in effective lines.
+  - 📦 Unused deps, import layers, lockfiles, TODOs — gated per language.
+- 📌 **Pinned tools** — CI matches the README.
+- 🧾 **Refusals** — evidence-backed, never silent.
 
 ## 🧭 How to use it
 
