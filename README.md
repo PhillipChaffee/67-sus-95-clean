@@ -7,7 +7,7 @@ One folder per language — the strictest setup that stays usable.
 Every folder ships:
 
 - 🚦 **Coverage gate** — fails below 95%.
-  - ✅ Free badge.
+  - ✅ Free Coveralls badge.
 - 🧹 **Linting + type checking** — the language's strictest:
   - 🚫 Deny-level wherever the tool allows.
   - 🏷️ Reason on every rule.
