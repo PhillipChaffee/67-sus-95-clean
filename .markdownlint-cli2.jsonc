@@ -10,6 +10,8 @@
     "MD025": false,
     // the landing README centers its banner image with HTML on purpose
     "MD033": false,
+    // the landing README opens with a bold middot tagline, not a heading
+    "MD036": false,
     // shell scripts legitimately use tab indentation; tabs inside fenced
     // shell blocks are the script's own style, not doc sloppiness
     "MD010": { "code_blocks": false }

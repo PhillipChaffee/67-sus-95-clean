@@ -1,38 +1,42 @@
 # 🛡️ full-lint
 
-One folder per language. The strictest setup that still stays usable day to day.
+One folder per language — the strictest setup that stays usable.
+
+[![hygiene](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml/badge.svg)](https://github.com/PhillipChaffee/full-lint/actions/workflows/hygiene.yml) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**Same guarantees in every folder · every gate proven to fail · refusals with evidence**
+
+[What you get](#-what-you-get) · [How to use it](#-how-to-use-it) · [The languages](#️-the-languages) · [Hygiene gates](#-the-shared-hygiene-gates) · [Adding a language](#-adding-a-language)
 
 ## 🎁 What you get
 
-Every folder ships the same guarantees:
+Every folder ships:
 
-- 🚦 A coverage gate that fails the build below 95%.
-- 🏅 A free coverage badge on every build, red included.
-- 🧹 Linting and type checking at the language's strictest level.
-- 🚫 Deny-level enforcement wherever the tool allows it.
-- 🏷️ A reason attached to every enabled rule.
-- 📚 Doc-comment substance enforced where a stable linter exists.
-- 🧠 Cognitive complexity capped at 15.
-- 📏 File length capped in effective lines, blanks and comments excluded.
-- 📦 Unused dependencies, import layers, lockfiles, and TODOs gated per language.
-- 📌 Pinned tool versions, and CI that matches the README.
-- 🧾 Refusals documented with evidence, never silent.
+- 🚦 **Coverage gate** — fails below 95%.
+  - ✅ Free Coveralls badge.
+- 🧹 **Linting + type checking** — the language's strictest:
+  - 📚 Doc comment substance.
+  - 🧠 Cognitive complexity ≤ 15.
+  - 📏 File length.
+  - 📦 Unused deps, import layers, lockfiles, TODOs.
+  - 🚫 Deny when allowed.
+  - 🏷️ Reason on every rule.
+- 📌 **Pinned tools** — CI matches the README.
+- 🧾 **Refusals** — evidence-backed, never silent.
 
 ## 🧭 How to use it
 
-You are starting a new project in one of the five languages.
+Starting a new project in one of the five languages:
 
-1. Read the folder for that language before you write code. Its README states
-   what is enforced and why.
-2. Install the skills with `scripts/install-skills.sh`. The script copies each
-   folder's `init-<lang>-repo` skill into `~/.agents/skills/`.
-3. Run the installed skill in your new repository. It writes the configuration
-   files and the gate scripts.
+1. Read the folder's README first — it states what is enforced, and why.
+2. Install the skills: `scripts/install-skills.sh` copies each
+   `init-<lang>-repo` skill into `~/.agents/skills/`.
+3. Run the skill in your new repo — it writes the configs and the gate
+   scripts.
 
 ## 🗂️ The languages
 
-The table shows the code gates only. Details and reasoning live in each
-folder's README.
+Code gates only — details and reasoning live in each folder's README.
 
 | folder | lint | types | docs | size gates | coverage | formatter |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -44,45 +48,43 @@ folder's README.
 
 ## 🧼 The shared hygiene gates
 
-Every folder also runs hygiene and supply-chain gates beside the code gates.
-The shared set:
+Beside the code gates, every folder runs the shared hygiene set:
 
-- a spell check and a markdown lint
-- a secret scan and a link check
+- spell check + markdown lint
+- secret scan + link check
 - copy-paste detection
-- lint of the repo's own artifacts (shellcheck, shfmt, yamllint, actionlint)
-- dependency advisories and license checks
+- own-artifact lint (shellcheck, shfmt, yamllint, actionlint)
+- dependency advisories + licenses
 
-All tools are pinned, and each gate carries a recorded proof that it fails on
-demand. You run the same gates locally with the folder's `run-gates.sh`. The
-per-language extras (deptry, vulture, cargo-deny, knip, `go mod tidy -diff`,
-and the rest) are documented in the folder READMEs. shell is the exception on
-advisories and licenses because it carries no lockfile manifest.
+All pinned, each with a recorded proof it fails on demand:
 
-Mutation testing runs nightly where it is wired (mutmut for python,
-cargo-mutants for rust) with recorded score floors. Some metric families are
-refused after measurement, and no config gates them: coupling dashboards,
-Halstead, Maintainability Index, NPath. Refusals are documented in
-`tasks/*/notes/`.
+- local run — the folder's `run-gates.sh`
+- per-language extras — deptry, vulture, cargo-deny, knip, `go mod tidy -diff`, the rest — in the folder READMEs
+- shell skips advisories + licenses: no lockfile manifest
+- mutation testing nightly where wired (mutmut for python, cargo-mutants for
+  rust), score floors recorded
+- refused after measurement, never gated: coupling dashboards, Halstead,
+  Maintainability Index, NPath
+- refusal notes in `tasks/*/notes/`
 
 ## 🗺️ Layout
 
 | path | what it is |
 | --- | --- |
-| `<lang>/README.md` | what is enforced, and the trade-offs ("strict but staying usable") |
-| `<lang>/<configs>` | the example configuration files, the set the gates read |
-| `<lang>/init-<lang>-repo/` | the installable skill, plus `templates/` byte-copies so it is self-contained |
-| `add-language/` | the skill that adds a new language to this repo |
-| `scripts/verify-sync.sh` | fails when a template copy drifts from its canonical config |
-| `scripts/install-skills.sh` | installs the skills into `~/.agents/skills/` |
-| `tasks/*/notes/` | evidence-backed decision notes from the enforcement efforts: refusals and the parity audit |
+| `<lang>/README.md` | what is enforced, and the trade-offs |
+| `<lang>/<configs>` | the configs the gates read |
+| `<lang>/init-<lang>-repo/` | the installable skill, with `templates/` byte-copies |
+| `add-language/` | the skill that adds a language |
+| `scripts/verify-sync.sh` | fails on template drift |
+| `scripts/install-skills.sh` | installs the skills |
+| `tasks/*/notes/` | refusal and parity-audit notes |
 
 ## ➕ Adding a language
 
-Run the `add-language` skill (see `add-language/SKILL.md`). The skill walks
-the loop: research the language, author the folder, validate the gates. It
-updates the list above. The invariant holds: a language folder is not merged
-until its coverage gate provably fails a build below 95%.
+Run the `add-language` skill (`add-language/SKILL.md`): research the
+language, author the folder, validate the gates. It updates the table above.
+The invariant: no folder merges until its coverage gate provably fails a
+build below 95%.
 
 ## ⚖️ License
 
